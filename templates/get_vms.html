@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+table, th, td {
+    border: 1px solid black;
+}
+</style>
+</head>
+<body>
+
+<a href="/proxstar/create">Create VM</a>
+
+<table>
+   <tr>
+        <th> Name </th>
+	<th> Status </th>
+	<th> Cores </th>
+	<th> Memory </th>
+	<th> Disk Size </th>
+   </tr>
+{% for vm in vms %}
+   <tr>
+        <td> {{ vm['name'] }} </td>
+        <td> {{ vm['status'] }} </td>
+	<td> {{ vm['config']['cores'] * vm['config']['sockets'] }} </td>
+	<td> {{ vm['config']['memory'] }} MB </td>
+	<td> {{ vm['disk_size'] }} </td>
+   </tr>
+{% endfor %}
+</table>
+
+{{ vms }}
+
+</body>
+</html>
