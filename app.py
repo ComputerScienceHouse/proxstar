@@ -1,6 +1,7 @@
 import os
 import time
 import psycopg2
+import subprocess
 from starrs import *
 from proxmox import *
 from proxmoxer import ProxmoxAPI
@@ -15,6 +16,11 @@ config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
 
 app.config.from_pyfile(config)
 
+app.config["GIT_REVISION"] = subprocess.check_output(['git',
+                                                      'rev-parse',
+                                                      '--short',
+                                                      'HEAD']).decode('utf-8').rstrip()
+
 
 user = 'proxstar'
 proxmox = connect_proxmox(app.config['PROXMOX_HOST'], app.config['PROXMOX_USER'], app.config['PROXMOX_PASS'])
@@ -28,12 +34,12 @@ def get_vms():
         vm['config'] = get_vm_config(proxmox, vm['vmid'])
         vm['disk_size'] = get_vm_disk_size(proxmox, vm['vmid'], config=vm['config'])
         print(vm)
-    return render_template('get_vms.html', vms=vms)
+    return render_template('get_vms.html', username='com6056', vms=vms)
 
 
 @app.route("/create")
 def create():
-    return render_template('create.html')
+    return render_template('create.html', username='com6056')
 
 
 @app.route("/get_create", methods=['POST'])
@@ -53,7 +59,7 @@ def get_create():
 def delete():
     vmid = request.form['delete']
     vmname = get_vm_config(proxmox, vmid)['name']
-    return render_template('confirm_delete.html', vmid=vmid, vmname=vmname)
+    return render_template('confirm_delete.html', username='com6056', vmid=vmid, vmname=vmname)
 
 
 @app.route("/confirm_delete", methods=['POST'])

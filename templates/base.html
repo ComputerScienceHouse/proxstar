@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Proxstar</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="theme-color" content="#B0197E">
+    <link rel="stylesheet" href="/proxstar/static/css/csh-material-bootstrap/dist/css/csh-material-bootstrap.css">
+    <link rel="stylesheet" href="/proxstar/static/css/styles.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+</head>
+<body>
+{% block nav %}
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/proxstar">Proxstar</a>
+            </div>
+            <div id="navbar" class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li>
+                        <a href="/proxstar">
+                            <span class="glyphicon glyphicon-th-list"></span>
+                            VM List
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/proxstar/create">
+                            <span class="glyphicon glyphicon-th-list"></span>
+                            Create VM
+                        </a>
+                    </li>
+                </ul>
+                <ul class="nav navbar-nav navbar-right">
+                    <li class="dropdown navbar-user">
+                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"
+                           role="button" aria-expanded="false">
+                            <img src="https://profiles.csh.rit.edu/image/{{ username }}"
+                                 title="{{ username }}">
+                            {{ username }}
+                            <span class="caret"></span>
+                        </a>
+                        <ul class="dropdown-menu" role="menu">
+                            <li>
+                                <a href="/settings">
+                                    <span class="glyphicon glyphicon-cog"></span>
+                                    Settings
+                                </a>
+                            </li>
+                            <li class="divider"></li>
+                            <li>
+                                <a href="https://profiles.csh.rit.edu/user/{{ username }}">
+                                    <span class="glyphicon glyphicon-user"></span>
+                                    Profile
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://members.csh.rit.edu/">
+                                    <span class="glyphicon glyphicon-globe"></span>
+                                    Members Portal
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/logout">
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+<body>
+{% block body %}
+{% endblock %}
+<footer>
+    <br>
+    <div class="version">
+	<a class="footer-version" href="https://github.com/com6056/proxstar/tree/{{config["GIT_REVISION"]}}">Proxstar ({{config["GIT_REVISION"]}})</a>
+    </div>
+</footer>
+</body>
+</body>
+</html>

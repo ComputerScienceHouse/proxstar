@@ -1,14 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-</style>
-</head>
-<body>
-
-<a href="/proxstar/create">Create VM</a>
-
-<br><br>
+{% extends "base.html" %}
+{% block body %}
 
 Are you sure you want to delete "{{ vmname }}"?
 
@@ -16,5 +7,4 @@ Are you sure you want to delete "{{ vmname }}"?
     <button type="submit" name="delete" value="{{ vmid }}">CONFIRM</button>
 </form>
 
-</body>
-</html>
+{% endblock %}

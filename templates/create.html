@@ -1,21 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
-<style>
-table, th, td {
-    border: 1px solid black;
-}
-</style>
-</head>
-<body>
-
-<a href="/proxstar/">VM List</a>
-
-<br><br>
-
-Create VM
-
-<br><br>
+{% extends "base.html" %}
+{% block body %}
 
 <form action="get_create" method="post">
     <label for="name">VM Name</label>
@@ -37,5 +21,4 @@ Create VM
     <input type="submit">
 </form>
 
-</body>
-</html>
+{% endblock %}
