@@ -11,6 +11,8 @@ table, th, td {
 
 <a href="/proxstar/create">Create VM</a>
 
+<br><br>
+
 <table>
    <tr>
         <th> Name </th>
@@ -18,17 +20,25 @@ table, th, td {
 	<th> Cores </th>
 	<th> Memory </th>
 	<th> Disk Size </th>
+	<th> Delete </th>
    </tr>
 {% for vm in vms %}
    <tr>
         <td> {{ vm['name'] }} </td>
         <td> {{ vm['status'] }} </td>
-	<td> {{ vm['config']['cores'] * vm['config']['sockets'] }} </td>
+	<td> {{ vm['config']['cores'] * vm['config'].get(sockets, 1) }} </td>
 	<td> {{ vm['config']['memory'] }} MB </td>
 	<td> {{ vm['disk_size'] }} </td>
+	<td>
+	    <form action="/proxstar/delete" method="post">
+		    <button type="submit" name="delete" value="{{ vm['vmid'] }}">DELETE</button>
+	    </form>
+	</td>
    </tr>
 {% endfor %}
 </table>
+
+<br>
 
 {{ vms }}
 

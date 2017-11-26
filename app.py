@@ -16,13 +16,9 @@ config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
 app.config.from_pyfile(config)
 
 
-user = 'ram'
+user = 'proxstar'
 proxmox = connect_proxmox(app.config['PROXMOX_HOST'], app.config['PROXMOX_USER'], app.config['PROXMOX_PASS'])
 starrs = connect_starrs(app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'], app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
-#print(get_vms_for_user(user))
-#vmid = create_vm(proxmox, starrs, user, name)
-#time.sleep(10)
-#delete_vm(proxmox, starrs, vmid, name)
 
 
 @app.route("/")
@@ -31,6 +27,7 @@ def get_vms():
     for vm in vms:
         vm['config'] = get_vm_config(proxmox, vm['vmid'])
         vm['disk_size'] = get_vm_disk_size(proxmox, vm['vmid'], config=vm['config'])
+        print(vm)
     return render_template('get_vms.html', vms=vms)
 
 
@@ -46,9 +43,26 @@ def get_create():
     memory = request.form['memory']
     disk = request.form['disk']
     print(name, cores, memory, disk)
-    vmid = create_vm(proxmox, starrs, user, name, cores, memory, disk)
+    vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory, disk)
+    print(register_starrs(starrs, name, user, mac, get_next_ip(starrs, '49net Public Fixed')[0][0]))
     print(vmid)
-    return vmid 
+    return vmid
+
+
+@app.route("/delete", methods=['POST'])
+def delete():
+    vmid = request.form['delete']
+    vmname = get_vm_config(proxmox, vmid)['name']
+    return render_template('confirm_delete.html', vmid=vmid, vmname=vmname)
+
+
+@app.route("/confirm_delete", methods=['POST'])
+def confirm_delete():
+    vmid = request.form['delete']
+    vmname = get_vm_config(proxmox, vmid)['name']
+    delete_vm(proxmox, starrs, vmid)
+    print(delete_starrs(starrs, vmname))
+    return 'SUCCESS'
 
 
 if __name__ == "__main__":

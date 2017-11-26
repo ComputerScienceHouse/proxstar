@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+</style>
+</head>
+<body>
+
+<a href="/proxstar/create">Create VM</a>
+
+<br><br>
+
+Are you sure you want to delete "{{ vmname }}"?
+
+<form action="/proxstar/confirm_delete" method="post">
+    <button type="submit" name="delete" value="{{ vmid }}">CONFIRM</button>
+</form>
+
+</body>
+</html>

@@ -11,15 +11,27 @@ table, th, td {
 
 <a href="/proxstar/">VM List</a>
 
+<br><br>
+
 Create VM
+
+<br><br>
 
 <form action="get_create" method="post">
     <label for="name">VM Name</label>
     <input type="text" name="name">
     <label for="cores">Cores</label>
-    <input type="text" name="cores">
+    <select name="cores">
+        <option value="1">1</option>
+        <option value="2">2</option>
+        <option value="4">4</option>
+    </select>
     <label for="memory">Memory</label>
-    <input type="text" name="memory">
+    <select name="memory">
+        <option value="1024">1GB</option>
+        <option value="2048">2GB</option>
+        <option value="4096">4GB</option>
+    </select>
     <label for="disk">Disk</label>
     <input type="text" name="disk">
     <input type="submit">

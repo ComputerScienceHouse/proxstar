@@ -64,12 +64,10 @@ def create_vm(proxmox, starrs, user, name, cores, memory, disk):
     node.qemu.create(vmid=vmid, name=name, cores=cores, memory=memory, storage='ceph', virtio0='ceph:10', net0='virtio,bridge=vmbr0', pool=user)
     time.sleep(3)
     mac = get_vm_mac(proxmox, vmid)
-    register_starrs(starrs, name, user, mac, get_next_ip(starrs, '49net Public Fixed')[0][0])
-    return vmid
+    return vmid, mac
 
-def delete_vm(proxmox, starrs, vmid, name):
+def delete_vm(proxmox, starrs, vmid):
     print(vmid)
     print(get_vm_node(proxmox, vmid))
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
     node.qemu(vmid).delete()
-    delete_starrs(starrs, name)
