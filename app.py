@@ -5,7 +5,7 @@ import subprocess
 from starrs import *
 from proxmox import *
 from proxmoxer import ProxmoxAPI
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect
 
 
 app = Flask(__name__)
@@ -28,13 +28,25 @@ starrs = connect_starrs(app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER
 
 
 @app.route("/")
-def get_vms():
+def list_vms():
     vms = get_vms_for_user(proxmox, user)
     for vm in vms:
-        vm['config'] = get_vm_config(proxmox, vm['vmid'])
-        vm['disk_size'] = get_vm_disk_size(proxmox, vm['vmid'], config=vm['config'])
-        print(vm)
-    return render_template('get_vms.html', username='com6056', vms=vms)
+        if 'name' not in vm:
+            vms.remove(vm)
+        else:
+            vm['config'] = get_vm_config(proxmox, vm['vmid'])
+            vm['disk_size'] = get_vm_disk_size(proxmox, vm['vmid'], config=vm['config'])
+    vms = sorted(vms, key=lambda k: k['name'])
+    return render_template('list_vms.html', username='com6056', vms=vms)
+
+
+@app.route("/vm/<string:vmid>")
+def vm_details(vmid):
+    vm = get_vm(proxmox, vmid)
+    vm['vmid'] = vmid
+    vm['config'] = get_vm_config(proxmox, vmid)
+    vm['disk_size'] = get_vm_disk_size(proxmox, vmid, config=vm['config'])
+    return render_template('vm_details.html', username='com6056', vm=vm)
 
 
 @app.route("/create")
@@ -48,16 +60,15 @@ def get_create():
     cores = request.form['cores']
     memory = request.form['memory']
     disk = request.form['disk']
-    print(name, cores, memory, disk)
     vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory, disk)
     print(register_starrs(starrs, name, user, mac, get_next_ip(starrs, '49net Public Fixed')[0][0]))
-    print(vmid)
-    return vmid
+    return redirect("/proxstar/vm/{}".format(vmid))
 
 
 @app.route("/delete", methods=['POST'])
 def delete():
     vmid = request.form['delete']
+    print(vmid)
     vmname = get_vm_config(proxmox, vmid)['name']
     return render_template('confirm_delete.html', username='com6056', vmid=vmid, vmname=vmname)
 
@@ -68,7 +79,8 @@ def confirm_delete():
     vmname = get_vm_config(proxmox, vmid)['name']
     delete_vm(proxmox, starrs, vmid)
     print(delete_starrs(starrs, vmname))
-    return 'SUCCESS'
+    time.sleep(3)
+    return redirect("/proxstar")
 
 
 if __name__ == "__main__":

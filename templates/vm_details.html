@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-3 col-md-push-9 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Actions</h3>
+                </div>
+                <div class="panel-body">
+                    <form action="/proxstar/delete" method="post">
+                        <button type="submit" name="delete" value="{{ vm['vmid'] }}">DELETE</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-md-pull-3 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Resources</h3>
+                </div>
+                <div class="panel-body">
+                    <ul class="nav nav-list">
+                        <li class="nav-header">Interfaces</li>
+                        <li class="nav-header">Disks</li>
+                        <li>Disk Size: {{ vm['disk_size'] }}</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-md-pull-3 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">VM Details</h3>
+                </div>
+                <div class="panel-body">
+                    <dl class="dl-horizontal">
+                        <dt>Name</dt>
+                        <dd>{{ vm['name'] }}</dd>
+                        <dt>ID</dt>
+                        <dd>{{ vm['vmid'] }}</dd>
+                        <dt>Status</dt>
+                        <dd>{{ vm['status'] }}</dd>
+                        <dt>Cores</dt>
+                        <dd>{{ vm['config']['cores'] * vm['config'].get(sockets, 1) }}</dd>
+                        <dt>Memory</dt>
+                        <dd>{{ vm['config']['memory'] }} MB</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

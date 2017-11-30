@@ -31,6 +31,11 @@ def get_vm_node(proxmox, vmid):
             return vm['node']
 
 
+def get_vm(proxmox, vmid):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    return node.qemu(vmid).status.current.get()
+
+
 def get_vm_config(proxmox, vmid):
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
     return node.qemu(vmid).config.get()

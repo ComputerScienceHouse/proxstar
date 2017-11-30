@@ -1,6 +1,46 @@
 body {
-    margin-top: 60px;
+    padding-top: 100px;
 }
+
+footer {
+    text-align: center;
+    margin: 20px 0;
+}
+
 table, th, td {
     border: 1px solid black;
+}
+
+.panel {
+    text-align: center;
+}
+
+.panel-body {
+    padding: 25px 15px 15px 15px;
+}
+
+.panel p {
+    line-height: 1.4;
+    margin: 5px 0 0 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.panel p a {
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+}
+
+.dl-horizontal dt {
+    float: left;
+    width: 160px;
+    text-align: right;
+}
+
+.dl-horizontal dd {
+    margin-left: 180px;
 }

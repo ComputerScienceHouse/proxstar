@@ -1,24 +1,55 @@
 {% extends "base.html" %}
 {% block body %}
 
-<form action="get_create" method="post">
-    <label for="name">VM Name</label>
-    <input type="text" name="name">
-    <label for="cores">Cores</label>
-    <select name="cores">
-        <option value="1">1</option>
-        <option value="2">2</option>
-        <option value="4">4</option>
-    </select>
-    <label for="memory">Memory</label>
-    <select name="memory">
-        <option value="1024">1GB</option>
-        <option value="2048">2GB</option>
-        <option value="4096">4GB</option>
-    </select>
-    <label for="disk">Disk</label>
-    <input type="text" name="disk">
-    <input type="submit">
-</form>
+<div class="container">
+    <div class="row">
+        <div class="col-md-9 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Create VM</h3>
+                </div>
+                <div class="panel-body">
+                    <form action="get_create" method="post">
+                        <div class="form-group">
+                            <label for="name">VM Name</label>
+                            <input type="text" name="name" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label for="cores">Cores</label>
+                            <select name="cores" class="form-control">
+                                <option value="1">1</option>
+                                <option value="2">2</option>
+                                <option value="4">4</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="memory">Memory</label>
+                            <select name="memory" class="form-control">
+                                <option value="1024">1GB</option>
+                                <option value="2048">2GB</option>
+                                <option value="4096">4GB</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="disk">Disk</label>
+                            <input type="text" name="disk" class="form-control">
+                        </div>
+                        <input type="submit">
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Help</h3>
+                </div>
+                <div class="panel-body">
+                    <p>Some help text.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}

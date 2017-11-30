@@ -1,3 +1,6 @@
 [submodule "static/css/csh-material-bootstrap"]
 	path = static/css/csh-material-bootstrap
 	url = https://github.com/ComputerScienceHouse/csh-material-bootstrap/
+[submodule "static/noVNC"]
+	path = static/noVNC
+	url = https://github.com/novnc/noVNC
