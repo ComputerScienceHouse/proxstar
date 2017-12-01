@@ -10,7 +10,7 @@
                 </div>
                 <div class="panel-body">
                     <form action="/proxstar/delete" method="post">
-                        <button type="submit" name="delete" value="{{ vm['vmid'] }}">DELETE</button>
+                        <button class="btn btn-danger" type="submit" name="delete" value="{{ vm['vmid'] }}">DELETE</button>
                     </form>
                 </div>
             </div>
@@ -23,8 +23,13 @@
                 <div class="panel-body">
                     <ul class="nav nav-list">
                         <li class="nav-header">Interfaces</li>
+                        {% for interface in vm['interfaces'] %}
+                        <li>{{ interface[0] }}: {{ interface[1] }}</li>
+                        {% endfor %}
                         <li class="nav-header">Disks</li>
-                        <li>Disk Size: {{ vm['disk_size'] }}</li>
+                        {% for disk in vm['disks'] %}
+                        <li>{{ disk[0] }}: {{ disk[1] }}</li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
