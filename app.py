@@ -62,16 +62,14 @@ def get_create():
     memory = request.form['memory']
     disk = request.form['disk']
     vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory, disk)
-    print(
-        register_starrs(starrs, name, user, mac,
-                        get_next_ip(starrs, '49net Public Fixed')[0][0]))
+    register_starrs(starrs, name, user, mac,
+                    get_next_ip(starrs, '49net Public Fixed')[0][0])
     return redirect("/proxstar/vm/{}".format(vmid))
 
 
 @app.route("/delete", methods=['POST'])
 def delete():
     vmid = request.form['delete']
-    print(vmid)
     vmname = get_vm_config(proxmox, vmid)['name']
     return render_template(
         'confirm_delete.html', username='com6056', vmid=vmid, vmname=vmname)
@@ -82,7 +80,7 @@ def confirm_delete():
     vmid = request.form['delete']
     vmname = get_vm_config(proxmox, vmid)['name']
     delete_vm(proxmox, starrs, vmid)
-    print(delete_starrs(starrs, vmname))
+    delete_starrs(starrs, vmname)
     time.sleep(3)
     return redirect("/proxstar")
 

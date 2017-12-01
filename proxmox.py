@@ -105,7 +105,7 @@ def create_vm(proxmox, starrs, user, name, cores, memory, disk):
         cores=cores,
         memory=memory,
         storage='ceph',
-        virtio0='ceph:10',
+        virtio0="ceph:{}".format(disk),
         net0='virtio,bridge=vmbr0',
         pool=user)
     time.sleep(3)
