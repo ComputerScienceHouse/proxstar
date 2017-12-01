@@ -66,6 +66,7 @@ def get_vm_interfaces(proxmox, vmid, config=None):
             else:
                 mac = mac[1].split('=')[1]
             interfaces.append([key, mac])
+    interfaces = sorted(interfaces, key=lambda x: x[0])
     return interfaces
 
 
@@ -87,13 +88,49 @@ def get_vm_disks(proxmox, vmid, config=None):
     for key, val in config.items():
         valid_disk_types = ['virtio', 'ide', 'sata', 'scsi']
         if any(disk_type in key for disk_type in valid_disk_types):
-            disk_size = val.split(',')
-            if 'size' in disk_size[0]:
-                disk_size = disk_size[0].split('=')[1]
-            else:
-                disk_size = disk_size[1].split('=')[1]
-            disks.append([key, disk_size])
+            if 'cdrom' not in val:
+                disk_size = val.split(',')
+                if 'size' in disk_size[0]:
+                    disk_size = disk_size[0].split('=')[1]
+                else:
+                    disk_size = disk_size[1].split('=')[1]
+                disks.append([key, disk_size])
+    disks = sorted(disks, key=lambda x: x[0])
     return disks
+
+
+def get_user_usage_limits(user):
+    limits = dict()
+    limits['cpu'] = 4
+    limits['mem'] = 4
+    limits['disk'] = 100
+    return limits
+
+
+def get_user_usage(proxmox, user):
+    usage = dict()
+    usage['cpu'] = 0
+    usage['mem'] = 0
+    usage['disk'] = 0
+    vms = get_vms_for_user(proxmox, user)
+    for vm in vms:
+        config = get_vm_config(proxmox, vm['vmid'])
+        usage['cpu'] += int(config['cores'] * config.get('sockets', 1))
+        usage['mem'] += (int(config['memory']) // 1024)
+        for disk in get_vm_disks(proxmox, vm['vmid'], config):
+            usage['disk'] += int(disk[1][:-1])
+    return usage
+
+
+def check_user_usage(proxmox, user, vm_cpu, vm_mem, vm_disk):
+    limits = get_user_usage_limits(user)
+    cur_usage = get_user_usage(proxmox, user)
+    if int(cur_usage['cpu']) + int(vm_cpu) > int(limits['cpu']):
+        return 'Exceeds CPU limit!'
+    elif int(cur_usage['mem']) + (int(vm_mem) / 1024) > int(limits['mem']):
+        return 'Exceeds memory limit!'
+    elif int(cur_usage['disk']) + int(vm_disk) > int(limits['disk']):
+        return 'Exceeds disk limit!'
 
 
 def create_vm(proxmox, starrs, user, name, cores, memory, disk):
@@ -114,7 +151,21 @@ def create_vm(proxmox, starrs, user, name, cores, memory, disk):
 
 
 def delete_vm(proxmox, starrs, vmid):
-    print(vmid)
-    print(get_vm_node(proxmox, vmid))
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
     node.qemu(vmid).delete()
+
+
+def change_vm_status(proxmox, vmid, action):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    if action == 'start':
+        node.qemu(vmid).status.start.post()
+    elif action == 'stop':
+        node.qemu(vmid).status.stop.post()
+    elif action == 'shutdown':
+        node.qemu(vmid).status.shutdown.post()
+    elif action == 'reset':
+        node.qemu(vmid).status.reset.post()
+    elif action == 'suspend':
+        node.qemu(vmid).status.suspend.post()
+    elif action == 'resume':
+        node.qemu(vmid).status.resume.post()

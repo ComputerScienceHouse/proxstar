@@ -9,7 +9,7 @@
                     <h3 class="panel-title">Create VM</h3>
                 </div>
                 <div class="panel-body">
-                    <form action="get_create" method="post">
+                    <form action="create" method="post">
                         <div class="form-group">
                             <label for="name">VM Name</label>
                             <input type="text" name="name" class="form-control">
@@ -17,24 +17,24 @@
                         <div class="form-group">
                             <label for="cores">Cores</label>
                             <select name="cores" class="form-control">
-                                <option value="1">1</option>
-                                <option value="2">2</option>
-                                <option value="4">4</option>
+                                {% for i in range(1, 4 - usage['cpu'] + 1) %}
+                                <option value="{{ i }}">{{ i }}</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="memory">Memory</label>
                             <select name="memory" class="form-control">
-                                <option value="1024">1GB</option>
-                                <option value="2048">2GB</option>
-                                <option value="4096">4GB</option>
+                                {% for i in range(1, 4 - usage['mem'] + 1) %}
+                                <option value="{{ i  * 1024 }}">{{ i }}GB</option>
+                                {% endfor %}
                             </select>
                         </div>
                         <div class="form-group">
                             <label for="disk">Disk</label>
                             <input type="text" name="disk" class="form-control">
                         </div>
-                        <input type="submit">
+                        <button class="btn btn-success" type="submit" value="Create">Create</button>
                     </form>
                 </div>
             </div>
@@ -42,10 +42,12 @@
         <div class="col-md-3 col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Help</h3>
+                    <h3 class="panel-title">Current Usage</h3>
                 </div>
                 <div class="panel-body">
-                    <p>Some help text.</p>
+                    <p>CPU:    {{ usage['cpu'] }}/{{ limits['cpu'] }} Cores</p>
+                    <p>Memory: {{ usage['mem'] }}/{{ limits['mem'] }} GB</p>
+                    <p>Disk:   {{ usage['disk'] }}/{{ limits['disk'] }} GB</p>
                 </div>
             </div>
         </div>

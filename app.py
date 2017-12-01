@@ -31,10 +31,6 @@ def list_vms():
     for vm in vms:
         if 'name' not in vm:
             vms.remove(vm)
-        else:
-            vm['config'] = get_vm_config(proxmox, vm['vmid'])
-            vm['disk_size'] = get_vm_disk_size(
-                proxmox, vm['vmid'], config=vm['config'])
     vms = sorted(vms, key=lambda k: k['name'])
     return render_template('list_vms.html', username='com6056', vms=vms)
 
@@ -50,21 +46,32 @@ def vm_details(vmid):
     return render_template('vm_details.html', username='com6056', vm=vm)
 
 
-@app.route("/create")
-def create():
-    return render_template('create.html', username='com6056')
-
-
-@app.route("/get_create", methods=['POST'])
-def get_create():
-    name = request.form['name']
-    cores = request.form['cores']
-    memory = request.form['memory']
-    disk = request.form['disk']
-    vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory, disk)
-    register_starrs(starrs, name, user, mac,
-                    get_next_ip(starrs, '49net Public Fixed')[0][0])
+@app.route("/vm_status/<string:vmid>", methods=['POST'])
+def vm_status(vmid):
+    action = request.form['action']
+    change_vm_status(proxmox, vmid, action)
     return redirect("/proxstar/vm/{}".format(vmid))
+
+
+@app.route("/create", methods=['GET', 'POST'])
+def create():
+    if request.method == 'GET':
+        usage = get_user_usage(proxmox, 'proxstar')
+        limits = get_user_usage_limits(user)
+        return render_template('create.html', username='com6056', usage=usage, limits=limits)
+    elif request.method == 'POST':
+        name = request.form['name']
+        cores = request.form['cores']
+        memory = request.form['memory']
+        disk = request.form['disk']
+        usage_check = check_user_usage(proxmox, user, cores, memory, disk)
+        if usage_check:
+            return usage_check
+        else:
+            vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory, disk)
+            register_starrs(starrs, name, user, mac,
+                            get_next_ip(starrs, '49net Public Fixed')[0][0])
+            return redirect("/proxstar/vm/{}".format(vmid))
 
 
 @app.route("/delete", methods=['POST'])
