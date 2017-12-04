@@ -77,7 +77,8 @@ def create():
             vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory,
                                   disk)
             register_starrs(starrs, name, user, mac,
-                            get_next_ip(starrs, '49net Public Fixed')[0][0])
+                            get_next_ip(starrs,
+                                        app.config['STARRS_IP_RANGE'])[0][0])
             return redirect("/proxstar/vm/{}".format(vmid))
 
 
