@@ -58,7 +58,13 @@ def create():
     if request.method == 'GET':
         usage = get_user_usage(proxmox, 'proxstar')
         limits = get_user_usage_limits(user)
-        return render_template('create.html', username='com6056', usage=usage, limits=limits)
+        full_limits = check_user_limit(proxmox, user, usage, limits)
+        return render_template(
+            'create.html',
+            username='com6056',
+            usage=usage,
+            limits=limits,
+            full_limits=full_limits)
     elif request.method == 'POST':
         name = request.form['name']
         cores = request.form['cores']
@@ -68,7 +74,8 @@ def create():
         if usage_check:
             return usage_check
         else:
-            vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory, disk)
+            vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory,
+                                  disk)
             register_starrs(starrs, name, user, mac,
                             get_next_ip(starrs, '49net Public Fixed')[0][0])
             return redirect("/proxstar/vm/{}".format(vmid))

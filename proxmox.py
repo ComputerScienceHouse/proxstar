@@ -123,6 +123,21 @@ def get_user_usage(proxmox, user):
     return usage
 
 
+def check_user_limit(proxmox, user, usage=None, limits=None):
+    full_limits = []
+    if not usage:
+        usage = get_user_usage(proxmox, user)
+    if not limits:
+        limits = get_user_usage_limits(user)
+    if usage['cpu'] >= limits['cpu']:
+        full_limits.append('CPU')
+    if usage['mem'] >= limits['mem']:
+        full_limits.append('Memory')
+    if usage['disk'] >= limits['disk']:
+        full_limits.append('Disk')
+    return full_limits
+
+
 def check_user_usage(proxmox, user, vm_cpu, vm_mem, vm_disk):
     limits = get_user_usage_limits(user)
     cur_usage = get_user_usage(proxmox, user)

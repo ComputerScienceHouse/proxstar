@@ -9,6 +9,15 @@
                     <h3 class="panel-title">Create VM</h3>
                 </div>
                 <div class="panel-body">
+                    {% if full_limits %}
+                        <p>You have reached your limit for the following resources:</p>
+                        <ul>
+                        {% for limit in full_limits %}
+                            <li>{{ limit }}</li>
+                        {% endfor %}
+                        </ul>
+                        <p>Before you can create any more VMs, you must first either power off (CPU/Memory) or delete (Disk) existing VMs until you have enough resources available.</p>
+                    {% else %}
                     <form action="create" method="post">
                         <div class="form-group">
                             <label for="name">VM Name</label>
@@ -36,6 +45,7 @@
                         </div>
                         <button class="btn btn-success" type="submit" value="Create">Create</button>
                     </form>
+                    {% endif %}
                 </div>
             </div>
         </div>
