@@ -115,8 +115,9 @@ def get_user_usage(proxmox, user):
     vms = get_vms_for_user(proxmox, user)
     for vm in vms:
         config = get_vm_config(proxmox, vm['vmid'])
-        usage['cpu'] += int(config['cores'] * config.get('sockets', 1))
-        usage['mem'] += (int(config['memory']) // 1024)
+        if vm['status'] == 'running' or vm['status'] == 'paused':
+            usage['cpu'] += int(config['cores'] * config.get('sockets', 1))
+            usage['mem'] += (int(config['memory']) // 1024)
         for disk in get_vm_disks(proxmox, vm['vmid'], config):
             usage['disk'] += int(disk[1][:-1])
     return usage
