@@ -37,34 +37,52 @@ def list_vms():
 
 @app.route("/vm/<string:vmid>")
 def vm_details(vmid):
-    vm = get_vm(proxmox, vmid)
-    vm['vmid'] = vmid
-    vm['config'] = get_vm_config(proxmox, vmid)
-    vm['disks'] = get_vm_disks(proxmox, vmid, config=vm['config'])
-    vm['interfaces'] = get_vm_interfaces(
-        proxmox, vm['vmid'], config=vm['config'])
-    return render_template('vm_details.html', username='com6056', vm=vm)
+    if int(vmid) in get_user_allowed_vms(proxmox, user):
+        vm = get_vm(proxmox, vmid)
+        vm['vmid'] = vmid
+        vm['config'] = get_vm_config(proxmox, vmid)
+        vm['disks'] = get_vm_disks(proxmox, vmid, config=vm['config'])
+        vm['interfaces'] = get_vm_interfaces(
+            proxmox, vm['vmid'], config=vm['config'])
+        return render_template('vm_details.html', username='com6056', vm=vm)
+    else:
+        return '', 403
 
 
-@app.route("/vm_status/<string:vmid>", methods=['POST'])
-def vm_status(vmid):
-    action = request.form['action']
-    change_vm_status(proxmox, vmid, action)
-    return redirect("/proxstar/vm/{}".format(vmid))
+@app.route("/vm/<string:vmid>/power/<string:action>", methods=['POST'])
+def vm_power(vmid, action):
+    if int(vmid) in get_user_allowed_vms(proxmox, user):
+        change_vm_power(proxmox, vmid, action)
+        return '', 200
+    else:
+        return '', 403
 
 
-@app.route("/create", methods=['GET', 'POST'])
+@app.route("/vm/<string:vmid>/delete", methods=['POST'])
+def delete(vmid):
+    if int(vmid) in get_user_allowed_vms(proxmox, user):
+        vmname = get_vm_config(proxmox, vmid)['name']
+        delete_vm(proxmox, starrs, vmid)
+        delete_starrs(starrs, vmname)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route("/vm/create", methods=['GET', 'POST'])
 def create():
     if request.method == 'GET':
         usage = get_user_usage(proxmox, 'proxstar')
         limits = get_user_usage_limits(user)
         full_limits = check_user_limit(proxmox, user, usage, limits)
+        percents = get_user_usage_percent(proxmox, usage, limits)
         return render_template(
             'create.html',
             username='com6056',
             usage=usage,
             limits=limits,
-            full_limits=full_limits)
+            full_limits=full_limits,
+            percents=percents)
     elif request.method == 'POST':
         name = request.form['name']
         cores = request.form['cores']
@@ -82,28 +100,10 @@ def create():
             return redirect("/proxstar/vm/{}".format(vmid))
 
 
-@app.route("/delete", methods=['POST'])
-def delete():
-    vmid = request.form['delete']
-    vmname = get_vm_config(proxmox, vmid)['name']
-    return render_template(
-        'confirm_delete.html', username='com6056', vmid=vmid, vmname=vmname)
-
-
-@app.route("/confirm_delete", methods=['POST'])
-def confirm_delete():
-    vmid = request.form['delete']
-    vmname = get_vm_config(proxmox, vmid)['name']
-    delete_vm(proxmox, starrs, vmid)
-    delete_starrs(starrs, vmname)
-    time.sleep(3)
-    return redirect("/proxstar")
-
-
 @app.route('/novnc/<path:path>')
 def send_novnc(path):
     return send_from_directory('static/novnc-pve/novnc', path)
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

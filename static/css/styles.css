@@ -65,3 +65,8 @@ table, th, td {
     margin-bottom: 5px;
     margin-top: 5px;
 }
+
+.resource-usage {
+  width: 50%;
+  margin: 0 auto;
+}

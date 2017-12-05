@@ -16,6 +16,13 @@ def get_vms_for_user(proxmox, user):
     return proxmox.pools(user).get()['members']
 
 
+def get_user_allowed_vms(proxmox, user):
+    allowed_vms = []
+    for vm in get_vms_for_user(proxmox, user):
+        allowed_vms.append(vm['vmid'])
+    return allowed_vms
+
+
 def get_node_least_mem(proxmox):
     nodes = proxmox.nodes.get()
     sorted_nodes = sorted(nodes, key=lambda x: x['mem'])
@@ -115,11 +122,12 @@ def get_user_usage(proxmox, user):
     vms = get_vms_for_user(proxmox, user)
     for vm in vms:
         config = get_vm_config(proxmox, vm['vmid'])
-        if vm['status'] == 'running' or vm['status'] == 'paused':
-            usage['cpu'] += int(config['cores'] * config.get('sockets', 1))
-            usage['mem'] += (int(config['memory']) // 1024)
-        for disk in get_vm_disks(proxmox, vm['vmid'], config):
-            usage['disk'] += int(disk[1][:-1])
+        if 'status' in vm:
+            if vm['status'] == 'running' or vm['status'] == 'paused':
+                usage['cpu'] += int(config['cores'] * config.get('sockets', 1))
+                usage['mem'] += (int(config['memory']) // 1024)
+            for disk in get_vm_disks(proxmox, vm['vmid'], config):
+                usage['disk'] += int(disk[1][:-1])
     return usage
 
 
@@ -149,6 +157,18 @@ def check_user_usage(proxmox, user, vm_cpu, vm_mem, vm_disk):
         return 'Exceeds disk limit!'
 
 
+def get_user_usage_percent(proxmox, usage=None, limits=None):
+    percents = dict()
+    if not usage:
+        usage = get_user_usage(proxmox, user)
+    if not limits:
+        limits = get_user_usage_limits(user)
+    percents['cpu'] = round(int(usage['cpu']) / int(limits['cpu']) * 100)
+    percents['mem'] = round(int(usage['mem']) / int(limits['mem']) * 100)
+    percents['disk'] = round(int(usage['disk']) / int(limits['disk']) * 100)
+    return percents
+
+
 def create_vm(proxmox, starrs, user, name, cores, memory, disk):
     node = proxmox.nodes(get_node_least_mem(proxmox))
     vmid = get_free_vmid(proxmox)
@@ -171,7 +191,7 @@ def delete_vm(proxmox, starrs, vmid):
     node.qemu(vmid).delete()
 
 
-def change_vm_status(proxmox, vmid, action):
+def change_vm_power(proxmox, vmid, action):
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
     if action == 'start':
         node.qemu(vmid).status.start.post()

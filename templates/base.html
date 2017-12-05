@@ -7,9 +7,8 @@
     <meta name="theme-color" content="#B0197E">
     <link rel="stylesheet" href="/proxstar/static/css/csh-material-bootstrap/dist/css/csh-material-bootstrap.css">
     <link rel="stylesheet" href="/proxstar/static/css/styles.css">
+    <link rel="stylesheet" href="/proxstar/static/css/circle.css">
     <link rel="manifest" href="/static/manifest.json">
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 </head>
 <body>
 {% block nav %}
@@ -34,7 +33,7 @@
                         </a>
                     </li>
                     <li>
-                        <a href="/proxstar/create">
+                        <a href="/proxstar/vm/create">
                             <span class="glyphicon glyphicon-plus-sign"></span>
                             Create VM
                         </a>
@@ -90,6 +89,10 @@
 	<a class="footer-version" href="https://github.com/com6056/proxstar/tree/{{config["GIT_REVISION"]}}">Proxstar ({{config["GIT_REVISION"]}})</a>
     </div>
 </footer>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script src="/proxstar/static/js/script.js"></script>
 </body>
 </body>
 </html>

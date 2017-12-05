@@ -10,34 +10,20 @@
                 </div>
                 <div class="panel-body">
                     {% if vm['qmpstatus'] == 'stopped' %}
-                    <form action="/proxstar/vm_status/{{ vm['vmid'] }}" method="post">
-                        <button class="btn btn-success proxstar-actionbtn" type="submit" name="action" value="start">START</button>
-                    </form>
+                    <button class="btn btn-success proxstar-actionbtn" id="start-vm" name="start" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">START</button>
+                    <button class="btn btn-danger proxstar-actionbtn" id="delete-vm" name="delete" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">DELETE</button>
                     {% endif %}
                     {% if vm['qmpstatus'] == 'paused' %}
-                    <form action="/proxstar/vm_status/{{ vm['vmid'] }}" method="post">
-                        <button class="btn btn-success proxstar-actionbtn" type="submit" name="action" value="resume">RESUME</button>
-                    </form>
+                    <button class="btn btn-success proxstar-actionbtn" id="resume-vm" name="resume" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESUME</button>
                     {% endif %}
                     {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
-                    <form action="/proxstar/vm_status/{{ vm['vmid'] }}" method="post">
-                        <button class="btn btn-info proxstar-actionbtn" type="submit" name="action" value="shutdown">SHUTDOWN</button>
-                    </form>
+                    <button class="btn btn-info proxstar-actionbtn" id="shutdown-vm" name="shutdown" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SHUTDOWN</button>
                     {% if vm['qmpstatus'] == 'running' %}
-                    <form action="/proxstar/vm_status/{{ vm['vmid'] }}" method="post">
-                        <button class="btn btn-info proxstar-actionbtn" type="submit" name="action" value="suspend">SUSPEND</button>
-                    </form>
+                    <button class="btn btn-info proxstar-actionbtn" id="suspend-vm" name="suspend" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SUSPEND</button>
                     {% endif %}
-                    <form action="/proxstar/vm_status/{{ vm['vmid'] }}" method="post">
-                        <button class="btn btn-warning proxstar-actionbtn" type="submit" name="action" value="stop">STOP</button>
-                    </form>
-                    <form action="/proxstar/vm_status/{{ vm['vmid'] }}" method="post">
-                        <button class="btn btn-warning proxstar-actionbtn" type="submit" name="action" value="reset">RESET</button>
-                    </form>
+                    <button class="btn btn-warning proxstar-actionbtn" id="stop-vm" name="stop" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">STOP</button>
+                    <button class="btn btn-warning proxstar-actionbtn" id="reset-vm" name="reset" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESET</button>
                     {% endif %}
-                    <form action="/proxstar/delete" method="post">
-                        <button class="btn btn-danger proxstar-actionbtn" type="submit" name="delete" value="{{ vm['vmid'] }}">DELETE</button>
-                    </form>
                 </div>
             </div>
         </div>
