@@ -106,21 +106,17 @@ def get_vm_disks(proxmox, vmid, config=None):
     return disks
 
 
-def get_vm_isos(proxmox, vmid, config=None):
+def get_vm_iso(proxmox, vmid, config=None):
     if not config:
         config = get_vm_config(proxmox, vmid)
-    drives = []
-    for key, val in config.items():
-        valid_drive_types = ['ide', 'sata', 'scsi']
-        if any(drive_type in key for drive_type in valid_drive_types):
-            if 'cdrom' in val:
-                if val.split(',')[0] == 'none':
-                    iso = 'None'
-                else:
-                    iso = val.split(',')[0].split('/')[1]
-                drives.append([key, iso])
-    drives = sorted(drives, key=lambda x: x[0])
-    return drives
+    if config.get('ide2'):
+        if config['ide2'].split(',')[0] == 'none':
+            iso = 'None'
+        else:
+            iso = config['ide2'].split(',')[0].split('/')[1]
+    else:
+        iso = 'None'
+    return iso
 
 
 def get_user_usage_limits(user):
@@ -230,3 +226,13 @@ def get_isos(proxmox, storage):
     for iso in proxmox.nodes('proxmox01').storage(storage).content.get():
         isos.append(iso['volid'].split('/')[1])
     return isos
+
+
+def eject_vm_iso(proxmox, vmid):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    node.qemu(vmid).config.post(ide2='none,media=cdrom')
+
+
+def mount_vm_iso(proxmox, vmid, iso):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    node.qemu(vmid).config.post(ide2="{},media=cdrom".format(iso))

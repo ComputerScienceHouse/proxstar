@@ -43,9 +43,17 @@
                         <li>{{ disk[0] }}: {{ disk[1] }}</li>
                         {% endfor %}
                         <li class="nav-header">ISO</li>
-                        {% for iso in vm['isos'] %}
-                        <li>{{ iso[1] }}</li>
-                        {% endfor %}
+                        <li>
+                            {{ vm['iso'] }}
+                            {% if vm['iso'] != 'None' %}
+                            <button class="btn btn-danger proxstar-ejectbtn" id="eject-iso" name="eject" data-vmid="{{ vm['vmid'] }}" data-iso="{{ vm['iso'] }}">
+                                <span class="glyphicon glyphicon-eject"></span>
+                            </button>
+                            {% endif %}
+                            <button class="btn btn-default proxstar-changebtn" id="change-iso" name="change" data-vmid="{{ vm['vmid'] }}" data-iso="{{ vm['iso'] }}">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>

@@ -35,6 +35,12 @@ def list_vms():
     return render_template('list_vms.html', username='com6056', vms=vms)
 
 
+@app.route("/isos")
+def isos():
+    isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
+    return ','.join(isos)
+
+
 @app.route("/vm/<string:vmid>")
 def vm_details(vmid):
     if int(vmid) in get_user_allowed_vms(proxmox, user):
@@ -42,7 +48,7 @@ def vm_details(vmid):
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
         vm['disks'] = get_vm_disks(proxmox, vmid, config=vm['config'])
-        vm['isos'] = get_vm_isos(proxmox, vmid, config=vm['config'])
+        vm['iso'] = get_vm_iso(proxmox, vmid, config=vm['config'])
         vm['interfaces'] = get_vm_interfaces(
             proxmox, vm['vmid'], config=vm['config'])
         return render_template('vm_details.html', username='com6056', vm=vm)
@@ -54,6 +60,25 @@ def vm_details(vmid):
 def vm_power(vmid, action):
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         change_vm_power(proxmox, vmid, action)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route("/vm/<string:vmid>/eject", methods=['POST'])
+def iso_eject(vmid):
+    if int(vmid) in get_user_allowed_vms(proxmox, user):
+        eject_vm_iso(proxmox, vmid)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route("/vm/<string:vmid>/mount/<string:iso>", methods=['POST'])
+def iso_mount(vmid, iso):
+    if int(vmid) in get_user_allowed_vms(proxmox, user):
+        iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
+        mount_vm_iso(proxmox, vmid, iso)
         return '', 200
     else:
         return '', 403

@@ -65,6 +65,22 @@ table, th, td {
     margin-top: 5px;
 }
 
+.proxstar-ejectbtn {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    padding: 0px 1px 0px 0px;
+    border-radius: 15px;
+}
+
+.proxstar-changebtn {
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    padding: 0px 0px 0px 1px;
+    border-radius: 15px;
+}
+
 .resource-usage {
   width: 50%;
   margin: 0 auto;

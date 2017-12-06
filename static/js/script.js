@@ -236,3 +236,102 @@ $("#resume-vm").click(function(){
         }
     });
 });
+
+$("#eject-iso").click(function(){
+    const vmid = $(this).data('vmid')
+    const iso = $(this).data('iso')
+    swal({
+        title: `Are you sure you want to eject ${iso}?`,
+        icon: "warning",
+        buttons: {
+            cancel: true,
+            delete: {
+                text: "Eject",
+                closeModal: false,
+                className: "swal-button--danger",
+            }
+        },
+        dangerMode: true,
+    })
+    .then((willDelete) => {
+        if (willDelete) {
+            const vmid = $(this).data('vmid')
+            fetch(`/proxstar/vm/${vmid}/eject`, {
+                credentials: 'same-origin',
+                method: 'post'
+            }).then((response) => {
+                return swal(`${iso} is now ejecting!`, {
+                    icon: "success",
+                });
+            }).then(() => {
+                window.location = `/proxstar/vm/${vmid}`;
+            }).catch(err => {
+                if (err) {
+                    swal("Uh oh...", `Unable to eject ${iso}. Please try again later.`, "error");
+                } else {
+                    swal.stopLoading();
+                    swal.close();
+                }
+            });
+        }
+    });
+});
+
+
+$("#change-iso").click(function(){
+    const vmid = $(this).data('vmid')
+    fetch(`/proxstar/isos`, {
+        credentials: 'same-origin',
+    }).then((response) => {
+        return response.text()
+    }).then((text) => {
+        var isos = text.split(',');
+        var iso_list = document.createElement('select');
+        for (i = 0; i < isos.length; i++) {
+            iso_list.appendChild(new Option(isos[i], isos[i]));
+        }
+        swal({
+            title: 'Choose an ISO to mount:',
+            content: iso_list,
+            buttons: {
+                cancel: true,
+                select: {
+                    text: "Select",
+                    closeModal: false,
+                    className: "swal-button",
+                }
+            },
+            dangerMode: true,
+        })
+        .then((willDelete) => {
+            if (willDelete) {
+                const vmid = $(this).data('vmid')
+                const iso = $(iso_list).val()
+                fetch(`/proxstar/vm/${vmid}/mount/${iso}`, {
+                    credentials: 'same-origin',
+                    method: 'post'
+                }).then((response) => {
+                    return swal(`${iso} is now being mounted!`, {
+                        icon: "success",
+                    });
+                }).then(() => {
+                    window.location = `/proxstar/vm/${vmid}`;
+                }).catch(err => {
+                    if (err) {
+                        swal("Uh oh...", `Unable to mount ${iso}. Please try again later.`, "error");
+                    } else {
+                        swal.stopLoading();
+                        swal.close();
+                    }
+                });
+            }
+       });
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to retrieve available ISOs. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});
