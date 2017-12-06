@@ -42,6 +42,7 @@ def vm_details(vmid):
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
         vm['disks'] = get_vm_disks(proxmox, vmid, config=vm['config'])
+        vm['isos'] = get_vm_isos(proxmox, vmid, config=vm['config'])
         vm['interfaces'] = get_vm_interfaces(
             proxmox, vm['vmid'], config=vm['config'])
         return render_template('vm_details.html', username='com6056', vm=vm)
@@ -76,24 +77,29 @@ def create():
         limits = get_user_usage_limits(user)
         full_limits = check_user_limit(proxmox, user, usage, limits)
         percents = get_user_usage_percent(proxmox, usage, limits)
+        isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
         return render_template(
             'create.html',
             username='com6056',
             usage=usage,
             limits=limits,
             full_limits=full_limits,
-            percents=percents)
+            percents=percents,
+            isos=isos)
     elif request.method == 'POST':
         name = request.form['name']
         cores = request.form['cores']
         memory = request.form['memory']
         disk = request.form['disk']
+        iso = request.form['iso']
+        if iso != 'none':
+            iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
         usage_check = check_user_usage(proxmox, user, cores, memory, disk)
         if usage_check:
             return usage_check
         else:
             vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory,
-                                  disk)
+                                  disk, iso)
             register_starrs(starrs, name, user, mac,
                             get_next_ip(starrs,
                                         app.config['STARRS_IP_RANGE'])[0][0])

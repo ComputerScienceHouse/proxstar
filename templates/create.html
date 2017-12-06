@@ -41,6 +41,15 @@
                             <label for="disk">Disk</label>
                             <input type="text" name="disk" class="form-control">
                         </div>
+                        <div class="form-group">
+                            <label for="iso">ISO</label>
+                            <select name="iso" class="form-control">
+                                <option value="none"></option>
+                                {% for iso in isos %}
+                                <option value="{{ iso }}">{{ iso }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <button class="btn btn-success" type="submit" value="Create">Create</button>
                     </form>
                     {% endif %}

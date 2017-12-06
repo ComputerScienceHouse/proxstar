@@ -42,6 +42,10 @@
                         {% for disk in vm['disks'] %}
                         <li>{{ disk[0] }}: {{ disk[1] }}</li>
                         {% endfor %}
+                        <li class="nav-header">ISO</li>
+                        {% for iso in vm['isos'] %}
+                        <li>{{ iso[1] }}</li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>

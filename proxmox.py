@@ -106,6 +106,23 @@ def get_vm_disks(proxmox, vmid, config=None):
     return disks
 
 
+def get_vm_isos(proxmox, vmid, config=None):
+    if not config:
+        config = get_vm_config(proxmox, vmid)
+    drives = []
+    for key, val in config.items():
+        valid_drive_types = ['ide', 'sata', 'scsi']
+        if any(drive_type in key for drive_type in valid_drive_types):
+            if 'cdrom' in val:
+                if val.split(',')[0] == 'none':
+                    iso = 'None'
+                else:
+                    iso = val.split(',')[0].split('/')[1]
+                drives.append([key, iso])
+    drives = sorted(drives, key=lambda x: x[0])
+    return drives
+
+
 def get_user_usage_limits(user):
     limits = dict()
     limits['cpu'] = 4
@@ -169,7 +186,7 @@ def get_user_usage_percent(proxmox, usage=None, limits=None):
     return percents
 
 
-def create_vm(proxmox, starrs, user, name, cores, memory, disk):
+def create_vm(proxmox, starrs, user, name, cores, memory, disk, iso):
     node = proxmox.nodes(get_node_least_mem(proxmox))
     vmid = get_free_vmid(proxmox)
     node.qemu.create(
@@ -179,6 +196,7 @@ def create_vm(proxmox, starrs, user, name, cores, memory, disk):
         memory=memory,
         storage='ceph',
         virtio0="ceph:{}".format(disk),
+        ide2="{},media=cdrom".format(iso),
         net0='virtio,bridge=vmbr0',
         pool=user)
     time.sleep(3)
@@ -205,3 +223,10 @@ def change_vm_power(proxmox, vmid, action):
         node.qemu(vmid).status.suspend.post()
     elif action == 'resume':
         node.qemu(vmid).status.resume.post()
+
+
+def get_isos(proxmox, storage):
+    isos = []
+    for iso in proxmox.nodes('proxmox01').storage(storage).content.get():
+        isos.append(iso['volid'].split('/')[1])
+    return isos
