@@ -17,9 +17,6 @@ app.config["GIT_REVISION"] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
 
 user = 'proxstar'
-proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                          app.config['PROXMOX_USER'],
-                          app.config['PROXMOX_PASS'])
 starrs = connect_starrs(
     app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
     app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
@@ -27,6 +24,9 @@ starrs = connect_starrs(
 
 @app.route("/")
 def list_vms():
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     vms = get_vms_for_user(proxmox, user)
     for vm in vms:
         if 'name' not in vm:
@@ -37,12 +37,18 @@ def list_vms():
 
 @app.route("/isos")
 def isos():
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
     return ','.join(isos)
 
 
 @app.route("/vm/<string:vmid>")
 def vm_details(vmid):
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
@@ -58,6 +64,9 @@ def vm_details(vmid):
 
 @app.route("/vm/<string:vmid>/power/<string:action>", methods=['POST'])
 def vm_power(vmid, action):
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         change_vm_power(proxmox, vmid, action)
         return '', 200
@@ -67,6 +76,9 @@ def vm_power(vmid, action):
 
 @app.route("/vm/<string:vmid>/eject", methods=['POST'])
 def iso_eject(vmid):
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         eject_vm_iso(proxmox, vmid)
         return '', 200
@@ -76,6 +88,9 @@ def iso_eject(vmid):
 
 @app.route("/vm/<string:vmid>/mount/<string:iso>", methods=['POST'])
 def iso_mount(vmid, iso):
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
         mount_vm_iso(proxmox, vmid, iso)
@@ -86,6 +101,9 @@ def iso_mount(vmid, iso):
 
 @app.route("/vm/<string:vmid>/delete", methods=['POST'])
 def delete(vmid):
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         vmname = get_vm_config(proxmox, vmid)['name']
         delete_vm(proxmox, starrs, vmid)
@@ -97,6 +115,9 @@ def delete(vmid):
 
 @app.route("/vm/create", methods=['GET', 'POST'])
 def create():
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
     if request.method == 'GET':
         usage = get_user_usage(proxmox, 'proxstar')
         limits = get_user_usage_limits(user)
