@@ -1,7 +1,11 @@
+# Proxstar
+VM_EXPIRE_MONTHS = 3
+
 # Proxmox
 PROXMOX_HOST = ''
 PROXMOX_USER = ''
 PROXMOX_PASS = ''
+PROXMOX_ISO_STORAGE = ''
 
 # STARRS
 STARRS_DB_HOST = ''
