@@ -75,6 +75,13 @@
                         <dd>{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}</dd>
                         <dt>Memory</dt>
                         <dd>{{ vm['config']['memory'] }} MB</dd>
+                        <dt>Expiration</dt>
+                        <dd>
+                            {{ vm['expire'] }}
+                            <button class="btn btn-success proxstar-renewbtn" id="renew-vm" name="renew" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">
+                                <span class="glyphicon glyphicon-plus"></span>
+                            </button>
+                        </dd>
                     </dl>
                 </div>
             </div>

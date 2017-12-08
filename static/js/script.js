@@ -244,8 +244,13 @@ $("#eject-iso").click(function(){
         title: `Are you sure you want to eject ${iso}?`,
         icon: "warning",
         buttons: {
-            cancel: true,
-            delete: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            eject: {
                 text: "Eject",
                 closeModal: false,
                 className: "swal-button--danger",
@@ -262,6 +267,13 @@ $("#eject-iso").click(function(){
             }).then((response) => {
                 return swal(`${iso} is now ejecting!`, {
                     icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
                 });
             }).then(() => {
                 window.location = `/proxstar/vm/${vmid}`;
@@ -294,11 +306,16 @@ $("#change-iso").click(function(){
             title: 'Choose an ISO to mount:',
             content: iso_list,
             buttons: {
-                cancel: true,
+                cancel: {
+                    text: "Cancel",
+                    visible: true,
+                    closeModal: true,
+                    className: "",
+                },
                 select: {
                     text: "Select",
                     closeModal: false,
-                    className: "swal-button",
+                    className: "swal-button--danger",
                 }
             },
             dangerMode: true,
@@ -313,6 +330,13 @@ $("#change-iso").click(function(){
                 }).then((response) => {
                     return swal(`${iso} is now being mounted!`, {
                         icon: "success",
+                        buttons: {
+                            ok: {
+                                text: "OK",
+                                closeModal: true,
+                                className: "",
+                            }
+                        }
                     });
                 }).then(() => {
                     window.location = `/proxstar/vm/${vmid}`;
@@ -329,6 +353,28 @@ $("#change-iso").click(function(){
     }).catch(err => {
         if (err) {
             swal("Uh oh...", `Unable to retrieve available ISOs. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});
+
+$("#renew-vm").click(function(){
+    const vmname = $(this).data('vmname')
+    const vmid = $(this).data('vmid')
+    fetch(`/proxstar/vm/${vmid}/renew`, {
+        credentials: 'same-origin',
+        method: 'post'
+    }).then((response) => {
+        return swal(`${vmname} is now renewing!`, {
+            icon: "success",
+        });
+    }).then(() => {
+        window.location = `/proxstar/vm/${vmid}`;
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to renew ${vmname}. Please try again later.`, "error");
         } else {
             swal.stopLoading();
             swal.close();
