@@ -194,7 +194,8 @@ def create_vm(proxmox, starrs, user, name, cores, memory, disk, iso):
         virtio0="ceph:{}".format(disk),
         ide2="{},media=cdrom".format(iso),
         net0='virtio,bridge=vmbr0',
-        pool=user)
+        pool=user,
+        description='Managed by Proxstar')
     time.sleep(3)
     mac = get_vm_mac(proxmox, vmid)
     return vmid, mac
