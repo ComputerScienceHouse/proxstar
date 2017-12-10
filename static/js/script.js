@@ -367,7 +367,7 @@ $("#renew-vm").click(function(){
         credentials: 'same-origin',
         method: 'post'
     }).then((response) => {
-        return swal(`${vmname} is now renewing!`, {
+        return swal(`${vmname} has been renewed!`, {
             icon: "success",
         });
     }).then(() => {
@@ -394,7 +394,7 @@ $("#create-vm").click(function(){
         }).then((response) => {
             return response.text()
         }).then((text) => {
-            if (text == "False") {
+            if (text == 'ok') {
                 var loader = document.createElement('div');
                 loader.setAttribute('class', 'loader');
                 var info = document.createElement('span');
@@ -431,8 +431,10 @@ $("#create-vm").click(function(){
                         });
                     }
                 });
-            } else {
-                swal("Uh oh...", `That name is already taken! Please try another name.`, "error");
+            } else if (text == 'invalid') {
+                swal("Uh oh...", `That name is not a valid name! Please try another name.`, "error");
+            } else if (text == 'taken') {
+                swal("Uh oh...", `That name is not available! Please try another name.`, "error");
             }
         }).catch(err => {
             if (err) {

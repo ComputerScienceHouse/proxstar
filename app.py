@@ -46,8 +46,13 @@ def hostname(name):
     starrs = connect_starrs(
         app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
         app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
-    result = check_hostname(starrs, name)
-    return str(result)
+    valid, available = check_hostname(starrs, name)
+    if not valid:
+        return 'invalid'
+    if not available:
+        return 'taken'
+    else:
+        return 'ok'
 
 
 @app.route("/vm/<string:vmid>")

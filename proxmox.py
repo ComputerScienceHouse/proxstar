@@ -140,7 +140,7 @@ def get_user_usage(proxmox, user):
                 usage['cpu'] += int(config['cores'] * config.get('sockets', 1))
                 usage['mem'] += (int(config['memory']) // 1024)
             for disk in get_vm_disks(proxmox, vm['vmid'], config):
-                usage['disk'] += int(disk[1][:-1])
+                usage['disk'] += int(disk[1])
     return usage
 
 

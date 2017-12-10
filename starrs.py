@@ -1,6 +1,5 @@
 import psycopg2
 
-
 def connect_starrs(db, user, host, password):
     try:
         starrs = psycopg2.connect(
@@ -43,12 +42,24 @@ def check_hostname(starrs, hostname):
     try:
         c.execute("BEGIN")
         c.callproc("api.initialize", ('root', ))
-        c.callproc("api.check_dns_hostname", (hostname, 'csh.rit.edu'))
-        results = c.fetchall()
+        c.callproc("api.validate_name", (hostname,))
+        valid = False
+        if hostname == c.fetchall()[0][0]:
+            valid = True
         c.execute("COMMIT")
+        c.execute("BEGIN")
+        c.callproc("api.initialize", ('root', ))
+        c.callproc("api.check_dns_hostname", (hostname, 'csh.rit.edu'))
+        available = False
+        if not c.fetchall()[0][0]:
+            available = True
+        c.execute("COMMIT")
+    except(psycopg2.InternalError):
+        valid = False
+        available = False
     finally:
         c.close()
-    return results[0][0]
+    return valid, available
 
 
 def register_starrs(starrs, name, owner, mac, addr):
