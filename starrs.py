@@ -25,6 +25,32 @@ def get_next_ip(starrs, range_name):
     return results
 
 
+def get_ip_for_mac(starrs, mac):
+    c = starrs.cursor()
+    try:
+        c.execute("BEGIN")
+        c.callproc("api.initialize", ('root', ))
+        c.callproc("api.get_system_interface_addresses", (mac.lower(), ))
+        results = c.fetchall()
+        c.execute("COMMIT")
+    finally:
+        c.close()
+    return results
+
+
+def check_hostname(starrs, hostname):
+    c = starrs.cursor()
+    try:
+        c.execute("BEGIN")
+        c.callproc("api.initialize", ('root', ))
+        c.callproc("api.check_dns_hostname", (hostname, 'csh.rit.edu'))
+        results = c.fetchall()
+        c.execute("COMMIT")
+    finally:
+        c.close()
+    return results[0][0]
+
+
 def register_starrs(starrs, name, owner, mac, addr):
     c = starrs.cursor()
     try:

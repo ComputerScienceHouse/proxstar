@@ -52,8 +52,8 @@ $("#stop-vm").click(function(){
         },
         dangerMode: true,
     })
-    .then((willDelete) => {
-        if (willDelete) {
+    .then((willStop) => {
+        if (willStop) {
             const vmid = $(this).data('vmid')
             fetch(`/proxstar/vm/${vmid}/power/stop`, {
                 credentials: 'same-origin',
@@ -91,8 +91,8 @@ $("#reset-vm").click(function(){
         },
         dangerMode: true,
     })
-    .then((willDelete) => {
-        if (willDelete) {
+    .then((willReset) => {
+        if (willReset) {
             const vmid = $(this).data('vmid')
             fetch(`/proxstar/vm/${vmid}/power/reset`, {
                 credentials: 'same-origin',
@@ -130,8 +130,8 @@ $("#shutdown-vm").click(function(){
         },
         dangerMode: true,
     })
-    .then((willDelete) => {
-        if (willDelete) {
+    .then((willShutdown) => {
+        if (willShutdown) {
             const vmid = $(this).data('vmid')
             fetch(`/proxstar/vm/${vmid}/power/shutdown`, {
                 credentials: 'same-origin',
@@ -169,8 +169,8 @@ $("#suspend-vm").click(function(){
         },
         dangerMode: true,
     })
-    .then((willDelete) => {
-        if (willDelete) {
+    .then((willSuspend) => {
+        if (willSuspend) {
             const vmid = $(this).data('vmid')
             fetch(`/proxstar/vm/${vmid}/power/suspend`, {
                 credentials: 'same-origin',
@@ -258,8 +258,8 @@ $("#eject-iso").click(function(){
         },
         dangerMode: true,
     })
-    .then((willDelete) => {
-        if (willDelete) {
+    .then((willEject) => {
+        if (willEject) {
             const vmid = $(this).data('vmid')
             fetch(`/proxstar/vm/${vmid}/eject`, {
                 credentials: 'same-origin',
@@ -320,8 +320,8 @@ $("#change-iso").click(function(){
             },
             dangerMode: true,
         })
-        .then((willDelete) => {
-            if (willDelete) {
+        .then((willChange) => {
+            if (willChange) {
                 const vmid = $(this).data('vmid')
                 const iso = $(iso_list).val()
                 fetch(`/proxstar/vm/${vmid}/mount/${iso}`, {
@@ -380,4 +380,73 @@ $("#renew-vm").click(function(){
             swal.close();
         }
     });
+});
+
+$("#create-vm").click(function(){
+    const name = document.getElementById('name').value
+    const cores = document.getElementById('cores').value
+    const mem = document.getElementById('mem').value
+    const disk = document.getElementById('disk').value
+    const iso = document.getElementById('iso').value
+    if (name && disk) {
+        fetch(`/proxstar/hostname/${name}`, {
+            credentials: 'same-origin',
+        }).then((response) => {
+            return response.text()
+        }).then((text) => {
+            if (text == "False") {
+                var loader = document.createElement('div');
+                loader.setAttribute('class', 'loader');
+                var info = document.createElement('span');
+                info.innerHTML = `Cores: ${cores}<br>Memory: ${mem/1024} GB<br>Disk: ${disk} GB<br>ISO: ${iso}`,
+                swal({
+                    title: `Are you sure you want to create ${name}?`,
+                    content: info,
+                    icon: "info",
+                    buttons: {
+                        cancel: true,
+                        create: {
+                            text: "Create",
+                            closeModal: false,
+                            className: "swal-button",
+                        }
+                    }
+                })
+                .then((willCreate) => {
+                    if (willCreate) {
+                        var data  = new FormData();
+                        data.append('name', name);
+                        data.append('cores', cores);
+                        data.append('mem', mem);
+                        data.append('disk', disk);
+                        data.append('iso', iso);
+                        fetch('/proxstar/vm/create', {
+                            credentials: 'same-origin',
+                            method: 'post',
+                            body: data
+                        }).then((response) => {
+                            return response.text()
+                        }).then((vmid) => {
+                            window.location = `/proxstar/vm/${vmid}`;
+                        });
+                    }
+                });
+            } else {
+                swal("Uh oh...", `That name is already taken! Please try another name.`, "error");
+            }
+        }).catch(err => {
+            if (err) {
+                swal("Uh oh...", `Unable to verify name. Please try again later.`, "error");
+            } else {
+                swal.stopLoading();
+                swal.close();
+            }
+        });
+    } else if (!name && !disk) {
+        swal("Uh oh...", `You must enter a name and disk size for your VM!`, "error");
+    } else if (!name) {
+        swal("Uh oh...", `You must enter a name for your VM!`, "error");
+    } else if (!disk) {
+        swal("Uh oh...", `You must enter a disk size for your VM!`, "error");
+    }
 });

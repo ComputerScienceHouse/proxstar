@@ -41,19 +41,32 @@ def isos():
     return ','.join(isos)
 
 
+@app.route("/hostname/<string:name>")
+def hostname(name):
+    starrs = connect_starrs(
+        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
+        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
+    result = check_hostname(starrs, name)
+    return str(result)
+
+
 @app.route("/vm/<string:vmid>")
 def vm_details(vmid):
     proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
                               app.config['PROXMOX_USER'],
                               app.config['PROXMOX_PASS'])
+    starrs = connect_starrs(
+        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
+        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
         vm['disks'] = get_vm_disks(proxmox, vmid, config=vm['config'])
         vm['iso'] = get_vm_iso(proxmox, vmid, config=vm['config'])
-        vm['interfaces'] = get_vm_interfaces(
-            proxmox, vm['vmid'], config=vm['config'])
+        vm['interfaces'] = []
+        for interface in get_vm_interfaces(proxmox, vm['vmid'], config=vm['config']):
+            vm['interfaces'].append([interface[0], get_ip_for_mac(starrs, interface[1])[0][3]])
         vm['expire'] = get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
         return render_template('vm_details.html', username='com6056', vm=vm)
     else:
@@ -152,7 +165,7 @@ def create():
     elif request.method == 'POST':
         name = request.form['name']
         cores = request.form['cores']
-        memory = request.form['memory']
+        memory = request.form['mem']
         disk = request.form['disk']
         iso = request.form['iso']
         if iso != 'none':
@@ -161,13 +174,14 @@ def create():
         if usage_check:
             return usage_check
         else:
-            vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory,
-                                  disk, iso)
-            register_starrs(starrs, name, user, mac,
-                            get_next_ip(starrs,
-                                        app.config['STARRS_IP_RANGE'])[0][0])
-            get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
-            return redirect("/proxstar/vm/{}".format(vmid))
+            if not check_hostname(starrs, name):
+                vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory,
+                                      disk, iso)
+                register_starrs(starrs, name, user, mac,
+                                get_next_ip(starrs,
+                                            app.config['STARRS_IP_RANGE'])[0][0])
+                get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
+                return vmid
 
 
 @app.route('/novnc/<path:path>')

@@ -40,7 +40,7 @@
                         {% endfor %}
                         <li class="nav-header">Disks</li>
                         {% for disk in vm['disks'] %}
-                        <li>{{ disk[0] }}: {{ disk[1] }}</li>
+                        <li>{{ disk[0] }}: {{ disk[1] }} GB</li>
                         {% endfor %}
                         <li class="nav-header">ISO</li>
                         <li>
@@ -74,7 +74,7 @@
                         <dt>Cores</dt>
                         <dd>{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}</dd>
                         <dt>Memory</dt>
-                        <dd>{{ vm['config']['memory'] }} MB</dd>
+                        <dd>{{ vm['config']['memory'] // 1024}} GB</dd>
                         <dt>Expiration</dt>
                         <dd>
                             {{ vm['expire'] }}

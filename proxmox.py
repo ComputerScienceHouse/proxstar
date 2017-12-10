@@ -82,9 +82,9 @@ def get_vm_disk_size(proxmox, vmid, config=None, name='virtio0'):
         config = get_vm_config(proxmox, vmid)
     disk_size = config[name].split(',')
     if 'size' in disk_size[0]:
-        disk_size = disk_size[0].split('=')[1]
+        disk_size = disk_size[0].split('=')[1].rstrip('G')
     else:
-        disk_size = disk_size[1].split('=')[1]
+        disk_size = disk_size[1].split('=')[1].rstrip('G')
     return disk_size
 
 
@@ -98,9 +98,9 @@ def get_vm_disks(proxmox, vmid, config=None):
             if 'cdrom' not in val:
                 disk_size = val.split(',')
                 if 'size' in disk_size[0]:
-                    disk_size = disk_size[0].split('=')[1]
+                    disk_size = disk_size[0].split('=')[1].rstrip('G')
                 else:
-                    disk_size = disk_size[1].split('=')[1]
+                    disk_size = disk_size[1].split('=')[1].rstrip('G')
                 disks.append([key, disk_size])
     disks = sorted(disks, key=lambda x: x[0])
     return disks
