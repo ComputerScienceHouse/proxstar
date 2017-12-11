@@ -40,7 +40,7 @@
                         {% endfor %}
                         <li class="nav-header">Disks</li>
                         {% for disk in vm['disks'] %}
-                        <li>{{ disk[0] }}: {{ disk[1] }} GB</li>
+                        <li>{{ disk[0] }}: {{ disk[1] }}GB</li>
                         {% endfor %}
                         <li class="nav-header">ISO</li>
                         <li>
@@ -67,6 +67,8 @@
                     <dl class="dl-horizontal">
                         <dt>Name</dt>
                         <dd>{{ vm['name'] }}</dd>
+                        <dt>DNS Name</dt>
+                        <dd>{{ vm['name'] }}.csh.rit.edu</dd>
                         <dt>ID</dt>
                         <dd>{{ vm['vmid'] }}</dd>
                         <dt>Status</dt>
@@ -87,7 +89,20 @@
                             {% endif %}
                         </dd>
                         <dt>Memory</dt>
-                        <dd>{{ vm['config']['memory'] // 1024}} GB</dd>
+                        <dd>
+                            {{ vm['config']['memory'] // 1024 }}GB
+                            {% if limits['mem'] - usage['mem'] > 0 %}
+                                {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
+                                <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-mem="{{ vm['config']['memory'] // 1024 }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
+                                    <span class="glyphicon glyphicon-cog"></span>
+                                </button>
+                                {% else %}
+                                <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['memory'] // 1024 }}" data-usage="{{ usage['mem'] }}" data-limit="{{ limits['mem'] }}">
+                                    <span class="glyphicon glyphicon-cog"></span>
+                                </button>
+                                {% endif %}
+                            {% endif %}
+                        </dd>
                         <dt>Expiration</dt>
                         <dd>
                             {{ vm['expire'] }}

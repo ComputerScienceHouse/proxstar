@@ -99,8 +99,8 @@ def vm_cpu(vmid, cores):
                               app.config['PROXMOX_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         cur_cores = get_vm_config(proxmox, vmid)['cores']
-        status = get_vm(proxmox, vmid)['qmpstatus']
         if cores >= cur_cores:
+            status = get_vm(proxmox, vmid)['qmpstatus']
             if status == 'running' or status == 'paused':
                 usage_check = check_user_usage(proxmox, user, cores - cur_cores, 0, 0)
             else:
@@ -108,6 +108,27 @@ def vm_cpu(vmid, cores):
             if usage_check:
                 return usage_check
         change_vm_cpu(proxmox, vmid, cores)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route("/vm/<string:vmid>/mem/<int:mem>", methods=['POST'])
+def vm_mem(vmid, mem):
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
+    if int(vmid) in get_user_allowed_vms(proxmox, user):
+        cur_mem = get_vm_config(proxmox, vmid)['memory'] // 1024
+        if mem >= cur_mem:
+            status = get_vm(proxmox, vmid)['qmpstatus']
+            if status == 'running' or status == 'paused':
+                usage_check = check_user_usage(proxmox, user, 0, mem - cur_mem, 0)
+            else:
+                usage_check = check_user_usage(proxmox, user, 0, mem, 0)
+            if usage_check:
+                return usage_check
+        change_vm_mem(proxmox, vmid, mem * 1024)
         return '', 200
     else:
         return '', 403

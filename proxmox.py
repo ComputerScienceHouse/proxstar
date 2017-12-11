@@ -227,6 +227,11 @@ def change_vm_cpu(proxmox, vmid, cores):
     node.qemu(vmid).config.put(cores=cores)
 
 
+def change_vm_mem(proxmox, vmid, mem):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    node.qemu(vmid).config.put(memory=mem)
+
+
 def get_isos(proxmox, storage):
     isos = []
     for iso in proxmox.nodes('proxmox01').storage(storage).content.get():

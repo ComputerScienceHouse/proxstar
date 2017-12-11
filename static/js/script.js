@@ -510,3 +510,61 @@ $("#change-cores").click(function(){
         }
     });
 });
+
+$("#change-mem").click(function(){
+    const vmid = $(this).data('vmid')
+    const cur_mem = $(this).data('mem')
+    const usage = $(this).data('usage')
+    const limit = $(this).data('limit')
+    var mem_list = document.createElement('select');
+    mem_list.setAttribute('style', 'width: 45px');
+    for (i = 1; i < limit - usage + 1; i++) {
+        mem_list.appendChild(new Option(`${i}GB`, i));
+    }
+    swal({
+        title: 'Select how much memory you would like to allocate to this VM:',
+        content: mem_list,
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            select: {
+                text: "Select",
+                closeModal: false,
+                className: "swal-button",
+            }
+        },
+    })
+    .then((willChange) => {
+        if (willChange) {
+            const mem = $(mem_list).val()
+            fetch(`/proxstar/vm/${vmid}/mem/${mem}`, {
+                credentials: 'same-origin',
+                method: 'post'
+            }).then((response) => {
+                return swal(`Now applying the change to the amount of memory!`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
+                });
+            }).then(() => {
+                window.location = `/proxstar/vm/${vmid}`;
+            });
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to change the amount of memory. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});
