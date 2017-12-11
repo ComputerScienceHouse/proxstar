@@ -72,7 +72,20 @@
                         <dt>Status</dt>
                         <dd>{{ vm['qmpstatus'] }}</dd>
                         <dt>Cores</dt>
-                        <dd>{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}</dd>
+                        <dd>
+                            {{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}
+                            {% if limits['cpu'] - usage['cpu'] > 0 %}
+                                {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
+                                <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage="{{ usage['cpu'] - (vm['config']['cores'] * vm['config'].get('sockets', 1)) }}" data-limit="{{ limits['cpu'] }}">
+                                    <span class="glyphicon glyphicon-cog"></span>
+                                </button>
+                                {% else %}
+                                <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage="{{ usage['cpu'] }}" data-limit="{{ limits['cpu'] }}">
+                                    <span class="glyphicon glyphicon-cog"></span>
+                                </button>
+                                {% endif %}
+                            {% endif %}
+                        </dd>
                         <dt>Memory</dt>
                         <dd>{{ vm['config']['memory'] // 1024}} GB</dd>
                         <dt>Expiration</dt>

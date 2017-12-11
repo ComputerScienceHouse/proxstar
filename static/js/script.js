@@ -452,3 +452,61 @@ $("#create-vm").click(function(){
         swal("Uh oh...", `You must enter a disk size for your VM!`, "error");
     }
 });
+
+$("#change-cores").click(function(){
+    const vmid = $(this).data('vmid')
+    const cur_cores = $(this).data('cores')
+    const usage = $(this).data('usage')
+    const limit = $(this).data('limit')
+    var core_list = document.createElement('select');
+    core_list.setAttribute('style', 'width: 25px');
+    for (i = 1; i < limit - usage + 1; i++) {
+        core_list.appendChild(new Option(i, i));
+    }
+    swal({
+        title: 'Select how many cores you would like to allocate to this VM:',
+        content: core_list,
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            select: {
+                text: "Select",
+                closeModal: false,
+                className: "swal-button",
+            }
+        },
+    })
+    .then((willChange) => {
+        if (willChange) {
+            const cores = $(core_list).val()
+            fetch(`/proxstar/vm/${vmid}/cpu/${cores}`, {
+                credentials: 'same-origin',
+                method: 'post'
+            }).then((response) => {
+                return swal(`Now applying the change to the number of cores!`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
+                });
+            }).then(() => {
+                window.location = `/proxstar/vm/${vmid}`;
+            });
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to change the number of cores. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});

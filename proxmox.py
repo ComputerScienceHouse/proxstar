@@ -163,11 +163,11 @@ def check_user_usage(proxmox, user, vm_cpu, vm_mem, vm_disk):
     limits = get_user_usage_limits(user)
     cur_usage = get_user_usage(proxmox, user)
     if int(cur_usage['cpu']) + int(vm_cpu) > int(limits['cpu']):
-        return 'Exceeds CPU limit!'
+        return 'exceeds_cpu_limit'
     elif int(cur_usage['mem']) + (int(vm_mem) / 1024) > int(limits['mem']):
-        return 'Exceeds memory limit!'
+        return 'exceeds_memory_limit'
     elif int(cur_usage['disk']) + int(vm_disk) > int(limits['disk']):
-        return 'Exceeds disk limit!'
+        return 'exceeds_disk_limit'
 
 
 def get_user_usage_percent(proxmox, usage=None, limits=None):
@@ -220,6 +220,11 @@ def change_vm_power(proxmox, vmid, action):
         node.qemu(vmid).status.suspend.post()
     elif action == 'resume':
         node.qemu(vmid).status.resume.post()
+
+
+def change_vm_cpu(proxmox, vmid, cores):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    node.qemu(vmid).config.put(cores=cores)
 
 
 def get_isos(proxmox, storage):

@@ -71,9 +71,11 @@ def vm_details(vmid):
         vm['iso'] = get_vm_iso(proxmox, vmid, config=vm['config'])
         vm['interfaces'] = []
         for interface in get_vm_interfaces(proxmox, vm['vmid'], config=vm['config']):
-            vm['interfaces'].append([interface[0], get_ip_for_mac(starrs, interface[1])[0][3]])
+            vm['interfaces'].append([interface[0], get_ip_for_mac(starrs, interface[1])])
         vm['expire'] = get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
-        return render_template('vm_details.html', username='com6056', vm=vm)
+        usage = get_user_usage(proxmox, 'proxstar')
+        limits = get_user_usage_limits(user)
+        return render_template('vm_details.html', username='com6056', vm=vm, usage=usage, limits=limits)
     else:
         return '', 403
 
@@ -90,13 +92,39 @@ def vm_power(vmid, action):
         return '', 403
 
 
+@app.route("/vm/<string:vmid>/cpu/<int:cores>", methods=['POST'])
+def vm_cpu(vmid, cores):
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
+    if int(vmid) in get_user_allowed_vms(proxmox, user):
+        cur_cores = get_vm_config(proxmox, vmid)['cores']
+        status = get_vm(proxmox, vmid)['qmpstatus']
+        if cores >= cur_cores:
+            if status == 'running' or status == 'paused':
+                usage_check = check_user_usage(proxmox, user, cores - cur_cores, 0, 0)
+            else:
+                usage_check = check_user_usage(proxmox, user, cores, 0, 0)
+            if usage_check:
+                return usage_check
+        change_vm_cpu(proxmox, vmid, cores)
+        return '', 200
+    else:
+        return '', 403
+
+
 @app.route("/vm/<string:vmid>/renew", methods=['POST'])
 def vm_renew(vmid):
     proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
                               app.config['PROXMOX_USER'],
                               app.config['PROXMOX_PASS'])
+    starrs = connect_starrs(
+        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
+        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
         renew_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
+        for interface in get_vm_interfaces(proxmox, vmid):
+            renew_ip(starrs, get_ip_for_mac(starrs, interface[1]))
         return '', 200
     else:
         return '', 403
@@ -179,10 +207,11 @@ def create():
         if usage_check:
             return usage_check
         else:
-            if not check_hostname(starrs, name):
+            valid, available = check_hostname(starrs, name)
+            if valid and available:
                 vmid, mac = create_vm(proxmox, starrs, user, name, cores, memory,
                                       disk, iso)
-                register_starrs(starrs, name, user, mac,
+                register_starrs(starrs, name, app.config['STARRS_USER'], mac,
                                 get_next_ip(starrs,
                                             app.config['STARRS_IP_RANGE'])[0][0])
                 get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
