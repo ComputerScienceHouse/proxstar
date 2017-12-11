@@ -10,8 +10,11 @@
                 </div>
                 <div class="panel-body">
                     {% if vm['qmpstatus'] == 'stopped' %}
+                    {% if not usage_check %}
                     <button class="btn btn-success proxstar-actionbtn" id="start-vm" name="start" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">START</button>
-                    <button class="btn btn-danger proxstar-actionbtn" id="delete-vm" name="delete" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">DELETE</button>
+                    {% else %}
+                    Insufficient resources to start VM.
+                    {% endif %}
                     {% endif %}
                     {% if vm['qmpstatus'] == 'paused' %}
                     <button class="btn btn-success proxstar-actionbtn" id="resume-vm" name="resume" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESUME</button>
@@ -23,6 +26,11 @@
                     {% endif %}
                     <button class="btn btn-warning proxstar-actionbtn" id="stop-vm" name="stop" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">STOP</button>
                     <button class="btn btn-warning proxstar-actionbtn" id="reset-vm" name="reset" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESET</button>
+                    {% endif %}
+                    {% if vm['qmpstatus'] == 'stopped' %}
+                    <button class="btn btn-danger proxstar-actionbtn" id="delete-vm" name="delete" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">DELETE</button>
+                    {% else %}
+                    To delete VM, power it off.
                     {% endif %}
                 </div>
             </div>
@@ -76,31 +84,27 @@
                         <dt>Cores</dt>
                         <dd>
                             {{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}
-                            {% if limits['cpu'] - usage['cpu'] > 0 %}
-                                {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
-                                <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage="{{ usage['cpu'] - (vm['config']['cores'] * vm['config'].get('sockets', 1)) }}" data-limit="{{ limits['cpu'] }}">
-                                    <span class="glyphicon glyphicon-cog"></span>
-                                </button>
-                                {% else %}
-                                <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage="{{ usage['cpu'] }}" data-limit="{{ limits['cpu'] }}">
-                                    <span class="glyphicon glyphicon-cog"></span>
-                                </button>
-                                {% endif %}
+                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
+                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage="{{ usage['cpu'] - (vm['config']['cores'] * vm['config'].get('sockets', 1)) }}" data-limit="{{ limits['cpu'] }}">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </button>
+                            {% else %}
+                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage=0 data-limit="{{ limits['cpu'] }}">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </button>
                             {% endif %}
                         </dd>
                         <dt>Memory</dt>
                         <dd>
                             {{ vm['config']['memory'] // 1024 }}GB
-                            {% if limits['mem'] - usage['mem'] > 0 %}
-                                {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
-                                <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-mem="{{ vm['config']['memory'] // 1024 }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
-                                    <span class="glyphicon glyphicon-cog"></span>
-                                </button>
-                                {% else %}
-                                <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['memory'] // 1024 }}" data-usage="{{ usage['mem'] }}" data-limit="{{ limits['mem'] }}">
-                                    <span class="glyphicon glyphicon-cog"></span>
-                                </button>
-                                {% endif %}
+                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
+                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-mem="{{ vm['config']['memory'] // 1024 }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </button>
+                            {% else %}
+                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['memory'] // 1024 }}" data-usage=0 data-limit="{{ limits['mem'] }}">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </button>
                             {% endif %}
                         </dd>
                         <dt>Expiration</dt>

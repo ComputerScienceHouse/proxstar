@@ -75,7 +75,8 @@ def vm_details(vmid):
         vm['expire'] = get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
         usage = get_user_usage(proxmox, 'proxstar')
         limits = get_user_usage_limits(user)
-        return render_template('vm_details.html', username='com6056', vm=vm, usage=usage, limits=limits)
+        usage_check = check_user_usage(proxmox, user, vm['config']['cores'], vm['config']['memory'], 0)
+        return render_template('vm_details.html', username='com6056', vm=vm, usage=usage, limits=limits, usage_check=usage_check)
     else:
         return '', 403
 
@@ -86,6 +87,11 @@ def vm_power(vmid, action):
                               app.config['PROXMOX_USER'],
                               app.config['PROXMOX_PASS'])
     if int(vmid) in get_user_allowed_vms(proxmox, user):
+        if action == 'start':
+            config = get_vm_config(proxmox, vmid)
+            usage_check = check_user_usage(proxmox, user, config['cores'], config['memory'], 0)
+            if usage_check:
+                return usage_check
         change_vm_power(proxmox, vmid, action)
         return '', 200
     else:
