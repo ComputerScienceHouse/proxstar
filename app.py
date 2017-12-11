@@ -211,7 +211,6 @@ def create():
     if request.method == 'GET':
         usage = get_user_usage(proxmox, 'proxstar')
         limits = get_user_usage_limits(user)
-        full_limits = check_user_limit(proxmox, user, usage, limits)
         percents = get_user_usage_percent(proxmox, usage, limits)
         isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
         return render_template(
@@ -219,7 +218,6 @@ def create():
             username='com6056',
             usage=usage,
             limits=limits,
-            full_limits=full_limits,
             percents=percents,
             isos=isos)
     elif request.method == 'POST':
@@ -230,7 +228,7 @@ def create():
         iso = request.form['iso']
         if iso != 'none':
             iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
-        usage_check = check_user_usage(proxmox, user, cores, memory, disk)
+        usage_check = check_user_usage(proxmox, user, 0, 0, disk)
         if usage_check:
             return usage_check
         else:

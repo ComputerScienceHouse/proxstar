@@ -388,62 +388,67 @@ $("#create-vm").click(function(){
     const mem = document.getElementById('mem').value
     const disk = document.getElementById('disk').value
     const iso = document.getElementById('iso').value
+    const max_disk = $(this).data('max_disk')
     if (name && disk) {
-        fetch(`/proxstar/hostname/${name}`, {
-            credentials: 'same-origin',
-        }).then((response) => {
-            return response.text()
-        }).then((text) => {
-            if (text == 'ok') {
-                var loader = document.createElement('div');
-                loader.setAttribute('class', 'loader');
-                var info = document.createElement('span');
-                info.innerHTML = `Cores: ${cores}<br>Memory: ${mem/1024} GB<br>Disk: ${disk} GB<br>ISO: ${iso}`,
-                swal({
-                    title: `Are you sure you want to create ${name}?`,
-                    content: info,
-                    icon: "info",
-                    buttons: {
-                        cancel: true,
-                        create: {
-                            text: "Create",
-                            closeModal: false,
-                            className: "swal-button",
+        if (disk > max_disk) {
+            swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk} GB or lower.`, "error");
+        } else {
+            fetch(`/proxstar/hostname/${name}`, {
+                credentials: 'same-origin',
+            }).then((response) => {
+                return response.text()
+            }).then((text) => {
+                if (text == 'ok') {
+                    var loader = document.createElement('div');
+                    loader.setAttribute('class', 'loader');
+                    var info = document.createElement('span');
+                    info.innerHTML = `Cores: ${cores}<br>Memory: ${mem/1024} GB<br>Disk: ${disk} GB<br>ISO: ${iso}`,
+                    swal({
+                        title: `Are you sure you want to create ${name}?`,
+                        content: info,
+                        icon: "info",
+                        buttons: {
+                            cancel: true,
+                            create: {
+                                text: "Create",
+                                closeModal: false,
+                                className: "swal-button",
+                            }
                         }
-                    }
-                })
-                .then((willCreate) => {
-                    if (willCreate) {
-                        var data  = new FormData();
-                        data.append('name', name);
-                        data.append('cores', cores);
-                        data.append('mem', mem);
-                        data.append('disk', disk);
-                        data.append('iso', iso);
-                        fetch('/proxstar/vm/create', {
-                            credentials: 'same-origin',
-                            method: 'post',
-                            body: data
-                        }).then((response) => {
-                            return response.text()
-                        }).then((vmid) => {
-                            window.location = `/proxstar/vm/${vmid}`;
-                        });
-                    }
-                });
-            } else if (text == 'invalid') {
-                swal("Uh oh...", `That name is not a valid name! Please try another name.`, "error");
-            } else if (text == 'taken') {
-                swal("Uh oh...", `That name is not available! Please try another name.`, "error");
-            }
-        }).catch(err => {
-            if (err) {
-                swal("Uh oh...", `Unable to verify name. Please try again later.`, "error");
-            } else {
-                swal.stopLoading();
-                swal.close();
-            }
-        });
+                    })
+                    .then((willCreate) => {
+                        if (willCreate) {
+                            var data  = new FormData();
+                            data.append('name', name);
+                            data.append('cores', cores);
+                            data.append('mem', mem);
+                            data.append('disk', disk);
+                            data.append('iso', iso);
+                            fetch('/proxstar/vm/create', {
+                                credentials: 'same-origin',
+                                method: 'post',
+                                body: data
+                            }).then((response) => {
+                                return response.text()
+                            }).then((vmid) => {
+                                window.location = `/proxstar/vm/${vmid}`;
+                            });
+                        }
+                    });
+                } else if (text == 'invalid') {
+                    swal("Uh oh...", `That name is not a valid name! Please try another name.`, "error");
+                } else if (text == 'taken') {
+                    swal("Uh oh...", `That name is not available! Please try another name.`, "error");
+                }
+            }).catch(err => {
+                if (err) {
+                    swal("Uh oh...", `Unable to verify name! Please try again later.`, "error");
+                } else {
+                    swal.stopLoading();
+                    swal.close();
+                }
+            });
+        }
     } else if (!name && !disk) {
         swal("Uh oh...", `You must enter a name and disk size for your VM!`, "error");
     } else if (!name) {
