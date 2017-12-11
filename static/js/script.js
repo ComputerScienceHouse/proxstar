@@ -568,3 +568,120 @@ $("#change-mem").click(function(){
         }
     });
 });
+
+$(".edit-limit").click(function(){
+    const user = $(this).data('user')
+    const cur_cpu = $(this).data('cpu')
+    const cur_mem = $(this).data('mem')
+    const cur_disk = $(this).data('disk')
+    var options = document.createElement('div');
+    cpu_text = document.createElement('p');
+    cpu_text.innerHTML = 'CPU';
+    options.append(cpu_text);
+    var cpu = document.createElement('input');
+    cpu.defaultValue = cur_cpu;
+    options.append(cpu);
+    mem_text = document.createElement('p');
+    mem_text.innerHTML = 'Memory (GB)';
+    options.append(mem_text);
+    var mem = document.createElement('input');
+    mem.defaultValue = cur_mem;
+    options.append(mem)
+    disk_text = document.createElement('p');
+    disk_text.innerHTML = 'Disk (GB)';
+    options.append(disk_text);
+    var disk = document.createElement('input');
+    disk.defaultValue = cur_disk;
+    options.append(disk)
+    swal({
+        title: `Enter the new limits for ${user}:`,
+        content: options,
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            select: {
+                text: "Submit",
+                closeModal: false,
+                className: "swal-button",
+            }
+        },
+    })
+    .then((willChange) => {
+        if (willChange) {
+            console.log($(cpu).val());
+            console.log($(mem).val());
+            console.log($(disk).val());
+            var data  = new FormData();
+            data.append('cpu', $(cpu).val());
+            data.append('mem', $(mem).val());
+            data.append('disk', $(disk).val());
+            fetch(`/proxstar/limits/${user}`, {
+                credentials: 'same-origin',
+                method: 'post',
+                body: data
+            }).then((response) => {
+                return swal(`Now applying the new limits to ${user}!`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
+                });
+            }).then(() => {
+                window.location = `/proxstar/limits`;
+            });
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to change the limits for ${user}. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});
+
+$(".reset-limit").click(function(){
+    const user = $(this).data('user')
+    swal({
+        title: `Are you sure you want to reset the usage limits for ${user} to the defaults?`,
+        icon: "warning",
+        buttons: {
+            cancel: true,
+            reset: {
+                text: "reset",
+                closeModal: false,
+                className: "swal-button--danger",
+            }
+        },
+        dangerMode: true,
+    })
+    .then((willReset) => {
+        if (willReset) {
+            fetch(`/proxstar/limits/${user}/reset`, {
+                credentials: 'same-origin',
+                method: 'post'
+            }).then((response) => {
+                return swal(`Usage limits for ${user} are now reset to defaults!`, {
+                    icon: "success",
+                });
+            }).then(() => {
+                window.location = `/proxstar/limits`;
+            }).catch(err => {
+                if (err) {
+                    swal("Uh oh...", `Unable to reset the usage limits for ${user}. Please try again later.`, "error");
+                } else {
+                    swal.stopLoading();
+                    swal.close();
+                }
+            });
+        }
+    });
+});

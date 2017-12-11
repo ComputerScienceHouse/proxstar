@@ -1,5 +1,6 @@
 import time
 from proxmoxer import ProxmoxAPI
+from db import *
 
 
 def connect_proxmox(host, user, password):
@@ -117,14 +118,6 @@ def get_vm_iso(proxmox, vmid, config=None):
     else:
         iso = 'None'
     return iso
-
-
-def get_user_usage_limits(user):
-    limits = dict()
-    limits['cpu'] = 4
-    limits['mem'] = 4
-    limits['disk'] = 100
-    return limits
 
 
 def get_user_usage(proxmox, user):
@@ -247,3 +240,10 @@ def eject_vm_iso(proxmox, vmid):
 def mount_vm_iso(proxmox, vmid, iso):
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
     node.qemu(vmid).config.post(ide2="{},media=cdrom".format(iso))
+
+
+def get_pools(proxmox):
+    pools = []
+    for pool in proxmox.pools.get():
+        pools.append(pool['poolid'])
+    return pools

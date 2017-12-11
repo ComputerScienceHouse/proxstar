@@ -3,7 +3,7 @@ from sqlalchemy.orm import sessionmaker
 from dateutil.relativedelta import relativedelta
 import datetime
 
-from db_init import VM_Expiration, Base
+from db_init import VM_Expiration, Usage_Limit, Base
 
 engine = create_engine('sqlite:///proxstar.db')
 Base.metadata.bind = engine
@@ -55,8 +55,39 @@ def get_expired_vms():
         expired.append(vm.id)
     return expired
 
+def get_user_usage_limits(user):
+    limits = dict()
+    if session.query(exists().where(Usage_Limit.id == user)).scalar():
+        limits['cpu'] = session.query(Usage_Limit).filter(
+            Usage_Limit.id == user).one().cpu
+        limits['mem'] = session.query(Usage_Limit).filter(
+            Usage_Limit.id == user).one().mem
+        limits['disk'] = session.query(Usage_Limit).filter(
+            Usage_Limit.id == user).one().disk
+    else:
+        limits['cpu'] = 4
+        limits['mem'] = 4
+        limits['disk'] = 100
+    return limits
 
-#for entry in session.query(VM_Expiration).all():
-#    print(entry.id, entry.expire_date)
-#expiry = session.query(VM_Expiration).filter(VM_Expiration.id == 100).one()
-#print(expiry.expire_date)
+
+def set_user_usage_limits(user, cpu, mem, disk):
+    if session.query(exists().where(Usage_Limit.id == user)).scalar():
+        limits = session.query(Usage_Limit).filter(
+            Usage_Limit.id == user).one()
+        limits.cpu = cpu
+        limits.mem = mem
+        limits.disk = disk
+        session.commit()
+    else:
+        limits = Usage_Limit(id=user, cpu=cpu, mem=mem, disk=disk)
+        session.add(limits)
+        session.commit()
+
+
+def delete_user_usage_limits(user):
+    if session.query(exists().where(Usage_Limit.id == user)).scalar():
+        limits = session.query(Usage_Limit).filter(
+            Usage_Limit.id == user).one()
+        session.delete(limits)
+        session.commit()

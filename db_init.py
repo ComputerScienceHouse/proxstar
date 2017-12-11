@@ -12,6 +12,14 @@ class VM_Expiration(Base):
     expire_date = Column(Date, nullable=False)
 
 
+class Usage_Limit(Base):
+    __tablename__ = 'usage_limit'
+    id = Column(String(32), primary_key=True)
+    cpu = Column(Integer, nullable=False)
+    mem = Column(Integer, nullable=False)
+    disk = Column(Integer, nullable=False)
+
+
 engine = create_engine('sqlite:///proxstar.db')
 
 Base.metadata.create_all(engine)

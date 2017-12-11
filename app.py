@@ -245,6 +245,36 @@ def create():
                 return vmid
 
 
+@app.route('/limits/<string:user>', methods=['POST'])
+def set_limits(user):
+    cpu = request.form['cpu']
+    mem = request.form['mem']
+    disk = request.form['disk']
+    set_user_usage_limits(user, cpu, mem, disk)
+    return '', 200
+
+
+@app.route('/limits/<string:user>/reset', methods=['POST'])
+def reset_limits(user):
+    delete_user_usage_limits(user)
+    return '', 200
+
+
+@app.route('/limits')
+def limits():
+    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
+                              app.config['PROXMOX_USER'],
+                              app.config['PROXMOX_PASS'])
+    pools = get_pools(proxmox)
+    pools = sorted(pools)
+    user_limits = []
+    for pool in pools:
+        if pool not in app.config['IGNORED_POOLS']:
+            limits = get_user_usage_limits(pool)
+            user_limits.append([pool, limits['cpu'], limits['mem'], limits['disk']])
+    return render_template('limits.html', username='com6056', user_limits=user_limits)
+
+
 @app.route('/novnc/<path:path>')
 def send_novnc(path):
     return send_from_directory('static/novnc-pve/novnc', path)
