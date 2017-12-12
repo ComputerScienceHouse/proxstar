@@ -261,7 +261,7 @@ def create():
         app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
         app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
     if request.method == 'GET':
-        usage = get_user_usage(proxmox, 'proxstar')
+        usage = get_user_usage(proxmox, user)
         limits = get_user_usage_limits(user)
         percents = get_user_usage_percent(proxmox, usage, limits)
         isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])

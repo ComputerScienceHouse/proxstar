@@ -24,7 +24,7 @@ $("#delete-vm").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = "";
+                window.location = "/";
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to delete ${vmname}. Please try again later.`, "error");
