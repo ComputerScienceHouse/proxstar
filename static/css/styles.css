@@ -90,7 +90,21 @@ table, th, td {
     line-height: 1;
 }
 
+.proxstar-limitbtn {
+    padding-top: 0px;
+    padding-bottom: 0px;
+    width: 70px;
+    height: 25px;
+    margin-top: 3px;
+    margin-bottom: 3px;
+}
+
 .resource-usage {
     width: 50%;
-    margin: 0 auto;
+    margin: 0px auto;
+}
+
+.usage-limit {
+    width: 80%;
+    margin: 0px auto;
 }

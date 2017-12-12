@@ -391,7 +391,7 @@ $("#create-vm").click(function(){
     const max_disk = $(this).data('max_disk')
     if (name && disk) {
         if (disk > max_disk) {
-            swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk} GB or lower.`, "error");
+            swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk}GB or lower.`, "error");
         } else {
             fetch(`/proxstar/hostname/${name}`, {
                 credentials: 'same-origin',
@@ -599,7 +599,7 @@ $(".edit-limit").click(function(){
     disk.defaultValue = cur_disk;
     options.append(disk)
     swal({
-        title: `Enter the new limits for ${user}:`,
+        title: `Enter the new usage limits for ${user}:`,
         content: options,
         buttons: {
             cancel: {

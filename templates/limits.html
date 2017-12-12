@@ -9,7 +9,7 @@
                     <h3 class="panel-title">Usage Limits</h3>
                 </div>
                 <div class="panel-body">
-                    <table class="table table-bordered table-striped">
+                    <table class="table table-bordered table-striped usage-limit">
                         <thead>
                             <tr role="row">
                                 <th>Username</th>
@@ -27,8 +27,8 @@
                                 <td>{{ user_limit[2] }}</td>
                                 <td>{{ user_limit[3] }}</td>
                                 <td>
-                                    <button class="btn btn-info edit-limit" data-user="{{ user_limit[0] }}" data-cpu="{{ user_limit[1] }}" data-mem="{{ user_limit[2] }}" data-disk="{{ user_limit[3] }}">EDIT</button>
-                                    <button class="btn btn-danger reset-limit" data-user="{{ user_limit[0] }}">RESET</button>
+                                    <button class="btn btn-info proxstar-limitbtn edit-limit" data-user="{{ user_limit[0] }}" data-cpu="{{ user_limit[1] }}" data-mem="{{ user_limit[2] }}" data-disk="{{ user_limit[3] }}">EDIT</button>
+                                    <button class="btn btn-danger proxstar-limitbtn reset-limit" data-user="{{ user_limit[0] }}">RESET</button>
                                 </td>
                             </tr>
                             {% endfor %}
