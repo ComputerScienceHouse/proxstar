@@ -11,7 +11,7 @@
                 </div>
             </div>
         </div>
-        {% else %}
+        {% elif not rtp %}
             {% for vm in vms %}
                 <div class="col-md-3 col-sm-4 col-xs-6">
                     <div class="panel panel-default">
@@ -23,6 +23,32 @@
                         </div>
                     </div>
                 </div>
+            {% endfor %}
+        {% else %}
+            {% for pool in vms %}
+                {% if pool[1] %}
+                <div class="col-md-12 col-sm-12">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">{{ pool[0] }}</h3>
+                        </div>
+                        <div class="panel-body">
+                            {% for vm in pool[1] %}
+                                <div class="col-md-3 col-sm-4 col-xs-6">
+                                    <div class="panel panel-default">
+                                        <div class="panel-body">
+                                            <a href="/vm/{{ vm['vmid'] }}">
+                                                <p>{{ vm['name'] }}</p>
+                                            </a>
+                                            <p>Status: {{ vm['status'] }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
             {% endfor %}
         {% endif %}
     </div>

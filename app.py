@@ -28,23 +28,15 @@ auth = OIDCAuthentication(
 def list_vms():
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
-    vms = get_vms_for_user(proxmox, user)
-    for vm in vms:
-        if 'name' not in vm:
-            vms.remove(vm)
-    vms = sorted(vms, key=lambda k: k['name'])
+    proxmox = connect_proxmox()
+    vms = get_vms_for_user(proxmox, user, rtp)
     return render_template('list_vms.html', username=user, rtp=rtp, vms=vms)
 
 
 @app.route("/isos")
 @auth.oidc_auth
 def isos():
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
+    proxmox = connect_proxmox()
     isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
     return ','.join(isos)
 
@@ -52,9 +44,7 @@ def isos():
 @app.route("/hostname/<string:name>")
 @auth.oidc_auth
 def hostname(name):
-    starrs = connect_starrs(
-        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
+    starrs = connect_starrs()
     valid, available = check_hostname(starrs, name)
     if not valid:
         return 'invalid'
@@ -69,12 +59,8 @@ def hostname(name):
 def vm_details(vmid):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
-    starrs = connect_starrs(
-        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
+    proxmox = connect_proxmox()
+    starrs = connect_starrs()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         vm = get_vm(proxmox, vmid)
@@ -110,9 +96,7 @@ def vm_details(vmid):
 @auth.oidc_auth
 def vm_power(vmid, action):
     user = session['userinfo']['preferred_username']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
+    proxmox = connect_proxmox()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         if action == 'start':
@@ -131,9 +115,7 @@ def vm_power(vmid, action):
 @auth.oidc_auth
 def vm_cpu(vmid, cores):
     user = session['userinfo']['preferred_username']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
+    proxmox = connect_proxmox()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         cur_cores = get_vm_config(proxmox, vmid)['cores']
@@ -156,9 +138,7 @@ def vm_cpu(vmid, cores):
 @auth.oidc_auth
 def vm_mem(vmid, mem):
     user = session['userinfo']['preferred_username']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
+    proxmox = connect_proxmox()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         cur_mem = get_vm_config(proxmox, vmid)['memory'] // 1024
@@ -181,12 +161,8 @@ def vm_mem(vmid, mem):
 @auth.oidc_auth
 def vm_renew(vmid):
     user = session['userinfo']['preferred_username']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
-    starrs = connect_starrs(
-        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
+    proxmox = connect_proxmox()
+    starrs = connect_starrs()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         renew_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
@@ -201,9 +177,7 @@ def vm_renew(vmid):
 @auth.oidc_auth
 def iso_eject(vmid):
     user = session['userinfo']['preferred_username']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
+    proxmox = connect_proxmox()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         eject_vm_iso(proxmox, vmid)
@@ -216,9 +190,7 @@ def iso_eject(vmid):
 @auth.oidc_auth
 def iso_mount(vmid, iso):
     user = session['userinfo']['preferred_username']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
+    proxmox = connect_proxmox()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
@@ -232,12 +204,8 @@ def iso_mount(vmid, iso):
 @auth.oidc_auth
 def delete(vmid):
     user = session['userinfo']['preferred_username']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
-    starrs = connect_starrs(
-        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
+    proxmox = connect_proxmox()
+    starrs = connect_starrs()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         vmname = get_vm_config(proxmox, vmid)['name']
@@ -254,12 +222,8 @@ def delete(vmid):
 def create():
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
-    proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                              app.config['PROXMOX_USER'],
-                              app.config['PROXMOX_PASS'])
-    starrs = connect_starrs(
-        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS'])
+    proxmox = connect_proxmox()
+    starrs = connect_starrs()
     if request.method == 'GET':
         usage = get_user_usage(proxmox, user)
         limits = get_user_usage_limits(user)
@@ -325,9 +289,7 @@ def limits():
     if 'rtp' in session['userinfo']['groups']:
         user = session['userinfo']['preferred_username']
         rtp = 'rtp' in session['userinfo']['groups']
-        proxmox = connect_proxmox(app.config['PROXMOX_HOST'],
-                                  app.config['PROXMOX_USER'],
-                                  app.config['PROXMOX_PASS'])
+        proxmox = connect_proxmox()
         pools = get_pools(proxmox)
         pools = sorted(pools)
         user_limits = []

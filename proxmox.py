@@ -1,22 +1,40 @@
 import time
+from flask import current_app as app
 from proxmoxer import ProxmoxAPI
 from db import *
 
 
-def connect_proxmox(host, user, password):
+def connect_proxmox():
     try:
         proxmox = ProxmoxAPI(
-            host, user=user, password=password, verify_ssl=False)
+            app.config['PROXMOX_HOST'], user=app.config['PROXMOX_USER'], password=app.config['PROXMOX_PASS'], verify_ssl=False)
     except:
         print("Unable to connect to Proxmox!")
         raise
     return proxmox
 
 
-def get_vms_for_user(proxmox, user):
-    if user not in get_pools(proxmox):
-        proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
-    return proxmox.pools(user).get()['members']
+def get_vms_for_user(proxmox, user, rtp=False):
+    pools = get_pools(proxmox)
+    if not rtp:
+        if user not in pools:
+            proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
+        vms = proxmox.pools(user).get()['members']
+        for vm in vms:
+            if 'name' not in vm:
+                vms.remove(vm)
+        vms = sorted(vms, key=lambda k: k['name'])
+        return vms
+    else:
+        pool_vms = []
+        for pool in pools:
+            vms = proxmox.pools(pool).get()['members']
+            for vm in vms:
+                if 'name' not in vm:
+                    vms.remove(vm)
+            vms = sorted(vms, key=lambda k: k['name'])
+            pool_vms.append([pool, vms])
+        return pool_vms
 
 
 def get_user_allowed_vms(proxmox, user):
@@ -232,5 +250,8 @@ def mount_vm_iso(proxmox, vmid, iso):
 def get_pools(proxmox):
     pools = []
     for pool in proxmox.pools.get():
-        pools.append(pool['poolid'])
+        poolid = pool['poolid']
+        if poolid not in app.config['IGNORED_POOLS']:
+            pools.append(poolid)
+    pools = sorted(pools)
     return pools

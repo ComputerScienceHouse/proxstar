@@ -1,0 +1,6 @@
+flask
+flask_pyoidc
+proxmoxer
+psycopg2
+sqlalchemy
+python-dateutil
