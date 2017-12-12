@@ -55,6 +55,7 @@ def get_expired_vms():
         expired.append(vm.id)
     return expired
 
+
 def get_user_usage_limits(user):
     limits = dict()
     if session.query(exists().where(Usage_Limit.id == user)).scalar():
