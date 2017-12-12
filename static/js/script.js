@@ -16,7 +16,7 @@ $("#delete-vm").click(function(){
     .then((willDelete) => {
         if (willDelete) {
             const vmid = $(this).data('vmid')
-            fetch(`/proxstar/vm/${vmid}/delete`, {
+            fetch(`/vm/${vmid}/delete`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -24,7 +24,7 @@ $("#delete-vm").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = "/proxstar";
+                window.location = "";
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to delete ${vmname}. Please try again later.`, "error");
@@ -55,7 +55,7 @@ $("#stop-vm").click(function(){
     .then((willStop) => {
         if (willStop) {
             const vmid = $(this).data('vmid')
-            fetch(`/proxstar/vm/${vmid}/power/stop`, {
+            fetch(`/vm/${vmid}/power/stop`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -63,7 +63,7 @@ $("#stop-vm").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = `/proxstar/vm/${vmid}`;
+                window.location = `/vm/${vmid}`;
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to stop ${vmname}. Please try again later.`, "error");
@@ -94,7 +94,7 @@ $("#reset-vm").click(function(){
     .then((willReset) => {
         if (willReset) {
             const vmid = $(this).data('vmid')
-            fetch(`/proxstar/vm/${vmid}/power/reset`, {
+            fetch(`/vm/${vmid}/power/reset`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -102,7 +102,7 @@ $("#reset-vm").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = `/proxstar/vm/${vmid}`;
+                window.location = `/vm/${vmid}`;
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to reset ${vmname}. Please try again later.`, "error");
@@ -133,7 +133,7 @@ $("#shutdown-vm").click(function(){
     .then((willShutdown) => {
         if (willShutdown) {
             const vmid = $(this).data('vmid')
-            fetch(`/proxstar/vm/${vmid}/power/shutdown`, {
+            fetch(`/vm/${vmid}/power/shutdown`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -141,7 +141,7 @@ $("#shutdown-vm").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = `/proxstar/vm/${vmid}`;
+                window.location = `/vm/${vmid}`;
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to shutdown ${vmname}. Please try again later.`, "error");
@@ -172,7 +172,7 @@ $("#suspend-vm").click(function(){
     .then((willSuspend) => {
         if (willSuspend) {
             const vmid = $(this).data('vmid')
-            fetch(`/proxstar/vm/${vmid}/power/suspend`, {
+            fetch(`/vm/${vmid}/power/suspend`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -180,7 +180,7 @@ $("#suspend-vm").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = `/proxstar/vm/${vmid}`;
+                window.location = `/vm/${vmid}`;
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to suspend ${vmname}. Please try again later.`, "error");
@@ -196,7 +196,7 @@ $("#suspend-vm").click(function(){
 $("#start-vm").click(function(){
     const vmname = $(this).data('vmname')
     const vmid = $(this).data('vmid')
-    fetch(`/proxstar/vm/${vmid}/power/start`, {
+    fetch(`/vm/${vmid}/power/start`, {
         credentials: 'same-origin',
         method: 'post'
     }).then((response) => {
@@ -204,7 +204,7 @@ $("#start-vm").click(function(){
             icon: "success",
         }); 
     }).then(() => {
-        window.location = `/proxstar/vm/${vmid}`;
+        window.location = `/vm/${vmid}`;
     }).catch(err => {
         if (err) {
             swal("Uh oh...", `Unable to start ${vmname}. Please try again later.`, "error");
@@ -218,7 +218,7 @@ $("#start-vm").click(function(){
 $("#resume-vm").click(function(){
     const vmname = $(this).data('vmname')
     const vmid = $(this).data('vmid')
-    fetch(`/proxstar/vm/${vmid}/power/resume`, {
+    fetch(`/vm/${vmid}/power/resume`, {
         credentials: 'same-origin',
         method: 'post'
     }).then((response) => {
@@ -226,7 +226,7 @@ $("#resume-vm").click(function(){
             icon: "success",
         }); 
     }).then(() => {
-        window.location = `/proxstar/vm/${vmid}`;
+        window.location = `/vm/${vmid}`;
     }).catch(err => {
         if (err) {
             swal("Uh oh...", `Unable to resume ${vmname}. Please try again later.`, "error");
@@ -261,7 +261,7 @@ $("#eject-iso").click(function(){
     .then((willEject) => {
         if (willEject) {
             const vmid = $(this).data('vmid')
-            fetch(`/proxstar/vm/${vmid}/eject`, {
+            fetch(`/vm/${vmid}/eject`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -276,7 +276,7 @@ $("#eject-iso").click(function(){
                     }
                 });
             }).then(() => {
-                window.location = `/proxstar/vm/${vmid}`;
+                window.location = `/vm/${vmid}`;
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to eject ${iso}. Please try again later.`, "error");
@@ -292,7 +292,7 @@ $("#eject-iso").click(function(){
 
 $("#change-iso").click(function(){
     const vmid = $(this).data('vmid')
-    fetch(`/proxstar/isos`, {
+    fetch(`/isos`, {
         credentials: 'same-origin',
     }).then((response) => {
         return response.text()
@@ -324,7 +324,7 @@ $("#change-iso").click(function(){
             if (willChange) {
                 const vmid = $(this).data('vmid')
                 const iso = $(iso_list).val()
-                fetch(`/proxstar/vm/${vmid}/mount/${iso}`, {
+                fetch(`/vm/${vmid}/mount/${iso}`, {
                     credentials: 'same-origin',
                     method: 'post'
                 }).then((response) => {
@@ -339,7 +339,7 @@ $("#change-iso").click(function(){
                         }
                     });
                 }).then(() => {
-                    window.location = `/proxstar/vm/${vmid}`;
+                    window.location = `/vm/${vmid}`;
                 }).catch(err => {
                     if (err) {
                         swal("Uh oh...", `Unable to mount ${iso}. Please try again later.`, "error");
@@ -363,7 +363,7 @@ $("#change-iso").click(function(){
 $("#renew-vm").click(function(){
     const vmname = $(this).data('vmname')
     const vmid = $(this).data('vmid')
-    fetch(`/proxstar/vm/${vmid}/renew`, {
+    fetch(`/vm/${vmid}/renew`, {
         credentials: 'same-origin',
         method: 'post'
     }).then((response) => {
@@ -371,7 +371,7 @@ $("#renew-vm").click(function(){
             icon: "success",
         });
     }).then(() => {
-        window.location = `/proxstar/vm/${vmid}`;
+        window.location = `/vm/${vmid}`;
     }).catch(err => {
         if (err) {
             swal("Uh oh...", `Unable to renew ${vmname}. Please try again later.`, "error");
@@ -393,7 +393,7 @@ $("#create-vm").click(function(){
         if (disk > max_disk) {
             swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk}GB or lower.`, "error");
         } else {
-            fetch(`/proxstar/hostname/${name}`, {
+            fetch(`/hostname/${name}`, {
                 credentials: 'same-origin',
             }).then((response) => {
                 return response.text()
@@ -424,14 +424,14 @@ $("#create-vm").click(function(){
                             data.append('mem', mem);
                             data.append('disk', disk);
                             data.append('iso', iso);
-                            fetch('/proxstar/vm/create', {
+                            fetch('/vm/create', {
                                 credentials: 'same-origin',
                                 method: 'post',
                                 body: data
                             }).then((response) => {
                                 return response.text()
                             }).then((vmid) => {
-                                window.location = `/proxstar/vm/${vmid}`;
+                                window.location = `/vm/${vmid}`;
                             });
                         }
                     });
@@ -488,7 +488,7 @@ $("#change-cores").click(function(){
     .then((willChange) => {
         if (willChange) {
             const cores = $(core_list).val()
-            fetch(`/proxstar/vm/${vmid}/cpu/${cores}`, {
+            fetch(`/vm/${vmid}/cpu/${cores}`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -503,7 +503,7 @@ $("#change-cores").click(function(){
                     }
                 });
             }).then(() => {
-                window.location = `/proxstar/vm/${vmid}`;
+                window.location = `/vm/${vmid}`;
             });
         }
     }).catch(err => {
@@ -546,7 +546,7 @@ $("#change-mem").click(function(){
     .then((willChange) => {
         if (willChange) {
             const mem = $(mem_list).val()
-            fetch(`/proxstar/vm/${vmid}/mem/${mem}`, {
+            fetch(`/vm/${vmid}/mem/${mem}`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -561,7 +561,7 @@ $("#change-mem").click(function(){
                     }
                 });
             }).then(() => {
-                window.location = `/proxstar/vm/${vmid}`;
+                window.location = `/vm/${vmid}`;
             });
         }
     }).catch(err => {
@@ -624,7 +624,7 @@ $(".edit-limit").click(function(){
             data.append('cpu', $(cpu).val());
             data.append('mem', $(mem).val());
             data.append('disk', $(disk).val());
-            fetch(`/proxstar/limits/${user}`, {
+            fetch(`/limits/${user}`, {
                 credentials: 'same-origin',
                 method: 'post',
                 body: data
@@ -640,7 +640,7 @@ $(".edit-limit").click(function(){
                     }
                 });
             }).then(() => {
-                window.location = `/proxstar/limits`;
+                window.location = `/limits`;
             });
         }
     }).catch(err => {
@@ -670,7 +670,7 @@ $(".reset-limit").click(function(){
     })
     .then((willReset) => {
         if (willReset) {
-            fetch(`/proxstar/limits/${user}/reset`, {
+            fetch(`/limits/${user}/reset`, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
@@ -678,7 +678,7 @@ $(".reset-limit").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = `/proxstar/limits`;
+                window.location = `/limits`;
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to reset the usage limits for ${user}. Please try again later.`, "error");

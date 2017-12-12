@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="theme-color" content="#B0197E">
-    <link rel="stylesheet" href="/proxstar/static/css/csh-material-bootstrap/dist/css/csh-material-bootstrap.css">
-    <link rel="stylesheet" href="/proxstar/static/css/styles.css">
-    <link rel="stylesheet" href="/proxstar/static/css/circle.css">
+    <link rel="stylesheet" href="/static/css/csh-material-bootstrap/dist/css/csh-material-bootstrap.css">
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <link rel="stylesheet" href="/static/css/circle.css">
     <link rel="manifest" href="/static/manifest.json">
 </head>
 <body>
@@ -22,28 +22,30 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a class="navbar-brand" href="/proxstar">Proxstar</a>
+                <a class="navbar-brand" href="/">Proxstar</a>
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li>
-                        <a href="/proxstar">
+                        <a href="/">
                             <span class="glyphicon glyphicon-th-list"></span>
                             VM List
                         </a>
                     </li>
                     <li>
-                        <a href="/proxstar/vm/create">
+                        <a href="/vm/create">
                             <span class="glyphicon glyphicon-plus-sign"></span>
                             Create VM
                         </a>
                     </li>
+                    {% if rtp %}
                     <li>
-                        <a href="/proxstar/limits">
+                        <a href="/limits">
                             <span class="glyphicon glyphicon-pencil"></span>
                             Usage Limits
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown navbar-user">
@@ -98,7 +100,7 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-<script src="/proxstar/static/js/script.js"></script>
+<script src="/static/js/script.js"></script>
 </body>
 </body>
 </html>

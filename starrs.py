@@ -34,6 +34,8 @@ def get_ip_for_mac(starrs, mac):
         c.execute("COMMIT")
     finally:
         c.close()
+    if not results:
+        return 'No IP'
     return results[0][3]
 
 

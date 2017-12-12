@@ -14,6 +14,8 @@ def connect_proxmox(host, user, password):
 
 
 def get_vms_for_user(proxmox, user):
+    if user not in get_pools(proxmox):
+        proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
     return proxmox.pools(user).get()['members']
 
 
@@ -96,7 +98,7 @@ def get_vm_disks(proxmox, vmid, config=None):
     for key, val in config.items():
         valid_disk_types = ['virtio', 'ide', 'sata', 'scsi']
         if any(disk_type in key for disk_type in valid_disk_types):
-            if 'cdrom' not in val:
+            if 'scsihw' not in key and 'cdrom' not in val:
                 disk_size = val.split(',')
                 if 'size' in disk_size[0]:
                     disk_size = disk_size[0].split('=')[1].rstrip('G')
