@@ -5,32 +5,47 @@ import subprocess
 from db import *
 from starrs import *
 from proxmox import *
+from werkzeug.contrib.cache import SimpleCache
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask import Flask, render_template, request, redirect, send_from_directory, session
 
 app = Flask(__name__)
-
 config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
-
 app.config.from_pyfile(config)
-
 app.config["GIT_REVISION"] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
-
 auth = OIDCAuthentication(
     app,
     issuer=app.config['OIDC_ISSUER'],
     client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
+cache = SimpleCache()
 
 
 @app.route("/")
+@app.route("/user/<string:user>")
 @auth.oidc_auth
-def list_vms():
-    user = session['userinfo']['preferred_username']
+def list_vms(user=None):
+    rtp_view = False
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    vms = get_vms_for_user(proxmox, user, rtp)
-    return render_template('list_vms.html', username=user, rtp=rtp, vms=vms)
+    if user and not rtp:
+        return '', 403
+    elif user and rtp:
+        vms = get_vms_for_user(proxmox, user)
+        rtp_view = user
+        user = session['userinfo']['preferred_username']
+    elif rtp:
+        user = session['userinfo']['preferred_username']
+        vms = cache.get('vms')
+        if vms is None:
+            vms = get_vms_for_rtp(proxmox)
+            cache.set('vms', vms, timeout=5 * 60)
+        rtp_view = True
+    else:
+        user = session['userinfo']['preferred_username']
+        vms = get_vms_for_user(proxmox, user)
+    return render_template(
+        'list_vms.html', username=user, rtp=rtp, rtp_view=rtp_view, vms=vms)
 
 
 @app.route("/isos")
@@ -227,7 +242,7 @@ def create():
     if request.method == 'GET':
         usage = get_user_usage(proxmox, user)
         limits = get_user_usage_limits(user)
-        percents = get_user_usage_percent(proxmox, usage, limits)
+        percents = get_user_usage_percent(proxmox, user, usage, limits)
         isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
         return render_template(
             'create.html',
@@ -302,6 +317,12 @@ def limits():
             'limits.html', username=user, rtp=rtp, user_limits=user_limits)
     else:
         return '', 403
+
+
+@app.route('/vm/<string:vmid>/rrd/<path:path>')
+@auth.oidc_auth
+def send_rrd(vmid, path):
+    return send_from_directory("rrd/{}".format(vmid), path)
 
 
 @app.route('/novnc/<path:path>')

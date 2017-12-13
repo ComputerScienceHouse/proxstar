@@ -584,18 +584,21 @@ $(".edit-limit").click(function(){
     cpu_text.innerHTML = 'CPU';
     options.append(cpu_text);
     var cpu = document.createElement('input');
+    cpu.type = 'number';
     cpu.defaultValue = cur_cpu;
     options.append(cpu);
     mem_text = document.createElement('p');
     mem_text.innerHTML = 'Memory (GB)';
     options.append(mem_text);
     var mem = document.createElement('input');
+    mem.type = 'number';
     mem.defaultValue = cur_mem;
     options.append(mem)
     disk_text = document.createElement('p');
     disk_text.innerHTML = 'Disk (GB)';
     options.append(disk_text);
     var disk = document.createElement('input');
+    disk.type = 'number';
     disk.defaultValue = cur_disk;
     options.append(disk)
     swal({

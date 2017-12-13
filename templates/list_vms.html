@@ -3,6 +3,15 @@
 
 <div class="container">
     <div class="row">
+        {% if rtp and rtp_view != True %}
+        <div class="col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <p>{{ rtp_view }}</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         {% if not vms %}
         <div class="col-md-12 col-sm-12">
             <div class="panel panel-default">
@@ -11,7 +20,7 @@
                 </div>
             </div>
         </div>
-        {% elif not rtp %}
+        {% elif rtp_view != True %}
             {% for vm in vms %}
                 <div class="col-md-3 col-sm-4 col-xs-6">
                     <div class="panel panel-default">
@@ -26,29 +35,58 @@
             {% endfor %}
         {% else %}
             {% for pool in vms %}
-                {% if pool[1] %}
-                <div class="col-md-12 col-sm-12">
+                <div class="col-md-3 col-sm-4 col-xs-6">
                     <div class="panel panel-default">
                         <div class="panel-heading">
-                            <h3 class="panel-title">{{ pool[0] }}</h3>
+                            <h3 class="panel-title">
+                                <a href="/user/{{ pool['user'] }}">
+                                    <p>{{ pool['user'] }}</p>
+                                </a>
+                            </h3>
                         </div>
                         <div class="panel-body">
-                            {% for vm in pool[1] %}
-                                <div class="col-md-3 col-sm-4 col-xs-6">
-                                    <div class="panel panel-default">
-                                        <div class="panel-body">
-                                            <a href="/vm/{{ vm['vmid'] }}">
-                                                <p>{{ vm['name'] }}</p>
-                                            </a>
-                                            <p>Status: {{ vm['status'] }}</p>
-                                        </div>
-                                    </div>
+                            <div class="profile">
+                                <img class="profile-img" src="https://profiles.csh.rit.edu/image/{{ pool['user'] }}" title="{{ pool['user'] }}">
+                            </div>
+                            <div class="resource-bar">
+                                <span class="glyphicon glyphicon-cog pull-left"></span>
+                                <div class="progress">
+                                    {% if pool['percents']['cpu'] <= 50 %}
+                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ pool['percents']['cpu'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['cpu'] }}%"></div>
+                                    {% elif pool['percents']['cpu'] <= 75 %}
+                                    <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ pool['percents']['cpu'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['cpu'] }}%"></div>
+                                    {% else %}
+                                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{ pool['percents']['cpu'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['cpu'] }}%"></div>
+                                    {% endif %}
                                 </div>
-                            {% endfor %}
+                            </div>
+                            <div class="resource-bar">
+                                <span class="glyphicon glyphicon-tasks pull-left"></span>
+                                <div class="progress">
+                                    {% if pool['percents']['mem'] <= 50 %}
+                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ pool['percents']['mem'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['mem'] }}%"></div>
+                                    {% elif pool['percents']['mem'] <= 75 %}
+                                    <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ pool['percents']['mem'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['mem'] }}%"></div>
+                                    {% else %}
+                                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{ pool['percents']['mem'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['mem'] }}%"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="resource-bar">
+                                <span class="glyphicon glyphicon-hdd pull-left"></span>
+                                <div class="progress">
+                                    {% if pool['percents']['disk'] <= 50 %}
+                                    <div class="progress-bar progress-bar-success" role="progressbar" aria-valuenow="{{ pool['percents']['disk'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['disk'] }}%"></div>
+                                    {% elif pool['percents']['disk'] <= 75 %}
+                                    <div class="progress-bar progress-bar-warning" role="progressbar" aria-valuenow="{{ pool['percents']['disk'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['disk'] }}%"></div>
+                                    {% else %}
+                                    <div class="progress-bar progress-bar-danger" role="progressbar" aria-valuenow="{{ pool['percents']['disk'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['disk'] }}%"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                {% endif %}
             {% endfor %}
         {% endif %}
     </div>

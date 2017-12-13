@@ -96,7 +96,11 @@
                         </dd>
                         <dt>Memory</dt>
                         <dd>
+                            {% if vm['config']['memory'] < 1024 %}
+                            {{ vm['config']['memory'] }}MB
+                            {% else %}
                             {{ vm['config']['memory'] // 1024 }}GB
+                            {% endif %}
                             {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
                             <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-mem="{{ vm['config']['memory'] // 1024 }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
@@ -115,6 +119,21 @@
                             </button>
                         </dd>
                     </dl>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">RRD Graphs</h3>
+                </div>
+                <div class="panel-body">
+                    <img class="rrd-graph" src="/vm/{{ vm['vmid'] }}/rrd/cpu.png">
+                    <img class="rrd-graph" src="/vm/{{ vm['vmid'] }}/rrd/mem.png">
+                    <img class="rrd-graph" src="/vm/{{ vm['vmid'] }}/rrd/netin.png">
+                    <img class="rrd-graph" src="/vm/{{ vm['vmid'] }}/rrd/netout.png">
+                    <img class="rrd-graph" src="/vm/{{ vm['vmid'] }}/rrd/diskread.png">
+                    <img class="rrd-graph" src="/vm/{{ vm['vmid'] }}/rrd/diskwrite.png">
                 </div>
             </div>
         </div>

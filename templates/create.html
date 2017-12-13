@@ -27,6 +27,7 @@
                     <div class="form-group">
                         <label for="mem">Memory</label>
                         <select name="mem" id="mem" class="form-control">
+                            <option value="512">512MB</option>
                             {% for i in range(1, limits['mem'] + 1) %}
                             <option value="{{ i  * 1024 }}">{{ i }}GB</option>
                             {% endfor %}

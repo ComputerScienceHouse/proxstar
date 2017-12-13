@@ -6,7 +6,8 @@ def connect_starrs():
     try:
         starrs = psycopg2.connect(
             "dbname='{}' user='{}' host='{}' password='{}'".format(
-                app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'], app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
+                app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
+                app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
     except:
         print("Unable to connect to STARRS database.")
         raise

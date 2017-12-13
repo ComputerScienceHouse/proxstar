@@ -1,40 +1,47 @@
 import time
-from flask import current_app as app
+from functools import lru_cache
 from proxmoxer import ProxmoxAPI
+from flask import current_app as app
 from db import *
 
 
 def connect_proxmox():
     try:
         proxmox = ProxmoxAPI(
-            app.config['PROXMOX_HOST'], user=app.config['PROXMOX_USER'], password=app.config['PROXMOX_PASS'], verify_ssl=False)
+            app.config['PROXMOX_HOST'],
+            user=app.config['PROXMOX_USER'],
+            password=app.config['PROXMOX_PASS'],
+            verify_ssl=False)
     except:
         print("Unable to connect to Proxmox!")
         raise
     return proxmox
 
 
-def get_vms_for_user(proxmox, user, rtp=False):
+def get_vms_for_user(proxmox, user):
     pools = get_pools(proxmox)
-    if not rtp:
-        if user not in pools:
-            proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
-        vms = proxmox.pools(user).get()['members']
-        for vm in vms:
-            if 'name' not in vm:
-                vms.remove(vm)
-        vms = sorted(vms, key=lambda k: k['name'])
-        return vms
-    else:
-        pool_vms = []
-        for pool in pools:
-            vms = proxmox.pools(pool).get()['members']
-            for vm in vms:
-                if 'name' not in vm:
-                    vms.remove(vm)
-            vms = sorted(vms, key=lambda k: k['name'])
-            pool_vms.append([pool, vms])
-        return pool_vms
+    if user not in pools:
+        proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
+    vms = proxmox.pools(user).get()['members']
+    for vm in vms:
+        if 'name' not in vm:
+            vms.remove(vm)
+    vms = sorted(vms, key=lambda k: k['name'])
+    return vms
+
+
+def get_vms_for_rtp(proxmox):
+    pools = get_pools(proxmox)
+    pool_vms = []
+    for pool in pools:
+        pool_dict = dict()
+        pool_dict['user'] = pool
+        pool_dict['usage'] = get_user_usage(proxmox, pool)
+        pool_dict['limits'] = get_user_usage_limits(pool)
+        pool_dict['percents'] = get_user_usage_percent(
+            proxmox, pool, pool_dict['usage'], pool_dict['limits'])
+        pool_vms.append(pool_dict)
+    return pool_vms
 
 
 def get_user_allowed_vms(proxmox, user):
@@ -102,10 +109,9 @@ def get_vm_disk_size(proxmox, vmid, config=None, name='virtio0'):
     if not config:
         config = get_vm_config(proxmox, vmid)
     disk_size = config[name].split(',')
-    if 'size' in disk_size[0]:
-        disk_size = disk_size[0].split('=')[1].rstrip('G')
-    else:
-        disk_size = disk_size[1].split('=')[1].rstrip('G')
+    for split in disk_size:
+        if 'size' in split:
+            disk_size = split.split('=')[1].rstrip('G')
     return disk_size
 
 
@@ -118,10 +124,9 @@ def get_vm_disks(proxmox, vmid, config=None):
         if any(disk_type in key for disk_type in valid_disk_types):
             if 'scsihw' not in key and 'cdrom' not in val:
                 disk_size = val.split(',')
-                if 'size' in disk_size[0]:
-                    disk_size = disk_size[0].split('=')[1].rstrip('G')
-                else:
-                    disk_size = disk_size[1].split('=')[1].rstrip('G')
+                for split in disk_size:
+                    if 'size' in split:
+                        disk_size = split.split('=')[1].rstrip('G')
                 disks.append([key, disk_size])
     disks = sorted(disks, key=lambda x: x[0])
     return disks
@@ -151,7 +156,7 @@ def get_user_usage(proxmox, user):
         if 'status' in vm:
             if vm['status'] == 'running' or vm['status'] == 'paused':
                 usage['cpu'] += int(config['cores'] * config.get('sockets', 1))
-                usage['mem'] += (int(config['memory']) // 1024)
+                usage['mem'] += (int(config['memory']) / 1024)
             for disk in get_vm_disks(proxmox, vm['vmid'], config):
                 usage['disk'] += int(disk[1])
     return usage
@@ -168,15 +173,18 @@ def check_user_usage(proxmox, user, vm_cpu, vm_mem, vm_disk):
         return 'exceeds_disk_limit'
 
 
-def get_user_usage_percent(proxmox, usage=None, limits=None):
+def get_user_usage_percent(proxmox, user, usage=None, limits=None):
     percents = dict()
     if not usage:
         usage = get_user_usage(proxmox, user)
     if not limits:
         limits = get_user_usage_limits(user)
-    percents['cpu'] = round(int(usage['cpu']) / int(limits['cpu']) * 100)
-    percents['mem'] = round(int(usage['mem']) / int(limits['mem']) * 100)
-    percents['disk'] = round(int(usage['disk']) / int(limits['disk']) * 100)
+    percents['cpu'] = round(usage['cpu'] / limits['cpu'] * 100)
+    percents['mem'] = round(usage['mem'] / limits['mem'] * 100)
+    percents['disk'] = round(usage['disk'] / limits['disk'] * 100)
+    for resource in percents:
+        if percents[resource] > 100:
+            percents[resource] = 100
     return percents
 
 
@@ -255,3 +263,9 @@ def get_pools(proxmox):
             pools.append(poolid)
     pools = sorted(pools)
     return pools
+
+
+def get_rrd_for_vm(proxmox, vmid, source, time):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    image = node.qemu(vmid).rrd.get(ds=source, timeframe=time)['image']
+    return image
