@@ -46,6 +46,16 @@
                             {% endfor %}
                         </select>
                     </div>
+                    {% if rtp %}
+                    <div class="form-group">
+                        <label for="user">User</label>
+                        <select name="user" id="user" class="form-control">
+                            {% for pool in pools %}
+                            <option value="{{ pool }}">{{ pool }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    {% endif %}
                     <button class="btn btn-success" id="create-vm" name="create" data-max_disk="{{ limits['disk'] - usage['disk'] }}">CREATE</button>
                     {% endif %}
                 </div>

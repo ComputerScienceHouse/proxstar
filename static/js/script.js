@@ -1,3 +1,7 @@
+$(document).ready(function(){
+    $('[data-toggle="tooltip"]').tooltip();
+});
+
 $("#delete-vm").click(function(){
     const vmname = $(this).data('vmname')
     swal({
@@ -388,6 +392,10 @@ $("#create-vm").click(function(){
     const mem = document.getElementById('mem').value
     const disk = document.getElementById('disk').value
     const iso = document.getElementById('iso').value
+    const user = document.getElementById('user')
+    if (user) {
+        const user_value = user.value
+    }
     const max_disk = $(this).data('max_disk')
     if (name && disk) {
         if (disk > max_disk) {
@@ -424,6 +432,9 @@ $("#create-vm").click(function(){
                             data.append('mem', mem);
                             data.append('disk', disk);
                             data.append('iso', iso);
+                            if (user) {
+                                data.append('user', user_value);
+                            }
                             fetch('/vm/create', {
                                 credentials: 'same-origin',
                                 method: 'post',

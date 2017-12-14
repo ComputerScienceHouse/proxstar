@@ -244,6 +244,7 @@ def create():
         limits = get_user_usage_limits(user)
         percents = get_user_usage_percent(proxmox, user, usage, limits)
         isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
+        pools = get_pools(proxmox)
         return render_template(
             'create.html',
             username=user,
@@ -251,7 +252,8 @@ def create():
             usage=usage,
             limits=limits,
             percents=percents,
-            isos=isos)
+            isos=isos,
+            pools=pools)
     elif request.method == 'POST':
         name = request.form['name']
         cores = request.form['cores']
@@ -260,7 +262,11 @@ def create():
         iso = request.form['iso']
         if iso != 'none':
             iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
-        usage_check = check_user_usage(proxmox, user, 0, 0, disk)
+        if not rtp:
+            usage_check = check_user_usage(proxmox, user, 0, 0, disk)
+        else:
+            usage_check = None
+            user = request.form['user']
         if usage_check:
             return usage_check
         else:
@@ -294,27 +300,6 @@ def reset_limits(user):
     if 'rtp' in session['userinfo']['groups']:
         delete_user_usage_limits(user)
         return '', 200
-    else:
-        return '', 403
-
-
-@app.route('/limits')
-@auth.oidc_auth
-def limits():
-    if 'rtp' in session['userinfo']['groups']:
-        user = session['userinfo']['preferred_username']
-        rtp = 'rtp' in session['userinfo']['groups']
-        proxmox = connect_proxmox()
-        pools = get_pools(proxmox)
-        pools = sorted(pools)
-        user_limits = []
-        for pool in pools:
-            if pool not in app.config['IGNORED_POOLS']:
-                limits = get_user_usage_limits(pool)
-                user_limits.append(
-                    [pool, limits['cpu'], limits['mem'], limits['disk']])
-        return render_template(
-            'limits.html', username=user, rtp=rtp, user_limits=user_limits)
     else:
         return '', 403
 
