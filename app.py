@@ -27,6 +27,7 @@ cache = SimpleCache()
 def list_vms(user=None):
     rtp_view = False
     rtp = 'rtp' in session['userinfo']['groups']
+    active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
     if user and not rtp:
         return '', 403
@@ -45,7 +46,12 @@ def list_vms(user=None):
         user = session['userinfo']['preferred_username']
         vms = get_vms_for_user(proxmox, user)
     return render_template(
-        'list_vms.html', username=user, rtp=rtp, rtp_view=rtp_view, vms=vms)
+        'list_vms.html',
+        username=user,
+        rtp=rtp,
+        active=active,
+        rtp_view=rtp_view,
+        vms=vms)
 
 
 @app.route("/isos")
@@ -299,6 +305,18 @@ def set_limits(user):
 def reset_limits(user):
     if 'rtp' in session['userinfo']['groups']:
         delete_user_usage_limits(user)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/user/<string:user>/delete', methods=['POST'])
+@auth.oidc_auth
+def delete_user(user):
+    if 'rtp' in session['userinfo']['groups']:
+        proxmox = connect_proxmox()
+        delete_user_pool(proxmox, user)
+        cache.delete('vms')
         return '', 200
     else:
         return '', 403

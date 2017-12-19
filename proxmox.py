@@ -36,6 +36,8 @@ def get_vms_for_rtp(proxmox):
     for pool in pools:
         pool_dict = dict()
         pool_dict['user'] = pool
+        pool_dict['vms'] = get_vms_for_user(proxmox, pool)
+        pool_dict['num_vms'] = len(pool_dict['vms'])
         pool_dict['usage'] = get_user_usage(proxmox, pool)
         pool_dict['limits'] = get_user_usage_limits(pool)
         pool_dict['percents'] = get_user_usage_percent(
@@ -269,3 +271,12 @@ def get_rrd_for_vm(proxmox, vmid, source, time):
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
     image = node.qemu(vmid).rrd.get(ds=source, timeframe=time)['image']
     return image
+
+
+def delete_user_pool(proxmox, pool):
+    proxmox.pools(pool).delete()
+    users = proxmox.access.users.get()
+    if any(user['userid'] == "{}@csh.rit.edu".format(pool) for user in users):
+        if 'rtp' not in proxmox.access.users(
+                "{}@csh.rit.edu".format(pool)).get()['groups']:
+            proxmox.access.users("{}@csh.rit.edu".format(pool)).delete()

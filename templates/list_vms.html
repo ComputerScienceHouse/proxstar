@@ -44,6 +44,7 @@
                                     {{ pool['user'] }}
                                 </a>
                             </h3>
+                            <span class="pull-right">{{ pool['num_vms'] }}</span>
                         </div>
                         <div class="panel-body">
                             <div class="resource-bar">
@@ -82,8 +83,11 @@
                                     {% endif %}
                                 </div>
                             </div>
-                            <button class="btn btn-info proxstar-limitbtn edit-limit" data-user="{{ pool['user'] }}" data-cpu="{{ pool['limits']['cpu'] }}" data-mem="{{ pool['limits']['mem'] }}" data-disk="{{ pool['limits']['disk'] }}">EDIT</button>
-                            <button class="btn btn-danger proxstar-limitbtn reset-limit" data-user="{{ pool['user'] }}">RESET</button>
+                            <button class="btn btn-info proxstar-poolbtn edit-limit" data-user="{{ pool['user'] }}" data-cpu="{{ pool['limits']['cpu'] }}" data-mem="{{ pool['limits']['mem'] }}" data-disk="{{ pool['limits']['disk'] }}">EDIT</button>
+                            <button class="btn btn-warning proxstar-poolbtn reset-limit" data-user="{{ pool['user'] }}">RESET</button>
+                            {% if not pool['vms'] %}
+                            <button class="btn btn-danger proxstar-poolbtn delete-user" data-user="{{ pool['user'] }}">DELETE</button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>

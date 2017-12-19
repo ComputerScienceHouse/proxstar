@@ -654,7 +654,7 @@ $(".edit-limit").click(function(){
                     }
                 });
             }).then(() => {
-                window.location = `/limits`;
+                window.location = "/";
             });
         }
     }).catch(err => {
@@ -692,10 +692,48 @@ $(".reset-limit").click(function(){
                     icon: "success",
                 });
             }).then(() => {
-                window.location = `/limits`;
+                window.location = "/";
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to reset the usage limits for ${user}. Please try again later.`, "error");
+                } else {
+                    swal.stopLoading();
+                    swal.close();
+                }
+            });
+        }
+    });
+});
+
+$(".delete-user").click(function(){
+    const user = $(this).data('user')
+    swal({
+        title: `Are you sure you want to delete the pool for ${user}?`,
+        icon: "warning",
+        buttons: {
+            cancel: true,
+            delete: {
+                text: "delete",
+                closeModal: false,
+                className: "swal-button--danger",
+            }
+        },
+        dangerMode: true,
+    })
+    .then((willDelete) => {
+        if (willDelete) {
+            fetch(`/user/${user}/delete`, {
+                credentials: 'same-origin',
+                method: 'post'
+            }).then((response) => {
+                return swal(`The pool for ${user} has been deleted!`, {
+                    icon: "success",
+                });
+            }).then(() => {
+                window.location = "/";
+            }).catch(err => {
+                if (err) {
+                    swal("Uh oh...", `Unable to delete the pool for ${user}. Please try again later.`, "error");
                 } else {
                     swal.stopLoading();
                     swal.close();

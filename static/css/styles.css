@@ -90,10 +90,9 @@ table, th, td {
     line-height: 1;
 }
 
-.proxstar-limitbtn {
-    padding-top: 0px;
-    padding-bottom: 0px;
-    width: 70px;
+.proxstar-poolbtn {
+    padding: 0;
+    width: 55px;
     height: 25px;
     margin-top: 10px;
 }

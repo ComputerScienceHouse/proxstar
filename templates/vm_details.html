@@ -20,10 +20,10 @@
                     <button class="btn btn-success proxstar-actionbtn" id="resume-vm" name="resume" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESUME</button>
                     {% endif %}
                     {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
-                    <button class="btn btn-info proxstar-actionbtn" id="shutdown-vm" name="shutdown" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SHUTDOWN</button>
                     {% if vm['qmpstatus'] == 'running' %}
                     <button class="btn btn-info proxstar-actionbtn" id="suspend-vm" name="suspend" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SUSPEND</button>
                     {% endif %}
+                    <button class="btn btn-info proxstar-actionbtn" id="shutdown-vm" name="shutdown" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SHUTDOWN</button>
                     <button class="btn btn-warning proxstar-actionbtn" id="stop-vm" name="stop" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">STOP</button>
                     <button class="btn btn-warning proxstar-actionbtn" id="reset-vm" name="reset" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESET</button>
                     {% endif %}
