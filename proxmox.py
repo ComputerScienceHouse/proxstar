@@ -3,6 +3,7 @@ from functools import lru_cache
 from proxmoxer import ProxmoxAPI
 from flask import current_app as app
 from db import *
+from ldapdb import *
 
 
 def connect_proxmox():
@@ -18,10 +19,20 @@ def connect_proxmox():
     return proxmox
 
 
+def create_user(proxmox, user):
+    if not is_rtp(user):
+        proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
+        users = proxmox.access.users.get()
+        username = "{}@csh.rit.edu".format(user)
+        proxmox.access.users.post(userid=username)
+        proxmox.access.acl.put(
+            path="/pool/{}".format(user), roles='PVEVMConsole', users=username)
+
+
 def get_vms_for_user(proxmox, user):
     pools = get_pools(proxmox)
     if user not in pools:
-        proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
+        create_user(proxmox, user)
     vms = proxmox.pools(user).get()['members']
     for vm in vms:
         if 'name' not in vm:
@@ -152,6 +163,8 @@ def get_user_usage(proxmox, user):
     usage['cpu'] = 0
     usage['mem'] = 0
     usage['disk'] = 0
+    if is_rtp(user):
+        return usage
     vms = get_vms_for_user(proxmox, user)
     for vm in vms:
         config = get_vm_config(proxmox, vm['vmid'])
@@ -204,8 +217,14 @@ def create_vm(proxmox, starrs, user, name, cores, memory, disk, iso):
         net0='virtio,bridge=vmbr0',
         pool=user,
         description='Managed by Proxstar')
-    time.sleep(3)
-    mac = get_vm_mac(proxmox, vmid)
+    retry = 0
+    while retry < 5:
+        try:
+            mac = get_vm_mac(proxmox, vmid)
+            break
+        except:
+            retry += 1
+            time.sleep(3)
     return vmid, mac
 
 

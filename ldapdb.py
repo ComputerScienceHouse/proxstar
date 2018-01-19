@@ -1,0 +1,24 @@
+from csh_ldap import CSHLDAP
+from flask import current_app as app
+
+
+def connect_ldap():
+    try:
+        ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
+               app.config['LDAP_BIND_PW'])
+    except:
+        print("Unable to connect to LDAP.")
+        raise
+    return ldap
+
+
+def is_rtp(user):
+    ldap = connect_ldap()
+    rtp_group = ldap.get_group('rtp')
+    return rtp_group.check_member(ldap.get_member(user, uid=True))
+
+
+def is_active(ldap, user):
+    ldap = connect_ldap()
+    rtp_group = ldap.get_group('active')
+    return rtp_group.check_member(ldap.get_member(user, uid=True))

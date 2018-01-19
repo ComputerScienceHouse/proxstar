@@ -20,6 +20,14 @@
                 </div>
             </div>
         </div>
+        {% elif vms == 'INACTIVE' %}
+        <div class="col-md-12 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <p>Only active members have access to create Proxmox VMs. If you believe this is an error, please contact an RTP.</p>
+                </div>
+            </div>
+        </div>
         {% elif rtp_view != True %}
             {% for vm in vms %}
                 <div class="col-md-3 col-sm-4 col-xs-6">

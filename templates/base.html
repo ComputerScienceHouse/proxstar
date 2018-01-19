@@ -27,6 +27,7 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
+                    {% if active %}
                     <li>
                         <a href="/">
                             <span class="glyphicon glyphicon-th-list"></span>
@@ -39,6 +40,7 @@
                             Create VM
                         </a>
                     </li>
+                    {% endif %}
                 </ul>
                 <ul class="nav navbar-nav navbar-right">
                     <li class="dropdown navbar-user">

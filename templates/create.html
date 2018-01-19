@@ -3,7 +3,11 @@
 
 <div class="container">
     <div class="row">
+        {% if rtp %}
+        <div class="col-md-12 col-sm-12">
+        {% else %}
         <div class="col-md-9 col-sm-12">
+        {% endif %}
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Create VM</h3>
@@ -13,11 +17,11 @@
                         <p>Before you can create any more VMs, you must first delete existing VMs until you have enough disk resources available.</p>
                     {% else %}
                     <div class="form-group">
-                        <label for="name">VM Name</label>
+                        <label for="name" class="pull-left">VM Name</label>
                         <input type="text" name="name" id="name" class="form-control">
                     </div>
                     <div class="form-group">
-                        <label for="cores">Cores</label>
+                        <label for="cores" class="pull-left">Cores</label>
                         <select name="cores" id="cores" class="form-control">
                             {% for i in range(1, limits['cpu'] + 1) %}
                             <option value="{{ i }}">{{ i }}</option>
@@ -25,7 +29,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="mem">Memory</label>
+                        <label for="mem" class="pull-left">Memory</label>
                         <select name="mem" id="mem" class="form-control">
                             <option value="512">512MB</option>
                             {% for i in range(1, limits['mem'] + 1) %}
@@ -34,11 +38,11 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="disk">Disk (GB)</label>
+                        <label for="disk" class="pull-left">Disk (GB)</label>
                         <input type="number" name="disk" id="disk" class="form-control" min="1" max="{{ limits['disk'] - usage['disk'] }}">
                     </div>
                     <div class="form-group">
-                        <label for="iso">ISO</label>
+                        <label for="iso" class="pull-left">ISO</label>
                         <select name="iso" id="iso" class="form-control">
                             <option value="none"></option>
                             {% for iso in isos %}
@@ -48,7 +52,7 @@
                     </div>
                     {% if rtp %}
                     <div class="form-group">
-                        <label for="user">User</label>
+                        <label for="user" class="pull-left">User</label>
                         <select name="user" id="user" class="form-control">
                             {% for pool in pools %}
                             <option value="{{ pool }}">{{ pool }}</option>
@@ -61,6 +65,7 @@
                 </div>
             </div>
         </div>
+        {% if not rtp %}
         <div class="col-md-3 col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
@@ -120,6 +125,7 @@
                 </div>
             </div>
         </div>
+        {% endif %}
     </div>
 </div>
 

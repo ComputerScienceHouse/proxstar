@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 from dateutil.relativedelta import relativedelta
+from ldapdb import *
 import datetime
 
 from db_init import VM_Expiration, Usage_Limit, Base
@@ -58,7 +59,11 @@ def get_expired_vms():
 
 def get_user_usage_limits(user):
     limits = dict()
-    if session.query(exists().where(Usage_Limit.id == user)).scalar():
+    if is_rtp(user):
+        limits['cpu'] = 1000
+        limits['mem'] = 1000
+        limits['disk'] = 100000
+    elif session.query(exists().where(Usage_Limit.id == user)).scalar():
         limits['cpu'] = session.query(Usage_Limit).filter(
             Usage_Limit.id == user).one().cpu
         limits['mem'] = session.query(Usage_Limit).filter(

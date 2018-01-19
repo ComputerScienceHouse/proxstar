@@ -29,3 +29,7 @@ STARRS_DB_USER = ''
 STARRS_DB_PASS = ''
 STARRS_USER = 'proxstar'
 STARRS_IP_RANGE = ''
+
+# LDAP
+LDAP_BIND_DN = ''
+LDAP_BIND_PW = ''

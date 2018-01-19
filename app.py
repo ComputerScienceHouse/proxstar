@@ -4,6 +4,7 @@ import psycopg2
 import subprocess
 from db import *
 from starrs import *
+from ldapdb import *
 from proxmox import *
 from werkzeug.contrib.cache import SimpleCache
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
@@ -45,6 +46,10 @@ def list_vms(user=None):
     else:
         user = session['userinfo']['preferred_username']
         vms = get_vms_for_user(proxmox, user)
+        if active:
+            vms = get_vms_for_user(proxmox, user)
+        else:
+            vms = 'INACTIVE'
     return render_template(
         'list_vms.html',
         username=user,
@@ -80,10 +85,10 @@ def hostname(name):
 def vm_details(vmid):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
+    active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
     starrs = connect_starrs()
-    if int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+    if 'rtp' in session['userinfo']['groups'] or int(vmid) in get_user_allowed_vms(proxmox, user):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
@@ -97,7 +102,7 @@ def vm_details(vmid):
                  get_ip_for_mac(starrs, interface[1])])
         vm['expire'] = get_vm_expire(
             vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
-        usage = get_user_usage(proxmox, 'proxstar')
+        usage = get_user_usage(proxmox, user)
         limits = get_user_usage_limits(user)
         usage_check = check_user_usage(proxmox, user, vm['config']['cores'],
                                        vm['config']['memory'], 0)
@@ -105,6 +110,7 @@ def vm_details(vmid):
             'vm_details.html',
             username=user,
             rtp=rtp,
+            active=active,
             vm=vm,
             usage=usage,
             limits=limits,
@@ -243,48 +249,55 @@ def delete(vmid):
 def create():
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
+    active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
     starrs = connect_starrs()
-    if request.method == 'GET':
-        usage = get_user_usage(proxmox, user)
-        limits = get_user_usage_limits(user)
-        percents = get_user_usage_percent(proxmox, user, usage, limits)
-        isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
-        pools = get_pools(proxmox)
-        return render_template(
-            'create.html',
-            username=user,
-            rtp=rtp,
-            usage=usage,
-            limits=limits,
-            percents=percents,
-            isos=isos,
-            pools=pools)
-    elif request.method == 'POST':
-        name = request.form['name']
-        cores = request.form['cores']
-        memory = request.form['mem']
-        disk = request.form['disk']
-        iso = request.form['iso']
-        if iso != 'none':
-            iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
-        if not rtp:
-            usage_check = check_user_usage(proxmox, user, 0, 0, disk)
-        else:
-            usage_check = None
-            user = request.form['user']
-        if usage_check:
-            return usage_check
-        else:
-            valid, available = check_hostname(starrs, name)
-            if valid and available:
-                vmid, mac = create_vm(proxmox, starrs, user, name, cores,
-                                      memory, disk, iso)
-                register_starrs(
-                    starrs, name, app.config['STARRS_USER'], mac,
-                    get_next_ip(starrs, app.config['STARRS_IP_RANGE'])[0][0])
-                get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
-                return vmid
+    if active:
+        if request.method == 'GET':
+            usage = get_user_usage(proxmox, user)
+            limits = get_user_usage_limits(user)
+            percents = get_user_usage_percent(proxmox, user, usage, limits)
+            isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
+            pools = get_pools(proxmox)
+            return render_template(
+                'create.html',
+                username=user,
+                rtp=rtp,
+                active=active,
+                usage=usage,
+                limits=limits,
+                percents=percents,
+                isos=isos,
+                pools=pools)
+        elif request.method == 'POST':
+            name = request.form['name']
+            cores = request.form['cores']
+            memory = request.form['mem']
+            disk = request.form['disk']
+            iso = request.form['iso']
+            if iso != 'none':
+                iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'],
+                                         iso)
+            if not rtp:
+                usage_check = check_user_usage(proxmox, user, 0, 0, disk)
+            else:
+                usage_check = None
+                user = request.form['user']
+            if usage_check:
+                return usage_check
+            else:
+                valid, available = check_hostname(starrs, name)
+                if valid and available:
+                    vmid, mac = create_vm(proxmox, starrs, user, name, cores,
+                                          memory, disk, iso)
+                    register_starrs(
+                        starrs, name, app.config['STARRS_USER'], mac,
+                        get_next_ip(starrs,
+                                    app.config['STARRS_IP_RANGE'])[0][0])
+                    get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
+                    return vmid
+    else:
+        return '', 403
 
 
 @app.route('/limits/<string:user>', methods=['POST'])

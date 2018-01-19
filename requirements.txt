@@ -4,3 +4,4 @@ proxmoxer
 psycopg2
 sqlalchemy
 python-dateutil
+csh_ldap
