@@ -5,3 +5,6 @@ psycopg2
 sqlalchemy
 python-dateutil
 csh_ldap
+rq
+rq-scheduler
+gunicorn

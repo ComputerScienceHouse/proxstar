@@ -24,7 +24,7 @@ $("#delete-vm").click(function(){
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
-                return swal(`${vmname} has been deleted!`, {
+                return swal(`${vmname} is now being deleted.`, {
                     icon: "success",
                 });
             }).then(() => {
@@ -440,9 +440,18 @@ $("#create-vm").click(function(){
                                 method: 'post',
                                 body: data
                             }).then((response) => {
-                                return response.text()
-                            }).then((vmid) => {
-                                window.location = `/vm/${vmid}`;
+                                return swal(`${name} is now being created. Check back soon and it should be good to go.`, {
+                                    icon: "success",
+                                    buttons: {
+                                        ok: {
+                                            text: "OK",
+                                            closeModal: true,
+                                            className: "",
+                                        }
+                                    }
+                                });
+                            }).then(() => {
+                                window.location = "/";
                             });
                         }
                     });

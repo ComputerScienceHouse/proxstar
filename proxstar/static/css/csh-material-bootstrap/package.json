@@ -1,0 +1,31 @@
+{
+  "name": "csh-material-bootstrap",
+  "description": "A material design Bootstrap theme for Computer Science House.",
+  "version": "1.0.0",
+  "author": "Computer Science House",
+  "homepage": "http://csh.rit.edu/",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ComputerScienceHouse/csh-material-bootstrap.git"
+  },
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "devDependencies": {
+    "autoprefixer": "^6.4.1",
+    "bower": "~1.2.8",
+    "css-mqpacker": "^5.0.1",
+    "cssnano": "^3.7.4",
+    "grunt": "~0.4.2",
+    "grunt-contrib-clean": "~0.5.0",
+    "grunt-contrib-concat": "~0.3.0",
+    "grunt-contrib-connect": "~0.8.0",
+    "grunt-contrib-copy": "^1.0.0",
+    "grunt-contrib-less": "~0.9.0",
+    "grunt-contrib-sass": "~0.7.4",
+    "grunt-contrib-watch": "~0.5.1",
+    "grunt-postcss": "^0.8.0",
+    "pixrem": "^3.0.2"
+  }
+}

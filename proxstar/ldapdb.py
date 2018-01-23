@@ -4,8 +4,7 @@ from flask import current_app as app
 
 def connect_ldap():
     try:
-        ldap = CSHLDAP(app.config['LDAP_BIND_DN'],
-               app.config['LDAP_BIND_PW'])
+        ldap = CSHLDAP(app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'])
     except:
         print("Unable to connect to LDAP.")
         raise

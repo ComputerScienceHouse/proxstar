@@ -1,10 +1,9 @@
+import datetime
 from sqlalchemy import create_engine, exists
 from sqlalchemy.orm import sessionmaker
 from dateutil.relativedelta import relativedelta
-from ldapdb import *
-import datetime
-
-from db_init import VM_Expiration, Usage_Limit, Base
+from proxstar.ldapdb import *
+from proxstar.db_init import VM_Expiration, Usage_Limit, Base
 
 engine = create_engine('sqlite:///proxstar.db')
 Base.metadata.bind = engine

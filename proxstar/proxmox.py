@@ -2,8 +2,8 @@ import time
 from functools import lru_cache
 from proxmoxer import ProxmoxAPI
 from flask import current_app as app
-from db import *
-from ldapdb import *
+from proxstar.db import *
+from proxstar.ldapdb import *
 
 
 def connect_proxmox():

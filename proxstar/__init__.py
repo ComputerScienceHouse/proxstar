@@ -1,17 +1,25 @@
 import os
 import time
-import psycopg2
 import subprocess
-from db import *
-from starrs import *
-from ldapdb import *
-from proxmox import *
+from rq import Queue
+from redis import Redis
 from werkzeug.contrib.cache import SimpleCache
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask import Flask, render_template, request, redirect, send_from_directory, session
+from proxstar.db import *
+from proxstar.tasks import *
+from proxstar.starrs import *
+from proxstar.ldapdb import *
+from proxstar.proxmox import *
+
+redis_conn = Redis()
+q = Queue(connection=redis_conn)
 
 app = Flask(__name__)
-config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
+if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")):
+    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")
+else:
+    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
 app.config.from_pyfile(config)
 app.config["GIT_REVISION"] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
@@ -21,11 +29,20 @@ auth = OIDCAuthentication(
     client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
 cache = SimpleCache()
 
+starrs = psycopg2.connect(
+    "dbname='{}' user='{}' host='{}' password='{}'".format(
+        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
+        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
+
 
 @app.route("/")
 @app.route("/user/<string:user>")
 @auth.oidc_auth
 def list_vms(user=None):
+    print(q.jobs)
+    for job_id in q.job_ids:
+        print(job_id)
+        print(q.fetch_job(job_id).result)
     rtp_view = False
     rtp = 'rtp' in session['userinfo']['groups']
     active = 'active' in session['userinfo']['groups']
@@ -88,7 +105,8 @@ def vm_details(vmid):
     active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
     starrs = connect_starrs()
-    if 'rtp' in session['userinfo']['groups'] or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if 'rtp' in session['userinfo']['groups'] or int(
+            vmid) in get_user_allowed_vms(proxmox, user):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
@@ -235,10 +253,7 @@ def delete(vmid):
     starrs = connect_starrs()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
-        vmname = get_vm_config(proxmox, vmid)['name']
-        delete_vm(proxmox, starrs, vmid)
-        delete_starrs(starrs, vmname)
-        delete_vm_expire(vmid)
+        q.enqueue(delete_vm_task, vmid)
         return '', 200
     else:
         return '', 403
@@ -288,14 +303,9 @@ def create():
             else:
                 valid, available = check_hostname(starrs, name)
                 if valid and available:
-                    vmid, mac = create_vm(proxmox, starrs, user, name, cores,
-                                          memory, disk, iso)
-                    register_starrs(
-                        starrs, name, app.config['STARRS_USER'], mac,
-                        get_next_ip(starrs,
-                                    app.config['STARRS_IP_RANGE'])[0][0])
-                    get_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
-                    return vmid
+                    q.enqueue(create_vm_task, user, name, cores, memory, disk,
+                              iso)
+            return '', 200
     else:
         return '', 403
 
