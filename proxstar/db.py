@@ -47,6 +47,16 @@ def get_expired_vms(db):
     return expired
 
 
+def get_expiring_vms(db):
+    expiring = []
+    today = datetime.date.today()
+    expire = db.query(VM_Expiration).filter(
+        (VM_Expiration.expire_date - today) <= 10).all()
+    for vm in expire:
+        expiring.append(vm.id)
+    return expiring
+
+
 def get_user_usage_limits(db, user):
     limits = dict()
     if is_rtp(user):

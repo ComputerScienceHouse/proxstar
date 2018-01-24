@@ -3,6 +3,7 @@ from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from proxstar.db import *
+from proxstar.mail import *
 from proxstar.starrs import *
 from proxstar.proxmox import *
 
@@ -68,3 +69,21 @@ def process_expired_vms_task():
     #        delete_vm(proxmox, starrs, vmid)
     #        delete_starrs(starrs, vmname)
     #        delete_vm_expire(vmid)
+
+
+def process_expiring_vms_task():
+    with app.app_context():
+        proxmox = connect_proxmox()
+        db = connect_db()
+        starrs = connect_starrs()
+        pools = get_pools(proxmox)
+        for pool in pools:
+            vms = get_vms_for_user(proxmox, pool)
+            for vm in vms:
+                vmid = vm['vmid']
+                expire = get_vm_expire(db, vmid,
+                                       app.config['VM_EXPIRE_MONTHS'])
+                days = (expire - datetime.date.today()).days
+                if days in [10, 7, 3, 1]:
+                    name = get_vm_config(proxmox, vmid)['name']
+                    send_vm_expire_email('com6056', name, days)

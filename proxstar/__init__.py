@@ -211,8 +211,8 @@ def vm_mem(vmid, mem):
 def vm_renew(vmid):
     user = session['userinfo']['preferred_username']
     proxmox = connect_proxmox()
-    if int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+    if 'rtp' in session['userinfo']['groups'] or int(
+            vmid) in get_user_allowed_vms(proxmox, user):
         renew_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
         for interface in get_vm_interfaces(proxmox, vmid):
             renew_ip(starrs, get_ip_for_mac(starrs, interface[1]))
