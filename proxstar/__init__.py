@@ -297,7 +297,7 @@ def create():
                 iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'],
                                          iso)
             if not rtp:
-                usage_check = check_user_usage(proxmox, user, 0, 0, disk)
+                usage_check = check_user_usage(proxmox, db, user, 0, 0, disk)
             else:
                 usage_check = None
                 user = request.form['user']
