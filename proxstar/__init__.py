@@ -14,7 +14,7 @@ from proxstar.starrs import *
 from proxstar.ldapdb import *
 from proxstar.proxmox import *
 
-redis_conn = Redis()
+redis_conn = Redis('redis', 6789)
 q = Queue(connection=redis_conn)
 
 app = Flask(__name__)
