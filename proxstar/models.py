@@ -1,7 +1,5 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Date
+from sqlalchemy import Column, Integer, String, Date
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship
-from sqlalchemy import create_engine
 
 Base = declarative_base()
 
@@ -18,8 +16,3 @@ class Usage_Limit(Base):
     cpu = Column(Integer, nullable=False)
     mem = Column(Integer, nullable=False)
     disk = Column(Integer, nullable=False)
-
-
-engine = create_engine('sqlite:///proxstar.db')
-
-Base.metadata.create_all(engine)

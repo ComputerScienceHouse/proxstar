@@ -1,7 +1,5 @@
 import time
-from functools import lru_cache
 from proxmoxer import ProxmoxAPI
-from flask import current_app as app
 from proxstar.db import *
 from proxstar.ldapdb import *
 
@@ -41,7 +39,7 @@ def get_vms_for_user(proxmox, user):
     return vms
 
 
-def get_vms_for_rtp(proxmox):
+def get_vms_for_rtp(proxmox, db):
     pools = get_pools(proxmox)
     pool_vms = []
     for pool in pools:
@@ -50,7 +48,7 @@ def get_vms_for_rtp(proxmox):
         pool_dict['vms'] = get_vms_for_user(proxmox, pool)
         pool_dict['num_vms'] = len(pool_dict['vms'])
         pool_dict['usage'] = get_user_usage(proxmox, pool)
-        pool_dict['limits'] = get_user_usage_limits(pool)
+        pool_dict['limits'] = get_user_usage_limits(db, pool)
         pool_dict['percents'] = get_user_usage_percent(
             proxmox, pool, pool_dict['usage'], pool_dict['limits'])
         pool_vms.append(pool_dict)
@@ -177,8 +175,8 @@ def get_user_usage(proxmox, user):
     return usage
 
 
-def check_user_usage(proxmox, user, vm_cpu, vm_mem, vm_disk):
-    limits = get_user_usage_limits(user)
+def check_user_usage(proxmox, db, user, vm_cpu, vm_mem, vm_disk):
+    limits = get_user_usage_limits(db, user)
     cur_usage = get_user_usage(proxmox, user)
     if int(cur_usage['cpu']) + int(vm_cpu) > int(limits['cpu']):
         return 'exceeds_cpu_limit'
@@ -203,7 +201,7 @@ def get_user_usage_percent(proxmox, user, usage=None, limits=None):
     return percents
 
 
-def create_vm(proxmox, starrs, user, name, cores, memory, disk, iso):
+def create_vm(proxmox, user, name, cores, memory, disk, iso):
     node = proxmox.nodes(get_node_least_mem(proxmox))
     vmid = get_free_vmid(proxmox)
     node.qemu.create(
@@ -228,7 +226,7 @@ def create_vm(proxmox, starrs, user, name, cores, memory, disk, iso):
     return vmid, mac
 
 
-def delete_vm(proxmox, starrs, vmid):
+def delete_vm(proxmox, vmid):
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
     node.qemu(vmid).delete()
 

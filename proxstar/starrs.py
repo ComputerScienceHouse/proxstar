@@ -2,18 +2,6 @@ import psycopg2
 from flask import current_app as app
 
 
-def connect_starrs():
-    try:
-        starrs = psycopg2.connect(
-            "dbname='{}' user='{}' host='{}' password='{}'".format(
-                app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-                app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
-    except:
-        print("Unable to connect to STARRS database.")
-        raise
-    return starrs
-
-
 def get_next_ip(starrs, range_name):
     c = starrs.cursor()
     try:

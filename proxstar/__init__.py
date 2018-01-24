@@ -3,6 +3,8 @@ import time
 import subprocess
 from rq import Queue
 from redis import Redis
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from werkzeug.contrib.cache import SimpleCache
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask import Flask, render_template, request, redirect, send_from_directory, session
@@ -16,8 +18,11 @@ redis_conn = Redis()
 q = Queue(connection=redis_conn)
 
 app = Flask(__name__)
-if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")):
-    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")
+if os.path.exists(
+        os.path.join(
+            app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")):
+    config = os.path.join(
+        app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
 app.config.from_pyfile(config)
@@ -29,6 +34,11 @@ auth = OIDCAuthentication(
     client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
 cache = SimpleCache()
 
+engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+Base.metadata.bind = engine
+DBSession = sessionmaker(bind=engine)
+db = DBSession()
+
 starrs = psycopg2.connect(
     "dbname='{}' user='{}' host='{}' password='{}'".format(
         app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
@@ -39,10 +49,6 @@ starrs = psycopg2.connect(
 @app.route("/user/<string:user>")
 @auth.oidc_auth
 def list_vms(user=None):
-    print(q.jobs)
-    for job_id in q.job_ids:
-        print(job_id)
-        print(q.fetch_job(job_id).result)
     rtp_view = False
     rtp = 'rtp' in session['userinfo']['groups']
     active = 'active' in session['userinfo']['groups']
@@ -57,7 +63,7 @@ def list_vms(user=None):
         user = session['userinfo']['preferred_username']
         vms = cache.get('vms')
         if vms is None:
-            vms = get_vms_for_rtp(proxmox)
+            vms = get_vms_for_rtp(proxmox, db)
             cache.set('vms', vms, timeout=5 * 60)
         rtp_view = True
     else:
@@ -87,7 +93,6 @@ def isos():
 @app.route("/hostname/<string:name>")
 @auth.oidc_auth
 def hostname(name):
-    starrs = connect_starrs()
     valid, available = check_hostname(starrs, name)
     if not valid:
         return 'invalid'
@@ -104,7 +109,6 @@ def vm_details(vmid):
     rtp = 'rtp' in session['userinfo']['groups']
     active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    starrs = connect_starrs()
     if 'rtp' in session['userinfo']['groups'] or int(
             vmid) in get_user_allowed_vms(proxmox, user):
         vm = get_vm(proxmox, vmid)
@@ -119,10 +123,11 @@ def vm_details(vmid):
                 [interface[0],
                  get_ip_for_mac(starrs, interface[1])])
         vm['expire'] = get_vm_expire(
-            vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
+            db, vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
         usage = get_user_usage(proxmox, user)
-        limits = get_user_usage_limits(user)
-        usage_check = check_user_usage(proxmox, user, vm['config']['cores'],
+        limits = get_user_usage_limits(db, user)
+        usage_check = check_user_usage(proxmox, db, user,
+                                       vm['config']['cores'],
                                        vm['config']['memory'], 0)
         return render_template(
             'vm_details.html',
@@ -207,7 +212,6 @@ def vm_mem(vmid, mem):
 def vm_renew(vmid):
     user = session['userinfo']['preferred_username']
     proxmox = connect_proxmox()
-    starrs = connect_starrs()
     if int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         renew_vm_expire(vmid, app.config['VM_EXPIRE_MONTHS'])
@@ -249,9 +253,9 @@ def iso_mount(vmid, iso):
 @auth.oidc_auth
 def delete(vmid):
     user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    starrs = connect_starrs()
-    if int(vmid) in get_user_allowed_vms(
+    if rtp or int(vmid) in get_user_allowed_vms(
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         q.enqueue(delete_vm_task, vmid)
         return '', 200
@@ -266,11 +270,10 @@ def create():
     rtp = 'rtp' in session['userinfo']['groups']
     active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    starrs = connect_starrs()
     if active:
         if request.method == 'GET':
             usage = get_user_usage(proxmox, user)
-            limits = get_user_usage_limits(user)
+            limits = get_user_usage_limits(db, user)
             percents = get_user_usage_percent(proxmox, user, usage, limits)
             isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
             pools = get_pools(proxmox)

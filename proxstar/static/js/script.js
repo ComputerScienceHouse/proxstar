@@ -393,9 +393,6 @@ $("#create-vm").click(function(){
     const disk = document.getElementById('disk').value
     const iso = document.getElementById('iso').value
     const user = document.getElementById('user')
-    if (user) {
-        const user_value = user.value
-    }
     const max_disk = $(this).data('max_disk')
     if (name && disk) {
         if (disk > max_disk) {
@@ -433,7 +430,7 @@ $("#create-vm").click(function(){
                             data.append('disk', disk);
                             data.append('iso', iso);
                             if (user) {
-                                data.append('user', user_value);
+                                data.append('user', user.value);
                             }
                             fetch('/vm/create', {
                                 credentials: 'same-origin',
@@ -640,9 +637,6 @@ $(".edit-limit").click(function(){
     })
     .then((willChange) => {
         if (willChange) {
-            console.log($(cpu).val());
-            console.log($(mem).val());
-            console.log($(disk).val());
             var data  = new FormData();
             data.append('cpu', $(cpu).val());
             data.append('mem', $(mem).val());

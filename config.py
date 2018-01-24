@@ -2,7 +2,10 @@ from os import environ
 
 # Proxstar
 VM_EXPIRE_MONTHS = int(environ.get('PROXSTAR_VM_EXPIRE_MONTHS', '3'))
-IGNORED_POOLS = [pool.strip() for pool in environ.get('PROXSTAR_IGNORED_POOLS', '').split(',')]
+IGNORED_POOLS = [
+    pool.strip()
+    for pool in environ.get('PROXSTAR_IGNORED_POOLS', '').split(',')
+]
 
 # Flask
 IP = environ.get('PROXSTAR_IP', '0.0.0.0')
@@ -11,11 +14,17 @@ SERVER_NAME = environ.get('PROXSTAR_SERVER_NAME', 'proxstar.csh.rit.edu')
 SECRET_KEY = environ.get('PROXSTAR_SECRET_KEY', '')
 
 # OIDC
-OIDC_ISSUER = environ.get('PROXSTAR_OIDC_ISSUER', 'https://sso.csh.rit.edu/auth/realms/csh')
+OIDC_ISSUER = environ.get('PROXSTAR_OIDC_ISSUER',
+                          'https://sso.csh.rit.edu/auth/realms/csh')
 OIDC_CLIENT_CONFIG = {
-    'client_id': environ.get('PROXSTAR_CLIENT_ID', 'proxstar'),
-    'client_secret': environ.get('PROXSTAR_CLIENT_SECRET', ''),
-    'post_logout_redirect_uris': [environ.get('PROXSTAR_REDIRECT_URI', 'https://proxstar.csh.rit.edu/logout')]
+    'client_id':
+    environ.get('PROXSTAR_CLIENT_ID', 'proxstar'),
+    'client_secret':
+    environ.get('PROXSTAR_CLIENT_SECRET', ''),
+    'post_logout_redirect_uris': [
+        environ.get('PROXSTAR_REDIRECT_URI',
+                    'https://proxstar.csh.rit.edu/logout')
+    ]
 }
 
 # Proxmox
