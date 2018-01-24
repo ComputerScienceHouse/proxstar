@@ -8,3 +8,4 @@ csh_ldap
 rq
 rq-scheduler
 gunicorn
+raven
