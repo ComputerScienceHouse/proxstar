@@ -48,10 +48,8 @@ def check_hostname(starrs, hostname):
     try:
         c.execute("BEGIN")
         c.callproc("api.initialize", ('root', ))
-        c.callproc("api.validate_name", (hostname, ))
-        valid = False
-        if hostname == c.fetchall()[0][0]:
-            valid = True
+        c.callproc("api.validate_domain", (hostname, 'csh.rit.edu'))
+        valid = c.fetchall()[0][0]
         c.execute("COMMIT")
         c.execute("BEGIN")
         c.callproc("api.initialize", ('root', ))
