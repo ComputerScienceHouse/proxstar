@@ -28,7 +28,7 @@ OIDC_CLIENT_CONFIG = {
 }
 
 # Proxmox
-PROXMOX_HOST = environ.get('PROXSTAR_PROXMOX_HOST', 'proxmox01.csh.rit.edu')
+PROXMOX_HOST = environ.get('PROXSTAR_PROXMOX_HOST', '')
 PROXMOX_USER = environ.get('PROXSTAR_PROXMOX_USER', '')
 PROXMOX_PASS = environ.get('PROXSTAR_PROXMOX_PASS', '')
 PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'nfs-iso')
@@ -44,3 +44,6 @@ STARRS_IP_RANGE = environ.get('PROXSTAR_IP_RANGE', '')
 # LDAP
 LDAP_BIND_DN = environ.get('PROXSTAR_LDAP_BIND_DN', '')
 LDAP_BIND_PW = environ.get('PROXSTAR_LDAP_BIND_PW', '')
+
+# DB
+SQLALCHEMY_DATABASE_URI = environ.get('PROXSTAR_SQLALCHEMY_DATABASE_URI', '')
