@@ -68,7 +68,6 @@ def list_vms(user=None):
         rtp_view = True
     else:
         user = session['userinfo']['preferred_username']
-        vms = get_vms_for_user(proxmox, user)
         if active:
             vms = get_vms_for_user(proxmox, user)
         else:
