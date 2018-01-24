@@ -14,9 +14,6 @@ from proxstar.starrs import *
 from proxstar.ldapdb import *
 from proxstar.proxmox import *
 
-redis_conn = Redis('redis', 6789)
-q = Queue(connection=redis_conn)
-
 app = Flask(__name__)
 if os.path.exists(
         os.path.join(
@@ -33,6 +30,9 @@ auth = OIDCAuthentication(
     issuer=app.config['OIDC_ISSUER'],
     client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
 cache = SimpleCache()
+
+redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
+q = Queue(connection=redis_conn)
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 Base.metadata.bind = engine
