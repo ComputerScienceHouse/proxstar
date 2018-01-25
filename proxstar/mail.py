@@ -18,13 +18,14 @@ def send_email(toaddr, subject, body):
     server.quit()
 
 
-def send_vm_expire_email(user, name, days):
+def send_vm_expire_email(user, vms):
     toaddr = "{}@csh.rit.edu".format(user)
     subject = 'Proxstar VM Expiration Notice'
-    if days != 1:
-        body = "{} is expiring in {} days. If you would like to keep this VM, please log into Proxstar and renew it.".format(
-            name, days)
-    else:
-        body = "{} is expiring in {} day. If you would like to keep this VM, please log into Proxstar and renew it.".format(
-            name, days)
+    body = "The following VMs in Proxstar are expiring soon:\n\n"
+    for vm in vms:
+        if vm[1] != 1:
+            body += "    - {} in {} days\n".format(vm[0], vm[1])
+        else:
+            body += "    - {} in {} day\n".format(vm[0], vm[1])
+    body += "\nPlease login to Proxstar and renew any VMs you would like to keep."
     send_email(toaddr, subject, body)

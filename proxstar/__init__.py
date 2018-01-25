@@ -150,7 +150,7 @@ def vm_power(vmid, action):
             proxmox, user) or 'rtp' in session['userinfo']['groups']:
         if action == 'start':
             config = get_vm_config(proxmox, vmid)
-            usage_check = check_user_usage(proxmox, user, config['cores'],
+            usage_check = check_user_usage(proxmox, db, user, config['cores'],
                                            config['memory'], 0)
             if usage_check:
                 return usage_check

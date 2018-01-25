@@ -78,6 +78,7 @@ def process_expiring_vms_task():
         starrs = connect_starrs()
         pools = get_pools(proxmox)
         for pool in pools:
+            expiring_vms = []
             vms = get_vms_for_user(proxmox, pool)
             for vm in vms:
                 vmid = vm['vmid']
@@ -86,4 +87,6 @@ def process_expiring_vms_task():
                 days = (expire - datetime.date.today()).days
                 if days in [10, 7, 3, 1]:
                     name = get_vm_config(proxmox, vmid)['name']
-                    send_vm_expire_email('com6056', name, days)
+                    expiring_vms.append([name, days])
+            if expiring_vms:
+                send_vm_expire_email('com6056', expiring_vms)
