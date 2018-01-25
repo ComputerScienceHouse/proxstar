@@ -3,6 +3,7 @@ import time
 import subprocess
 from rq import Queue
 from redis import Redis
+from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from werkzeug.contrib.cache import SimpleCache
@@ -33,6 +34,7 @@ cache = SimpleCache()
 
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
 q = Queue(connection=redis_conn)
+scheduler = Scheduler(connection=redis_conn)
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 Base.metadata.bind = engine
@@ -188,8 +190,8 @@ def vm_cpu(vmid, cores):
 def vm_mem(vmid, mem):
     user = session['userinfo']['preferred_username']
     proxmox = connect_proxmox()
-    if int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+    if 'rtp' in session['userinfo']['groups'] or int(
+            vmid) in get_user_allowed_vms(proxmox, user):
         cur_mem = get_vm_config(proxmox, vmid)['memory'] // 1024
         if mem >= cur_mem:
             status = get_vm(proxmox, vmid)['qmpstatus']
