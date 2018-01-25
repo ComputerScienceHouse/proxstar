@@ -110,8 +110,7 @@ def vm_details(vmid):
     rtp = 'rtp' in session['userinfo']['groups']
     active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if 'rtp' in session['userinfo']['groups'] or int(
-            vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
@@ -147,9 +146,9 @@ def vm_details(vmid):
 @auth.oidc_auth
 def vm_power(vmid, action):
     user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
         if action == 'start':
             config = get_vm_config(proxmox, vmid)
             usage_check = check_user_usage(proxmox, db, user, config['cores'],
@@ -166,17 +165,17 @@ def vm_power(vmid, action):
 @auth.oidc_auth
 def vm_cpu(vmid, cores):
     user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
         cur_cores = get_vm_config(proxmox, vmid)['cores']
         if cores >= cur_cores:
             status = get_vm(proxmox, vmid)['qmpstatus']
             if status == 'running' or status == 'paused':
-                usage_check = check_user_usage(proxmox, user,
+                usage_check = check_user_usage(proxmox, db, user,
                                                cores - cur_cores, 0, 0)
             else:
-                usage_check = check_user_usage(proxmox, user, cores, 0, 0)
+                usage_check = check_user_usage(proxmox, db, user, cores, 0, 0)
             if usage_check:
                 return usage_check
         change_vm_cpu(proxmox, vmid, cores)
@@ -189,17 +188,17 @@ def vm_cpu(vmid, cores):
 @auth.oidc_auth
 def vm_mem(vmid, mem):
     user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if 'rtp' in session['userinfo']['groups'] or int(
-            vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
         cur_mem = get_vm_config(proxmox, vmid)['memory'] // 1024
         if mem >= cur_mem:
             status = get_vm(proxmox, vmid)['qmpstatus']
             if status == 'running' or status == 'paused':
-                usage_check = check_user_usage(proxmox, user, 0, mem - cur_mem,
-                                               0)
+                usage_check = check_user_usage(proxmox, db, user, 0,
+                                               mem - cur_mem, 0)
             else:
-                usage_check = check_user_usage(proxmox, user, 0, mem, 0)
+                usage_check = check_user_usage(proxmox, db, user, 0, mem, 0)
             if usage_check:
                 return usage_check
         change_vm_mem(proxmox, vmid, mem * 1024)
@@ -212,9 +211,9 @@ def vm_mem(vmid, mem):
 @auth.oidc_auth
 def vm_renew(vmid):
     user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if 'rtp' in session['userinfo']['groups'] or int(
-            vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
         renew_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         for interface in get_vm_interfaces(proxmox, vmid):
             renew_ip(starrs, get_ip_for_mac(starrs, interface[1]))
@@ -227,9 +226,9 @@ def vm_renew(vmid):
 @auth.oidc_auth
 def iso_eject(vmid):
     user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
         eject_vm_iso(proxmox, vmid)
         return '', 200
     else:
@@ -240,9 +239,9 @@ def iso_eject(vmid):
 @auth.oidc_auth
 def iso_mount(vmid, iso):
     user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
         iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
         mount_vm_iso(proxmox, vmid, iso)
         return '', 200
