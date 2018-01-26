@@ -85,9 +85,12 @@ def process_expiring_vms_task():
                 expire = get_vm_expire(db, vmid,
                                        app.config['VM_EXPIRE_MONTHS'])
                 days = (expire - datetime.date.today()).days
-                if days in [10, 7, 3, 1]:
+                if days in [10, 7, 3, 1, 0]:
                     name = get_vm_config(proxmox, vmid)['name']
                     expiring_vms.append([name, days])
+                    if days == 0:
+                        #change_vm_power(proxmox, vmid, 'stop')
+                        pass
             if expiring_vms:
                 send_vm_expire_email('com6056', expiring_vms)
 
