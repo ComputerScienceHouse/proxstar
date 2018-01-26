@@ -46,6 +46,17 @@ starrs = psycopg2.connect(
         app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
         app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
 
+if 'generate_pool_cache' not in scheduler:
+    scheduler.schedule(
+        id='generate_pool_cache',
+        scheduled_time=datetime.datetime.utcnow(),
+        func=generate_pool_cache_task,
+        interval=60)
+
+if 'process_expiring_vms' not in scheduler:
+    scheduler.cron(
+        '0 0 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
+
 
 @app.route("/")
 @app.route("/user/<string:user>")
@@ -63,10 +74,7 @@ def list_vms(user=None):
         user = session['userinfo']['preferred_username']
     elif rtp:
         user = session['userinfo']['preferred_username']
-        vms = cache.get('vms')
-        if vms is None:
-            vms = get_vms_for_rtp(proxmox, db)
-            cache.set('vms', vms, timeout=5 * 60)
+        vms = get_pool_cache(db)
         rtp_view = True
     else:
         user = session['userinfo']['preferred_username']

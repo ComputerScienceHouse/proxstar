@@ -40,9 +40,8 @@ def get_vms_for_user(proxmox, user):
 
 
 def get_vms_for_rtp(proxmox, db):
-    pools = get_pools(proxmox)
-    pool_vms = []
-    for pool in pools:
+    pools = []
+    for pool in get_pools(proxmox):
         pool_dict = dict()
         pool_dict['user'] = pool
         pool_dict['vms'] = get_vms_for_user(proxmox, pool)
@@ -51,8 +50,8 @@ def get_vms_for_rtp(proxmox, db):
         pool_dict['limits'] = get_user_usage_limits(db, pool)
         pool_dict['percents'] = get_user_usage_percent(
             proxmox, pool, pool_dict['usage'], pool_dict['limits'])
-        pool_vms.append(pool_dict)
-    return pool_vms
+        pools.append(pool_dict)
+    return pools
 
 
 def get_user_allowed_vms(proxmox, user):

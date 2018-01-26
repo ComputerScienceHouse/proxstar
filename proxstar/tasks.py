@@ -90,3 +90,11 @@ def process_expiring_vms_task():
                     expiring_vms.append([name, days])
             if expiring_vms:
                 send_vm_expire_email('com6056', expiring_vms)
+
+
+def generate_pool_cache_task():
+    with app.app_context():
+        proxmox = connect_proxmox()
+        db = connect_db()
+        pools = get_vms_for_rtp(proxmox, db)
+        store_pool_cache(db, pools)

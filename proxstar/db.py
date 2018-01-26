@@ -2,7 +2,7 @@ import datetime
 from sqlalchemy import exists
 from dateutil.relativedelta import relativedelta
 from proxstar.ldapdb import *
-from proxstar.models import VM_Expiration, Usage_Limit, Base
+from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Base
 
 
 def get_vm_expire(db, vmid, months):
@@ -95,3 +95,32 @@ def delete_user_usage_limits(db, user):
         limits = db.query(Usage_Limit).filter(Usage_Limit.id == user).one()
         db.delete(limits)
         db.commit()
+
+
+def store_pool_cache(db, pools):
+    db.query(Pool_Cache).delete()
+    for pool in pools:
+        pool_entry = Pool_Cache(
+            pool=pool['user'],
+            vms=pool['vms'],
+            num_vms=pool['num_vms'],
+            usage=pool['usage'],
+            limits=pool['limits'],
+            percents=pool['percents'])
+        db.add(pool_entry)
+    db.commit()
+
+
+def get_pool_cache(db):
+    db_pools = db.query(Pool_Cache).all()
+    pools = []
+    for pool in db_pools:
+        pool_dict = dict()
+        pool_dict['user'] = pool.pool
+        pool_dict['vms'] = pool.vms
+        pool_dict['num_vms'] = pool.num_vms
+        pool_dict['usage'] = pool.usage
+        pool_dict['limits'] = pool.limits
+        pool_dict['percents'] = pool.percents
+        pools.append(pool_dict)
+    return pools
