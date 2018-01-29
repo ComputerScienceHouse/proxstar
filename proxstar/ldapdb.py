@@ -21,3 +21,12 @@ def is_active(user):
     ldap = connect_ldap()
     rtp_group = ldap.get_group('active')
     return rtp_group.check_member(ldap.get_member(user, uid=True))
+
+
+def is_user(user):
+    ldap = connect_ldap()
+    try:
+        rtp_group = ldap.get_member(user, uid=True)
+        return True
+    except:
+        return False

@@ -9,3 +9,4 @@ rq
 rq-scheduler
 gunicorn
 raven
+paramiko

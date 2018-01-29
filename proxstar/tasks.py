@@ -1,4 +1,5 @@
 import os
+import paramiko
 from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -101,3 +102,11 @@ def generate_pool_cache_task():
         db = connect_db()
         pools = get_vms_for_rtp(proxmox, db)
         store_pool_cache(db, pools)
+
+
+def setup_template(hostname):
+    with app.app_context():
+        db = connect_db()
+        client = paramiko.SSHClient()
+        client.connect('ssh.example.com', username='root', password='todo')
+        stdin, stdout, stderr = client.exec_command('ls')

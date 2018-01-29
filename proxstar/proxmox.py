@@ -277,7 +277,7 @@ def get_pools(proxmox):
     pools = []
     for pool in proxmox.pools.get():
         poolid = pool['poolid']
-        if poolid not in app.config['IGNORED_POOLS']:
+        if is_user(poolid):
             pools.append(poolid)
     pools = sorted(pools)
     return pools

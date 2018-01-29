@@ -2,10 +2,6 @@ from os import environ
 
 # Proxstar
 VM_EXPIRE_MONTHS = int(environ.get('PROXSTAR_VM_EXPIRE_MONTHS', '3'))
-IGNORED_POOLS = [
-    pool.strip()
-    for pool in environ.get('PROXSTAR_IGNORED_POOLS', '').split(',')
-]
 
 # Flask
 IP = environ.get('PROXSTAR_IP', '0.0.0.0')
