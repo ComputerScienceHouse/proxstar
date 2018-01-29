@@ -229,7 +229,7 @@
   height: 1em;
   border-radius: 50%;
   float: none;
-  margin: 0 0.1em 0.1em 0;
+  margin: 0 auto 0.1em auto;
   background-color: #cccccc;
 }
 .c100 *,

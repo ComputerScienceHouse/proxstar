@@ -73,7 +73,7 @@
                 </div>
                 <div class="panel-body">
                     <div class="resource-usage">
-                        <div>
+                        <div class="col-md-12 col-sm-4">
                             CPU Cores
                             {% if percents['cpu'] <= 50 %}
                             <div class="c100 p{{ percents['cpu'] }} green">
@@ -89,7 +89,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div>
+                        <div class="col-md-12 col-sm-4">
                             Memory (GB)
                             {% if percents['mem'] <= 50 %}
                             <div class="c100 p{{ percents['mem'] }} green">
@@ -105,7 +105,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div>
+                        <div class="col-md-12 col-sm-4">
                             Disk (GB)
                             {% if percents['disk'] <= 50 %}
                             <div class="c100 p{{ percents['disk'] }} green">
