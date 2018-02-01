@@ -277,7 +277,7 @@ def get_pools(proxmox):
     pools = []
     for pool in proxmox.pools.get():
         poolid = pool['poolid']
-        if is_user(poolid):
+        if is_user(poolid) and poolid != 'rtp':
             pools.append(poolid)
     pools = sorted(pools)
     return pools
