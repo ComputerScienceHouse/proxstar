@@ -12,7 +12,7 @@ def get_next_ip(starrs, range_name):
         c.execute("COMMIT")
     finally:
         c.close()
-    return results
+    return results[0][0]
 
 
 def get_ip_for_mac(starrs, mac):

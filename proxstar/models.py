@@ -28,3 +28,10 @@ class Pool_Cache(Base):
     usage = Column(JSON, nullable=False)
     limits = Column(JSON, nullable=False)
     percents = Column(JSON, nullable=False)
+
+
+class Template(Base):
+    __tablename__ = 'template'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(32), nullable=False)
+    desc = Column(Text)

@@ -92,7 +92,6 @@
                                 </div>
                             </div>
                             <button class="btn btn-info proxstar-poolbtn edit-limit" data-user="{{ pool['user'] }}" data-cpu="{{ pool['limits']['cpu'] }}" data-mem="{{ pool['limits']['mem'] }}" data-disk="{{ pool['limits']['disk'] }}">EDIT</button>
-                            <button class="btn btn-warning proxstar-poolbtn reset-limit" data-user="{{ pool['user'] }}">RESET</button>
                             {% if not pool['vms'] %}
                             <button class="btn btn-danger proxstar-poolbtn delete-user" data-user="{{ pool['user'] }}">DELETE</button>
                             {% endif %}

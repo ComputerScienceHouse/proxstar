@@ -26,10 +26,19 @@ else:
 app.config.from_pyfile(config)
 app.config["GIT_REVISION"] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
-auth = OIDCAuthentication(
-    app,
-    issuer=app.config['OIDC_ISSUER'],
-    client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
+
+retry = 0
+while retry < 5:
+    try:
+        auth = OIDCAuthentication(
+            app,
+            issuer=app.config['OIDC_ISSUER'],
+            client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
+        break
+    except:
+        retry += 1
+        time.sleep(2)
+
 cache = SimpleCache()
 
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
@@ -334,16 +343,6 @@ def set_limits(user):
         return '', 403
 
 
-@app.route('/limits/<string:user>/reset', methods=['POST'])
-@auth.oidc_auth
-def reset_limits(user):
-    if 'rtp' in session['userinfo']['groups']:
-        delete_user_usage_limits(user)
-        return '', 200
-    else:
-        return '', 403
-
-
 @app.route('/user/<string:user>/delete', methods=['POST'])
 @auth.oidc_auth
 def delete_user(user):
@@ -375,4 +374,4 @@ def logout():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run()

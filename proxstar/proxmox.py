@@ -296,3 +296,25 @@ def delete_user_pool(proxmox, pool):
         if 'rtp' not in proxmox.access.users(
                 "{}@csh.rit.edu".format(pool)).get()['groups']:
             proxmox.access.users("{}@csh.rit.edu".format(pool)).delete()
+
+
+def clone_vm(proxmox, template_id, name, pool):
+    node = proxmox.nodes(get_vm_node(proxmox, template_id))
+    newid = get_free_vmid(proxmox)
+    target = get_node_least_mem(proxmox)
+    node.qemu(template_id).clone.post(
+        newid=newid,
+        name=name,
+        pool=pool,
+        full=1,
+        description='Managed by Proxstar',
+        target=target)
+    retry = 0
+    while retry < 60:
+        try:
+            mac = get_vm_mac(proxmox, newid)
+            break
+        except:
+            retry += 1
+            time.sleep(3)
+    return newid, mac

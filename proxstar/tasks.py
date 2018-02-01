@@ -42,8 +42,7 @@ def create_vm_task(user, name, cores, memory, disk, iso):
         starrs = connect_starrs()
         vmid, mac = create_vm(proxmox, user, name, cores, memory, disk, iso)
         register_starrs(starrs, name, app.config['STARRS_USER'], mac,
-                        get_next_ip(starrs,
-                                    app.config['STARRS_IP_RANGE'])[0][0])
+                        get_next_ip(starrs, app.config['STARRS_IP_RANGE']))
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
 
 
@@ -104,9 +103,30 @@ def generate_pool_cache_task():
         store_pool_cache(db, pools)
 
 
-def setup_template(hostname):
+def setup_template(template_id, name, user, cores, memory):
     with app.app_context():
+        proxmox = connect_proxmox()
+        starrs = connect_starrs()
         db = connect_db()
+        vmid, mac = clone_vm(proxmox, template_id, name, user)
+        ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
+        register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
+        get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
+        change_vm_cpu(proxmox, vmid, cores)
+        change_vm_mem(proxmox, vmid, memory)
+        time.sleep(60)
+        change_vm_power(proxmox, vmid, 'start')
         client = paramiko.SSHClient()
-        client.connect('ssh.example.com', username='root', password='todo')
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        retry = 0
+        while retry < 30:
+            try:
+                client.connect(ip, username='root', password='')
+                break
+            except:
+                retry += 1
+                time.sleep(3)
         stdin, stdout, stderr = client.exec_command('ls')
+        for line in stdout:
+            print('... ' + line.strip('\n'))
+        client.close()
