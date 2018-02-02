@@ -155,7 +155,7 @@ def get_vm_iso(proxmox, vmid, config=None):
     return iso
 
 
-def get_user_usage(proxmox, user):
+def get_user_usage(proxmox, db, user):
     usage = dict()
     usage['cpu'] = 0
     usage['mem'] = 0
