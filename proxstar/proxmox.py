@@ -27,8 +27,8 @@ def create_user(proxmox, user):
             path="/pool/{}".format(user), roles='PVEVMConsole', users=username)
 
 
-def get_vms_for_user(proxmox, user):
-    pools = get_pools(proxmox)
+def get_vms_for_user(proxmox, db, user):
+    pools = get_pools(proxmox, db)
     if user not in pools:
         create_user(proxmox, user)
     vms = proxmox.pools(user).get()['members']
@@ -41,12 +41,12 @@ def get_vms_for_user(proxmox, user):
 
 def get_vms_for_rtp(proxmox, db):
     pools = []
-    for pool in get_pools(proxmox):
+    for pool in get_pools(proxmox, db):
         pool_dict = dict()
         pool_dict['user'] = pool
-        pool_dict['vms'] = get_vms_for_user(proxmox, pool)
+        pool_dict['vms'] = get_vms_for_user(proxmox, db, pool)
         pool_dict['num_vms'] = len(pool_dict['vms'])
-        pool_dict['usage'] = get_user_usage(proxmox, pool)
+        pool_dict['usage'] = get_user_usage(proxmox, db, pool)
         pool_dict['limits'] = get_user_usage_limits(db, pool)
         pool_dict['percents'] = get_user_usage_percent(
             proxmox, pool, pool_dict['usage'], pool_dict['limits'])
@@ -54,9 +54,9 @@ def get_vms_for_rtp(proxmox, db):
     return pools
 
 
-def get_user_allowed_vms(proxmox, user):
+def get_user_allowed_vms(proxmox, db, user):
     allowed_vms = []
-    for vm in get_vms_for_user(proxmox, user):
+    for vm in get_vms_for_user(proxmox, db, user):
         allowed_vms.append(vm['vmid'])
     return allowed_vms
 
@@ -162,7 +162,7 @@ def get_user_usage(proxmox, user):
     usage['disk'] = 0
     if is_rtp(user):
         return usage
-    vms = get_vms_for_user(proxmox, user)
+    vms = get_vms_for_user(proxmox, db, user)
     for vm in vms:
         config = get_vm_config(proxmox, vm['vmid'])
         if 'status' in vm:
@@ -176,7 +176,7 @@ def get_user_usage(proxmox, user):
 
 def check_user_usage(proxmox, db, user, vm_cpu, vm_mem, vm_disk):
     limits = get_user_usage_limits(db, user)
-    cur_usage = get_user_usage(proxmox, user)
+    cur_usage = get_user_usage(proxmox, db, user)
     if int(cur_usage['cpu']) + int(vm_cpu) > int(limits['cpu']):
         return 'exceeds_cpu_limit'
     elif int(cur_usage['mem']) + (int(vm_mem) / 1024) > int(limits['mem']):
@@ -188,7 +188,7 @@ def check_user_usage(proxmox, db, user, vm_cpu, vm_mem, vm_disk):
 def get_user_usage_percent(proxmox, user, usage=None, limits=None):
     percents = dict()
     if not usage:
-        usage = get_user_usage(proxmox, user)
+        usage = get_user_usage(proxmox, db, user)
     if not limits:
         limits = get_user_usage_limits(user)
     percents['cpu'] = round(usage['cpu'] / limits['cpu'] * 100)
@@ -273,11 +273,12 @@ def mount_vm_iso(proxmox, vmid, iso):
     node.qemu(vmid).config.post(ide2="{},media=cdrom".format(iso))
 
 
-def get_pools(proxmox):
+def get_pools(proxmox, db):
     pools = []
     for pool in proxmox.pools.get():
         poolid = pool['poolid']
-        if is_user(poolid) and poolid != 'rtp':
+        ignored_pools = get_ignored_pools(db)
+        if poolid not in ignored_pools and is_user(poolid):
             pools.append(poolid)
     pools = sorted(pools)
     return pools

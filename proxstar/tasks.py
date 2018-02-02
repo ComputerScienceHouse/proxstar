@@ -79,7 +79,7 @@ def process_expiring_vms_task():
         pools = get_pools(proxmox)
         for pool in pools:
             expiring_vms = []
-            vms = get_vms_for_user(proxmox, pool)
+            vms = get_vms_for_user(proxmox, db, pool)
             for vm in vms:
                 vmid = vm['vmid']
                 expire = get_vm_expire(db, vmid,

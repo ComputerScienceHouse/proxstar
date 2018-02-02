@@ -78,7 +78,7 @@ def list_vms(user=None):
     if user and not rtp:
         return '', 403
     elif user and rtp:
-        vms = get_vms_for_user(proxmox, user)
+        vms = get_vms_for_user(proxmox, db, user)
         rtp_view = user
         user = session['userinfo']['preferred_username']
     elif rtp:
@@ -88,7 +88,7 @@ def list_vms(user=None):
     else:
         user = session['userinfo']['preferred_username']
         if active:
-            vms = get_vms_for_user(proxmox, user)
+            vms = get_vms_for_user(proxmox, db, user)
         else:
             vms = 'INACTIVE'
     return render_template(
@@ -127,7 +127,7 @@ def vm_details(vmid):
     rtp = 'rtp' in session['userinfo']['groups']
     active = 'active' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
@@ -141,7 +141,7 @@ def vm_details(vmid):
                  get_ip_for_mac(starrs, interface[1])])
         vm['expire'] = get_vm_expire(
             db, vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
-        usage = get_user_usage(proxmox, user)
+        usage = get_user_usage(proxmox, db, user)
         limits = get_user_usage_limits(db, user)
         usage_check = check_user_usage(proxmox, db, user,
                                        vm['config']['cores'],
@@ -165,7 +165,7 @@ def vm_power(vmid, action):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
         if action == 'start':
             config = get_vm_config(proxmox, vmid)
             usage_check = check_user_usage(proxmox, db, user, config['cores'],
@@ -184,7 +184,7 @@ def vm_cpu(vmid, cores):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
         cur_cores = get_vm_config(proxmox, vmid)['cores']
         if cores >= cur_cores:
             status = get_vm(proxmox, vmid)['qmpstatus']
@@ -207,7 +207,7 @@ def vm_mem(vmid, mem):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
         cur_mem = get_vm_config(proxmox, vmid)['memory'] // 1024
         if mem >= cur_mem:
             status = get_vm(proxmox, vmid)['qmpstatus']
@@ -230,7 +230,7 @@ def vm_renew(vmid):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
         renew_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         for interface in get_vm_interfaces(proxmox, vmid):
             renew_ip(starrs, get_ip_for_mac(starrs, interface[1]))
@@ -245,7 +245,7 @@ def iso_eject(vmid):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
         eject_vm_iso(proxmox, vmid)
         return '', 200
     else:
@@ -258,7 +258,7 @@ def iso_mount(vmid, iso):
     user = session['userinfo']['preferred_username']
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
-    if rtp or int(vmid) in get_user_allowed_vms(proxmox, user):
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
         iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
         mount_vm_iso(proxmox, vmid, iso)
         return '', 200
@@ -273,7 +273,7 @@ def delete(vmid):
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
     if rtp or int(vmid) in get_user_allowed_vms(
-            proxmox, user) or 'rtp' in session['userinfo']['groups']:
+            proxmox, db, user) or 'rtp' in session['userinfo']['groups']:
         q.enqueue(delete_vm_task, vmid)
         return '', 200
     else:
@@ -289,7 +289,7 @@ def create():
     proxmox = connect_proxmox()
     if active:
         if request.method == 'GET':
-            usage = get_user_usage(proxmox, user)
+            usage = get_user_usage(proxmox, db, user)
             limits = get_user_usage_limits(db, user)
             percents = get_user_usage_percent(proxmox, user, usage, limits)
             isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])

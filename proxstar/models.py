@@ -35,3 +35,8 @@ class Template(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(32), nullable=False)
     desc = Column(Text)
+
+
+class Ignored_Pools(Base):
+    __tablename__ = 'ignored_pools'
+    id = Column(String(32), primary_key=True)

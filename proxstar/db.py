@@ -2,7 +2,7 @@ import datetime
 from sqlalchemy import exists
 from dateutil.relativedelta import relativedelta
 from proxstar.ldapdb import *
-from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Base
+from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Ignored_Pools, Base
 
 
 def get_vm_expire(db, vmid, months):
@@ -124,3 +124,10 @@ def get_pool_cache(db):
         pool_dict['percents'] = pool.percents
         pools.append(pool_dict)
     return pools
+
+
+def get_ignored_pools(db):
+    ignored_pools = []
+    for pool in db.query(Ignored_Pools).all():
+        ignored_pools.append(pool.id)
+    return ignored_pools
