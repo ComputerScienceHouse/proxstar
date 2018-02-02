@@ -64,7 +64,7 @@ if 'generate_pool_cache' not in scheduler:
 
 if 'process_expiring_vms' not in scheduler:
     scheduler.cron(
-        '0 0 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
+        '0 5 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
 
 
 @app.route("/")
