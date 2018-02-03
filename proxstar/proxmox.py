@@ -274,10 +274,10 @@ def mount_vm_iso(proxmox, vmid, iso):
 
 
 def get_pools(proxmox, db):
+    ignored_pools = get_ignored_pools(db)
     pools = []
     for pool in proxmox.pools.get():
         poolid = pool['poolid']
-        ignored_pools = get_ignored_pools(db)
         if poolid not in ignored_pools and is_user(poolid):
             pools.append(poolid)
     pools = sorted(pools)

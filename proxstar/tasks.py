@@ -76,7 +76,7 @@ def process_expiring_vms_task():
         proxmox = connect_proxmox()
         db = connect_db()
         starrs = connect_starrs()
-        pools = get_pools(proxmox)
+        pools = get_pools(proxmox, db)
         for pool in pools:
             expiring_vms = []
             vms = get_vms_for_user(proxmox, db, pool)
