@@ -293,7 +293,7 @@ def create():
             limits = get_user_usage_limits(db, user)
             percents = get_user_usage_percent(proxmox, user, usage, limits)
             isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
-            pools = get_pools(proxmox)
+            pools = get_pools(proxmox, db)
             return render_template(
                 'create.html',
                 username=user,
