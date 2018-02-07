@@ -745,3 +745,21 @@ $(".delete-user").click(function(){
         }
     });
 });
+
+$(".delete-ignored-pool").click(function(){
+    const pool = $(this).data('pool')
+    fetch(`/pool/${pool}/ignore`, {
+        credentials: 'same-origin',
+        method: 'delete'
+    });
+    location.reload();
+});
+
+$(".add-ignored-pool").click(function(){
+    const pool = document.getElementById('pool').value
+    fetch(`/pool/${pool}/ignore`, {
+        credentials: 'same-origin',
+        method: 'post'
+    });
+    location.reload();
+});

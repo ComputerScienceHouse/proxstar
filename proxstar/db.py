@@ -131,3 +131,17 @@ def get_ignored_pools(db):
     for pool in db.query(Ignored_Pools).all():
         ignored_pools.append(pool.id)
     return ignored_pools
+
+
+def delete_ignored_pool(db, pool):
+    if db.query(exists().where(Ignored_Pools.id == pool)).scalar():
+        ignored_pool = db.query(Ignored_Pools).filter(Ignored_Pools.id == pool).one()
+        db.delete(ignored_pool)
+        db.commit()
+
+
+def add_ignored_pool(db, pool):
+    if not db.query(exists().where(Ignored_Pools.id == pool)).scalar():
+        ignored_pool = Ignored_Pools(id=pool)
+        db.add(ignored_pool)
+        db.commit()

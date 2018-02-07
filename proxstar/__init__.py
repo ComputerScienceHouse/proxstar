@@ -355,6 +355,37 @@ def delete_user(user):
         return '', 403
 
 
+@app.route("/settings")
+@auth.oidc_auth
+def settings():
+    user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
+    active = 'active' in session['userinfo']['groups']
+    if rtp:
+        ignored_pools = get_ignored_pools(db)
+        return render_template(
+            'settings.html',
+            username=user,
+            rtp=rtp,
+            active=active,
+            ignored_pools=ignored_pools)
+    else:
+        return '', 403
+
+
+@app.route("/pool/<string:pool>/ignore", methods=['POST', 'DELETE'])
+@auth.oidc_auth
+def ignored_pools(pool):
+    if 'rtp' in session['userinfo']['groups']:
+        if request.method == 'POST':
+            add_ignored_pool(db, pool)
+        elif request.method == "DELETE":
+            delete_ignored_pool(db, pool)
+        return '', 200
+    else:
+        return '', 403
+
+
 @app.route('/vm/<string:vmid>/rrd/<path:path>')
 @auth.oidc_auth
 def send_rrd(vmid, path):

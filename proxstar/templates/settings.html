@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-9 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Templates</h3>
+                </div>
+                <div class="panel-body">
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Ignored Pools</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr role="row">
+                                <th>Pool</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pool in ignored_pools %}
+                                <tr role="row">
+                                    <td class="col-md-9">{{ pool }}</td>
+                                    <td class="col-md-3">
+                                        <button class="btn btn-sm btn-danger delete-ignored-pool" data-pool="{{ pool }}">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="col-md-9">
+                        <input type="text" id="pool" class="form-control">
+                    </div>
+                    <div class="col-md-3">
+                    <button class="btn btn-sm btn-success add-ignored-pool" data-pool="{{ pool }}">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
