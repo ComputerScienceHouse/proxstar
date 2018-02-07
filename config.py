@@ -24,7 +24,7 @@ OIDC_CLIENT_CONFIG = {
 }
 
 # Proxmox
-PROXMOX_HOST = environ.get('PROXSTAR_PROXMOX_HOST', '')
+PROXMOX_HOSTS = [host.strip() for host in environ.get('PROXSTAR_PROXMOX_HOSTS', '').split(',')]
 PROXMOX_USER = environ.get('PROXSTAR_PROXMOX_USER', '')
 PROXMOX_PASS = environ.get('PROXSTAR_PROXMOX_PASS', '')
 PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'nfs-iso')

@@ -5,16 +5,19 @@ from proxstar.ldapdb import *
 
 
 def connect_proxmox():
-    try:
-        proxmox = ProxmoxAPI(
-            app.config['PROXMOX_HOST'],
-            user=app.config['PROXMOX_USER'],
-            password=app.config['PROXMOX_PASS'],
-            verify_ssl=False)
-    except:
+    for host in app.config['PROXMOX_HOSTS']:
+        try:
+            proxmox = ProxmoxAPI(
+                host,
+                user=app.config['PROXMOX_USER'],
+                password=app.config['PROXMOX_PASS'],
+                verify_ssl=False)
+            version = proxmox.version.get()
+            return proxmox
+        except:
+            pass
         print("Unable to connect to Proxmox!")
         raise
-    return proxmox
 
 
 def create_user(proxmox, user):
