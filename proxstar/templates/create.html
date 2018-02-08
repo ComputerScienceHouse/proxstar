@@ -38,17 +38,28 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="disk" class="pull-left">Disk (GB)</label>
-                        <input type="number" value=32 name="disk" id="disk" class="form-control" min="1" max="{{ limits['disk'] - usage['disk'] }}">
-                    </div>
-                    <div class="form-group">
-                        <label for="iso" class="pull-left">ISO</label>
-                        <select name="iso" id="iso" class="form-control">
+                        <label for="template" class="pull-left">Template</label>
+                        <select name="template" id="template" class="form-control" onchange="hide_for_template(this)">
                             <option value="none"></option>
-                            {% for iso in isos %}
-                            <option value="{{ iso }}">{{ iso }}</option>
+                            {% for template in templates %}
+                            <option value="{{ template['id'] }}">{{ template['name'] }} ({{ template['disk'] }}GB)</option>
                             {% endfor %}
                         </select>
+                    </div>
+                    <div id="hide-for-template">
+                        <div class="form-group">
+                            <label for="disk" class="pull-left">Disk (GB)</label>
+                            <input type="number" value=32 name="disk" id="disk" class="form-control" min="1" max="{{ limits['disk'] - usage['disk'] }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="iso" class="pull-left">ISO</label>
+                            <select name="iso" id="iso" class="form-control">
+                                <option value="none"></option>
+                                {% for iso in isos %}
+                                <option value="{{ iso }}">{{ iso }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                     </div>
                     {% if rtp %}
                     <div class="form-group">

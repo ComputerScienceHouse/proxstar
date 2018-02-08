@@ -24,11 +24,11 @@ def send_vm_expire_email(user, vms):
     body = "The following VMs in Proxstar are expiring soon:\n\n"
     for vm in vms:
         if vm[1] == 0:
-            body += "    - {} today (VM has been stopped)\n".format(
+            body += "    - {} expires today (VM has been stopped and will be deleted tomorrow)\n".format(
                 vm[0], vm[1])
-        if vm[1] == 1:
-            body += "    - {} in 1 day\n".format(vm[0])
+        elif vm[1] == 1:
+            body += "    - {} expires in 1 day\n".format(vm[0])
         else:
-            body += "    - {} in {} days\n".format(vm[0], vm[1])
+            body += "    - {} expires in {} days\n".format(vm[0], vm[1])
     body += "\nPlease login to Proxstar and renew any VMs you would like to keep."
     send_email(toaddr, subject, body)

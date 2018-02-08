@@ -1,9 +1,11 @@
+/*jshint esversion: 6 */
+
 $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
 
 $("#delete-vm").click(function(){
-    const vmname = $(this).data('vmname')
+    const vmname = $(this).data('vmname');
     swal({
         title: `Are you sure you want to delete ${vmname}?`,
         icon: "warning",
@@ -19,7 +21,7 @@ $("#delete-vm").click(function(){
     })
     .then((willDelete) => {
         if (willDelete) {
-            const vmid = $(this).data('vmid')
+            const vmid = $(this).data('vmid');
             fetch(`/vm/${vmid}/delete`, {
                 credentials: 'same-origin',
                 method: 'post'
@@ -42,7 +44,7 @@ $("#delete-vm").click(function(){
 });
 
 $("#stop-vm").click(function(){
-    const vmname = $(this).data('vmname')
+    const vmname = $(this).data('vmname');
     swal({
         title: `Are you sure you want to stop ${vmname}?`,
         icon: "warning",
@@ -81,7 +83,7 @@ $("#stop-vm").click(function(){
 });
 
 $("#reset-vm").click(function(){
-    const vmname = $(this).data('vmname')
+    const vmname = $(this).data('vmname');
     swal({
         title: `Are you sure you want to reset ${vmname}?`,
         icon: "warning",
@@ -97,7 +99,7 @@ $("#reset-vm").click(function(){
     })
     .then((willReset) => {
         if (willReset) {
-            const vmid = $(this).data('vmid')
+            const vmid = $(this).data('vmid');
             fetch(`/vm/${vmid}/power/reset`, {
                 credentials: 'same-origin',
                 method: 'post'
@@ -120,7 +122,7 @@ $("#reset-vm").click(function(){
 });
 
 $("#shutdown-vm").click(function(){
-    const vmname = $(this).data('vmname')
+    const vmname = $(this).data('vmname');
     swal({
         title: `Are you sure you want to shutdown ${vmname}?`,
         icon: "warning",
@@ -136,7 +138,7 @@ $("#shutdown-vm").click(function(){
     })
     .then((willShutdown) => {
         if (willShutdown) {
-            const vmid = $(this).data('vmid')
+            const vmid = $(this).data('vmid');
             fetch(`/vm/${vmid}/power/shutdown`, {
                 credentials: 'same-origin',
                 method: 'post'
@@ -159,7 +161,7 @@ $("#shutdown-vm").click(function(){
 });
 
 $("#suspend-vm").click(function(){
-    const vmname = $(this).data('vmname')
+    const vmname = $(this).data('vmname');
     swal({
         title: `Are you sure you want to suspend ${vmname}?`,
         icon: "warning",
@@ -175,7 +177,7 @@ $("#suspend-vm").click(function(){
     })
     .then((willSuspend) => {
         if (willSuspend) {
-            const vmid = $(this).data('vmid')
+            const vmid = $(this).data('vmid');
             fetch(`/vm/${vmid}/power/suspend`, {
                 credentials: 'same-origin',
                 method: 'post'
@@ -198,8 +200,8 @@ $("#suspend-vm").click(function(){
 });
 
 $("#start-vm").click(function(){
-    const vmname = $(this).data('vmname')
-    const vmid = $(this).data('vmid')
+    const vmname = $(this).data('vmname');
+    const vmid = $(this).data('vmid');
     fetch(`/vm/${vmid}/power/start`, {
         credentials: 'same-origin',
         method: 'post'
@@ -220,8 +222,8 @@ $("#start-vm").click(function(){
 });
 
 $("#resume-vm").click(function(){
-    const vmname = $(this).data('vmname')
-    const vmid = $(this).data('vmid')
+    const vmname = $(this).data('vmname');
+    const vmid = $(this).data('vmid');
     fetch(`/vm/${vmid}/power/resume`, {
         credentials: 'same-origin',
         method: 'post'
@@ -242,8 +244,7 @@ $("#resume-vm").click(function(){
 });
 
 $("#eject-iso").click(function(){
-    const vmid = $(this).data('vmid')
-    const iso = $(this).data('iso')
+    const iso = $(this).data('iso');
     swal({
         title: `Are you sure you want to eject ${iso}?`,
         icon: "warning",
@@ -264,7 +265,7 @@ $("#eject-iso").click(function(){
     })
     .then((willEject) => {
         if (willEject) {
-            const vmid = $(this).data('vmid')
+            const vmid = $(this).data('vmid');
             fetch(`/vm/${vmid}/eject`, {
                 credentials: 'same-origin',
                 method: 'post'
@@ -295,7 +296,6 @@ $("#eject-iso").click(function(){
 
 
 $("#change-iso").click(function(){
-    const vmid = $(this).data('vmid')
     fetch(`/isos`, {
         credentials: 'same-origin',
     }).then((response) => {
@@ -326,8 +326,8 @@ $("#change-iso").click(function(){
         })
         .then((willChange) => {
             if (willChange) {
-                const vmid = $(this).data('vmid')
-                const iso = $(iso_list).val()
+                const vmid = $(this).data('vmid');
+                const iso = $(iso_list).val();
                 fetch(`/vm/${vmid}/mount/${iso}`, {
                     credentials: 'same-origin',
                     method: 'post'
@@ -365,8 +365,8 @@ $("#change-iso").click(function(){
 });
 
 $("#renew-vm").click(function(){
-    const vmname = $(this).data('vmname')
-    const vmid = $(this).data('vmid')
+    const vmname = $(this).data('vmname');
+    const vmid = $(this).data('vmid');
     fetch(`/vm/${vmid}/renew`, {
         credentials: 'same-origin',
         method: 'post'
@@ -387,99 +387,125 @@ $("#renew-vm").click(function(){
 });
 
 $("#create-vm").click(function(){
-    const name = document.getElementById('name').value
-    const cores = document.getElementById('cores').value
-    const mem = document.getElementById('mem').value
-    const disk = document.getElementById('disk').value
-    const iso = document.getElementById('iso').value
-    const user = document.getElementById('user')
-    const max_disk = $(this).data('max_disk')
-    if (name && disk) {
-        if (disk > max_disk) {
-            swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk}GB or lower.`, "error");
-        } else {
-            fetch(`/hostname/${name}`, {
-                credentials: 'same-origin',
-            }).then((response) => {
-                return response.text()
-            }).then((text) => {
-                if (text == 'ok') {
-                    var loader = document.createElement('div');
-                    loader.setAttribute('class', 'loader');
-                    var info = document.createElement('span');
-                    info.innerHTML = `Cores: ${cores}<br>Memory: ${mem/1024} GB<br>Disk: ${disk} GB<br>ISO: ${iso}`,
-                    swal({
-                        title: `Are you sure you want to create ${name}?`,
-                        content: info,
-                        icon: "info",
-                        buttons: {
-                            cancel: true,
-                            create: {
-                                text: "Create",
-                                closeModal: false,
-                                className: "swal-button",
-                            }
-                        }
-                    })
-                    .then((willCreate) => {
-                        if (willCreate) {
-                            var data  = new FormData();
-                            data.append('name', name);
-                            data.append('cores', cores);
-                            data.append('mem', mem);
-                            data.append('disk', disk);
-                            data.append('iso', iso);
-                            if (user) {
-                                data.append('user', user.value);
-                            }
-                            fetch('/vm/create', {
-                                credentials: 'same-origin',
-                                method: 'post',
-                                body: data
-                            }).then((response) => {
-                                return swal(`${name} is now being created. Check back soon and it should be good to go.`, {
-                                    icon: "success",
-                                    buttons: {
-                                        ok: {
-                                            text: "OK",
-                                            closeModal: true,
-                                            className: "",
-                                        }
-                                    }
-                                });
-                            }).then(() => {
-                                window.location = "/";
-                            });
-                        }
-                    });
-                } else if (text == 'invalid') {
-                    swal("Uh oh...", `That name is not a valid name! Please try another name.`, "error");
-                } else if (text == 'taken') {
-                    swal("Uh oh...", `That name is not available! Please try another name.`, "error");
-                }
-            }).catch(err => {
-                if (err) {
-                    swal("Uh oh...", `Unable to verify name! Please try again later.`, "error");
-                } else {
-                    swal.stopLoading();
-                    swal.close();
-                }
-            });
+    const name = document.getElementById('name').value;
+    const cores = document.getElementById('cores').value;
+    const mem = document.getElementById('mem').value;
+    const template = document.getElementById('template').value;
+    const iso = document.getElementById('iso').value;
+    const user = document.getElementById('user');
+    const max_disk = $(this).data('max_disk');
+    var disk = document.getElementById('disk').value;
+    fetch(`/template/${template}/disk`, {
+        credentials: 'same-origin',
+    }).then((response) => {
+        return response.text()
+    }).then((template_disk) => {
+        if (template != 'none') {
+            disk = template_disk
         }
-    } else if (!name && !disk) {
-        swal("Uh oh...", `You must enter a name and disk size for your VM!`, "error");
-    } else if (!name) {
-        swal("Uh oh...", `You must enter a name for your VM!`, "error");
-    } else if (!disk) {
-        swal("Uh oh...", `You must enter a disk size for your VM!`, "error");
-    }
+        return disk
+    }).then((disk) => {
+        if (name && disk) {
+            if (disk > max_disk) {
+                swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk}GB or lower.`, "error");
+            } else {
+                fetch(`/hostname/${name}`, {
+                    credentials: 'same-origin',
+                }).then((response) => {
+                    return response.text()
+                }).then((text) => {
+                    if (text == 'ok') {
+                        var loader = document.createElement('div');
+                        loader.setAttribute('class', 'loader');
+                        var info = document.createElement('span');
+                        if (template == 'none') {
+                            info.innerHTML = `Cores: ${cores}<br>Memory: ${mem/1024}GB<br>Disk: ${disk}GB<br>ISO: ${iso}`;
+                        } else {
+                            const template_select = document.getElementById('template');
+                            const template_name = template_select.options[template_select.selectedIndex].text;
+                            info.innerHTML = `Cores: ${cores}<br>Memory: ${mem/1024}GB<br>Template: ${template_name}`;
+                        }
+                        swal({
+                            title: `Are you sure you want to create ${name}?`,
+                            content: info,
+                            icon: "info",
+                            buttons: {
+                                cancel: true,
+                                create: {
+                                    text: "Create",
+                                    closeModal: false,
+                                    className: "swal-button",
+                                }
+                            }
+                        })
+                        .then((willCreate) => {
+                            if (willCreate) {
+                                var data  = new FormData();
+                                data.append('name', name);
+                                data.append('cores', cores);
+                                data.append('mem', mem);
+                                data.append('template', template);
+                                data.append('disk', disk);
+                                data.append('iso', iso);
+                                if (user) {
+                                    data.append('user', user.value);
+                                }
+                                fetch('/vm/create', {
+                                    credentials: 'same-origin',
+                                    method: 'post',
+                                    body: data
+                                }).then((response) => {
+                                    return response.text()
+                                }).then((password) => {
+                                    if (template == 'none') {
+                                        var swal_text = `${name} is now being created. Check back soon and it should be good to go.`
+                                    } else {
+                                        var swal_text = `${name} is now being created. Check back soon and it should be good to go. The SSH credentials are your CSH username for the user and ${password} for the password. Save this password because you will not be able to retrieve it again!`
+                                    }
+                                    return swal(`${swal_text}`, {
+                                        icon: "success",
+                                        buttons: {
+                                            ok: {
+                                                text: "OK",
+                                                closeModal: true,
+                                                className: "",
+                                            }
+                                        }
+                                    });
+                                }).then(() => {
+                                    window.location = "/";
+                                });
+                            }
+                        });
+                    } else if (text == 'invalid') {
+                        swal("Uh oh...", `That name is not a valid name! Please try another name.`, "error");
+                    } else if (text == 'taken') {
+                        swal("Uh oh...", `That name is not available! Please try another name.`, "error");
+                    }
+                }).catch(err => {
+                    if (err) {
+                        swal("Uh oh...", `Unable to verify name! Please try again later.`, "error");
+                    } else {
+                        swal.stopLoading();
+                        swal.close();
+                    }
+                });
+            }
+        } else if (!name && !disk) {
+            swal("Uh oh...", `You must enter a name and disk size for your VM!`, "error");
+        } else if (!name) {
+            swal("Uh oh...", `You must enter a name for your VM!`, "error");
+        } else if (!disk) {
+            swal("Uh oh...", `You must enter a disk size for your VM!`, "error");
+        }
+    });
 });
 
 $("#change-cores").click(function(){
-    const vmid = $(this).data('vmid')
-    const cur_cores = $(this).data('cores')
-    const usage = $(this).data('usage')
-    const limit = $(this).data('limit')
+    const vmid = $(this).data('vmid');
+    const cur_cores = $(this).data('cores');
+    const usage = $(this).data('usage');
+    const limit = $(this).data('limit');
     var core_list = document.createElement('select');
     core_list.setAttribute('style', 'width: 25px');
     for (i = 1; i < limit - usage + 1; i++) {
@@ -504,7 +530,7 @@ $("#change-cores").click(function(){
     })
     .then((willChange) => {
         if (willChange) {
-            const cores = $(core_list).val()
+            const cores = $(core_list).val();
             fetch(`/vm/${vmid}/cpu/${cores}`, {
                 credentials: 'same-origin',
                 method: 'post'
@@ -534,10 +560,10 @@ $("#change-cores").click(function(){
 });
 
 $("#change-mem").click(function(){
-    const vmid = $(this).data('vmid')
-    const cur_mem = $(this).data('mem')
-    const usage = $(this).data('usage')
-    const limit = $(this).data('limit')
+    const vmid = $(this).data('vmid');
+    const cur_mem = $(this).data('mem');
+    const usage = $(this).data('usage');
+    const limit = $(this).data('limit');
     var mem_list = document.createElement('select');
     mem_list.setAttribute('style', 'width: 45px');
     for (i = 1; i < limit - usage + 1; i++) {
@@ -562,7 +588,7 @@ $("#change-mem").click(function(){
     })
     .then((willChange) => {
         if (willChange) {
-            const mem = $(mem_list).val()
+            const mem = $(mem_list).val();
             fetch(`/vm/${vmid}/mem/${mem}`, {
                 credentials: 'same-origin',
                 method: 'post'
@@ -592,10 +618,10 @@ $("#change-mem").click(function(){
 });
 
 $(".edit-limit").click(function(){
-    const user = $(this).data('user')
-    const cur_cpu = $(this).data('cpu')
-    const cur_mem = $(this).data('mem')
-    const cur_disk = $(this).data('disk')
+    const user = $(this).data('user');
+    const cur_cpu = $(this).data('cpu');
+    const cur_mem = $(this).data('mem');
+    const cur_disk = $(this).data('disk');
     var options = document.createElement('div');
     cpu_text = document.createElement('p');
     cpu_text.innerHTML = 'CPU';
@@ -671,7 +697,7 @@ $(".edit-limit").click(function(){
 });
 
 $(".reset-limit").click(function(){
-    const user = $(this).data('user')
+    const user = $(this).data('user');
     swal({
         title: `Are you sure you want to reset the usage limits for ${user} to the defaults?`,
         icon: "warning",
@@ -709,7 +735,7 @@ $(".reset-limit").click(function(){
 });
 
 $(".delete-user").click(function(){
-    const user = $(this).data('user')
+    const user = $(this).data('user');
     swal({
         title: `Are you sure you want to delete the pool for ${user}?`,
         icon: "warning",
@@ -747,7 +773,7 @@ $(".delete-user").click(function(){
 });
 
 $(".delete-ignored-pool").click(function(){
-    const pool = $(this).data('pool')
+    const pool = $(this).data('pool');
     fetch(`/pool/${pool}/ignore`, {
         credentials: 'same-origin',
         method: 'delete'
@@ -756,10 +782,23 @@ $(".delete-ignored-pool").click(function(){
 });
 
 $(".add-ignored-pool").click(function(){
-    const pool = document.getElementById('pool').value
+    const pool = document.getElementById('pool').value;
     fetch(`/pool/${pool}/ignore`, {
         credentials: 'same-origin',
         method: 'post'
     });
     location.reload();
 });
+
+function hide_for_template(obj) {
+    var template_element = obj;
+    var selected = template_element.options[template_element.selectedIndex].value;
+    var hide_area = document.getElementById('hide-for-template');
+
+    if(selected === 'none'){
+        hide_area.style.display = 'block';
+    }
+    else{
+        hide_area.style.display = 'none';
+    }
+}

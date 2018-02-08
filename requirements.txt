@@ -6,7 +6,7 @@ sqlalchemy
 python-dateutil
 csh_ldap
 rq
-rq-scheduler
+rq-scheduler==0.7.0
 gunicorn
 raven
 paramiko

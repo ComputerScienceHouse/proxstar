@@ -2,7 +2,7 @@ import datetime
 from sqlalchemy import exists
 from dateutil.relativedelta import relativedelta
 from proxstar.ldapdb import *
-from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Ignored_Pools, Base
+from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Ignored_Pools, Template, Base
 
 
 def get_vm_expire(db, vmid, months):
@@ -135,7 +135,8 @@ def get_ignored_pools(db):
 
 def delete_ignored_pool(db, pool):
     if db.query(exists().where(Ignored_Pools.id == pool)).scalar():
-        ignored_pool = db.query(Ignored_Pools).filter(Ignored_Pools.id == pool).one()
+        ignored_pool = db.query(Ignored_Pools).filter(
+            Ignored_Pools.id == pool).one()
         db.delete(ignored_pool)
         db.commit()
 
@@ -145,3 +146,37 @@ def add_ignored_pool(db, pool):
         ignored_pool = Ignored_Pools(id=pool)
         db.add(ignored_pool)
         db.commit()
+
+
+def get_templates(db):
+    templates = []
+    for template in db.query(Template).all():
+        template_dict = dict()
+        template_dict['id'] = template.id
+        template_dict['name'] = template.name
+        template_dict['desc'] = template.desc
+        template_dict['username'] = template.username
+        template_dict['disk'] = template.disk
+        templates.append(template_dict)
+    return templates
+
+
+def get_template(db, template_id):
+    template_dict = dict()
+    if db.query(exists().where(Template.id == template_id)).scalar():
+        template = db.query(Template).filter(Template.id == template_id).one()
+        template_dict['id'] = template.id
+        template_dict['name'] = template.name
+        template_dict['desc'] = template.desc
+        template_dict['username'] = template.username
+        template_dict['password'] = template.password
+        template_dict['disk'] = template.disk
+    return template_dict
+
+
+def get_template_disk(db, template_id):
+    disk = 0
+    if db.query(exists().where(Template.id == template_id)).scalar():
+        template = db.query(Template).filter(Template.id == template_id).one()
+        disk = template.disk
+    return str(disk)

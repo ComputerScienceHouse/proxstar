@@ -9,6 +9,34 @@
                     <h3 class="panel-title">Templates</h3>
                 </div>
                 <div class="panel-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr role="row">
+                                <th>Proxmox ID</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Disk Size (GB)</th>
+                                <th>Description</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for template in templates %}
+                                <tr role="row">
+                                    <td>{{ template['id'] }}</td>
+                                    <td>{{ template['name'] }}</td>
+                                    <td>{{ template['username'] }}</td>
+                                    <td>{{ template['disk'] }}</td>
+                                    <td>{{ template['desc'] }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger delete-template" data-template_id="{{ template['id'] }}">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>

@@ -4,6 +4,7 @@ from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from proxstar.db import *
+from proxstar.util import *
 from proxstar.mail import *
 from proxstar.starrs import *
 from proxstar.proxmox import *
@@ -103,30 +104,45 @@ def generate_pool_cache_task():
         store_pool_cache(db, pools)
 
 
-def setup_template(template_id, name, user, cores, memory):
+def setup_template(template_id, name, user, password, cores, memory):
     with app.app_context():
         proxmox = connect_proxmox()
         starrs = connect_starrs()
         db = connect_db()
+        template = get_template(db, template_id)
         vmid, mac = clone_vm(proxmox, template_id, name, user)
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
         register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         change_vm_cpu(proxmox, vmid, cores)
         change_vm_mem(proxmox, vmid, memory)
-        time.sleep(60)
+        time.sleep(90)
         change_vm_power(proxmox, vmid, 'start')
+        time.sleep(20)
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         retry = 0
         while retry < 30:
             try:
-                client.connect(ip, username='root', password='')
+                client.connect(
+                    ip,
+                    username=template['username'],
+                    password=template['password'])
                 break
             except:
                 retry += 1
                 time.sleep(3)
-        stdin, stdout, stderr = client.exec_command('ls')
-        for line in stdout:
-            print('... ' + line.strip('\n'))
+        stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
+        exit_status = stdout.channel.recv_exit_status()
+        root_password = gen_password(32)
+        stdin, stdout, stderr = client.exec_command(
+            "echo '{}' | passwd root --stdin".format(root_password))
+        exit_status = stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command(
+            "echo '{}' | passwd '{}' --stdin".format(password, user))
+        exit_status = stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command(
+            "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
+                user))
+        exit_status = stdout.channel.recv_exit_status()
         client.close()

@@ -35,6 +35,9 @@ class Template(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(32), nullable=False)
     desc = Column(Text)
+    username = Column(Text, nullable=False)
+    password = Column(Text, nullable=False)
+    disk = Column(Integer, nullable=False)
 
 
 class Ignored_Pools(Base):

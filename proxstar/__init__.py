@@ -10,6 +10,7 @@ from werkzeug.contrib.cache import SimpleCache
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask import Flask, render_template, request, redirect, send_from_directory, session
 from proxstar.db import *
+from proxstar.util import *
 from proxstar.tasks import *
 from proxstar.starrs import *
 from proxstar.ldapdb import *
@@ -294,6 +295,7 @@ def create():
             percents = get_user_usage_percent(proxmox, user, usage, limits)
             isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
             pools = get_pools(proxmox, db)
+            templates = get_templates(db)
             return render_template(
                 'create.html',
                 username=user,
@@ -303,11 +305,13 @@ def create():
                 limits=limits,
                 percents=percents,
                 isos=isos,
-                pools=pools)
+                pools=pools,
+                templates=templates)
         elif request.method == 'POST':
             name = request.form['name']
             cores = request.form['cores']
             memory = request.form['mem']
+            template = request.form['template']
             disk = request.form['disk']
             iso = request.form['iso']
             if iso != 'none':
@@ -323,8 +327,28 @@ def create():
             else:
                 valid, available = check_hostname(starrs, name)
                 if valid and available:
-                    q.enqueue(create_vm_task, user, name, cores, memory, disk,
-                              iso)
+                    if template == 'none':
+                        q.enqueue(
+                            create_vm_task,
+                            user,
+                            name,
+                            cores,
+                            memory,
+                            disk,
+                            iso,
+                            timeout=300)
+                    else:
+                        password = gen_password(16)
+                        q.enqueue(
+                            setup_template,
+                            template,
+                            name,
+                            user,
+                            password,
+                            cores,
+                            memory,
+                            timeout=600)
+                        return password, 200
             return '', 200
     else:
         return '', 403
@@ -362,12 +386,14 @@ def settings():
     rtp = 'rtp' in session['userinfo']['groups']
     active = 'active' in session['userinfo']['groups']
     if rtp:
+        templates = get_templates(db)
         ignored_pools = get_ignored_pools(db)
         return render_template(
             'settings.html',
             username=user,
             rtp=rtp,
             active=active,
+            templates=templates,
             ignored_pools=ignored_pools)
     else:
         return '', 403
@@ -384,6 +410,14 @@ def ignored_pools(pool):
         return '', 200
     else:
         return '', 403
+
+
+@app.route('/template/<string:template_id>/disk')
+@auth.oidc_auth
+def template_disk(template_id):
+    if template_id == 'none':
+        return '0'
+    return get_template_disk(db, template_id)
 
 
 @app.route('/vm/<string:vmid>/rrd/<path:path>')
