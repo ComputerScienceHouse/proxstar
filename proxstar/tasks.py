@@ -110,28 +110,37 @@ def setup_template(template_id, name, user, password, cores, memory):
         starrs = connect_starrs()
         db = connect_db()
         template = get_template(db, template_id)
+        print('clone')
         vmid, mac = clone_vm(proxmox, template_id, name, user)
+        print('starrs')
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
         register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
+        print('set cpu mem')
         change_vm_cpu(proxmox, vmid, cores)
         change_vm_mem(proxmox, vmid, memory)
+        print('wait to start')
         time.sleep(90)
+        print('start')
         change_vm_power(proxmox, vmid, 'start')
+        print('wait after start')
         time.sleep(20)
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         retry = 0
         while retry < 30:
             try:
+                print('try ssh')
                 client.connect(
                     ip,
                     username=template['username'],
                     password=template['password'])
                 break
             except:
+                print('ssh failed')
                 retry += 1
                 time.sleep(3)
+        print('start commands')
         stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
         exit_status = stdout.channel.recv_exit_status()
         root_password = gen_password(32)
@@ -145,4 +154,5 @@ def setup_template(template_id, name, user, password, cores, memory):
             "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
                 user))
         exit_status = stdout.channel.recv_exit_status()
+        print('done')
         client.close()
