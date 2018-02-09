@@ -131,6 +131,9 @@ def setup_template(template_id, name, user, password, cores, memory):
         while retry < 30:
             try:
                 print('try ssh')
+                print(ip)
+                print(template['username'])
+                print(template['password'])
                 client.connect(
                     ip,
                     username=template['username'],
