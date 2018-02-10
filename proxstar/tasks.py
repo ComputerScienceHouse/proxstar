@@ -1,4 +1,6 @@
 import os
+import pickle
+pickle.HIGHEST_PROTOCOL = 2
 import paramiko
 from rq import Queue
 from redis import Redis
