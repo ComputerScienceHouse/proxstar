@@ -1,7 +1,5 @@
 import os
 import paramiko
-from rq import Queue
-from redis import Redis
 from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -20,9 +18,6 @@ if os.path.exists(
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
 app.config.from_pyfile(config)
-
-redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
-q = Queue(connection=redis_conn)
 
 
 def connect_db():
@@ -111,7 +106,6 @@ def generate_pool_cache_task():
 
 def setup_template(template_id, name, user, password, cores, memory):
     with app.app_context():
-        q = Queue('ssh', connection=redis_conn)
         proxmox = connect_proxmox()
         starrs = connect_starrs()
         db = connect_db()
@@ -125,34 +119,30 @@ def setup_template(template_id, name, user, password, cores, memory):
         time.sleep(90)
         change_vm_power(proxmox, vmid, 'start')
         time.sleep(20)
-        q.enqueue(setup_template_ssh, ip, template, user, password)
-
-
-def setup_template_ssh(ip, template, user, password):
-    client = paramiko.SSHClient()
-    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    retry = 0
-    while retry < 30:
-        try:
-            client.connect(
-                ip,
-                username=template['username'],
-                password=template['password'])
-            break
-        except:
-            retry += 1
-            time.sleep(3)
-    stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
-    exit_status = stdout.channel.recv_exit_status()
-    root_password = gen_password(32)
-    stdin, stdout, stderr = client.exec_command(
-        "echo '{}' | passwd root --stdin".format(root_password))
-    exit_status = stdout.channel.recv_exit_status()
-    stdin, stdout, stderr = client.exec_command(
-        "echo '{}' | passwd '{}' -e --stdin".format(password, user))
-    exit_status = stdout.channel.recv_exit_status()
-    stdin, stdout, stderr = client.exec_command(
-        "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
-            user))
-    exit_status = stdout.channel.recv_exit_status()
-    client.close()
+        client = paramiko.SSHClient()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        retry = 0
+        while retry < 30:
+            try:
+                client.connect(
+                    ip,
+                    username=template['username'],
+                    password=template['password'])
+                break
+            except:
+                retry += 1
+                time.sleep(3)
+        stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
+        exit_status = stdout.channel.recv_exit_status()
+        root_password = gen_password(32)
+        stdin, stdout, stderr = client.exec_command(
+            "echo '{}' | passwd root --stdin".format(root_password))
+        exit_status = stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command(
+            "echo '{}' | passwd '{}' -e --stdin".format(password, user))
+        exit_status = stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command(
+            "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
+                user))
+        exit_status = stdout.channel.recv_exit_status()
+        client.close()
