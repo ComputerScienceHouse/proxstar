@@ -90,8 +90,7 @@ def process_expiring_vms_task():
                     name = get_vm_config(proxmox, vmid)['name']
                     expiring_vms.append([name, days])
                     if days == 0:
-                        #change_vm_power(proxmox, vmid, 'stop')
-                        pass
+                        change_vm_power(proxmox, vmid, 'stop')
             if expiring_vms:
                 send_vm_expire_email('com6056', expiring_vms)
 
@@ -109,16 +108,27 @@ def setup_template(template_id, name, user, password, cores, memory):
         proxmox = connect_proxmox()
         starrs = connect_starrs()
         db = connect_db()
+        print("[{}] Retrieving template info for template {}.".format(
+            name, template_id))
         template = get_template(db, template_id)
+        print("[{}] Cloning template {}.".format(name, template_id))
         vmid, mac = clone_vm(proxmox, template_id, name, user)
+        print("[{}] Registering in STARRS.".format(name))
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
         register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
+        print("[{}] Setting CPU and memory.".format(name))
         change_vm_cpu(proxmox, vmid, cores)
         change_vm_mem(proxmox, vmid, memory)
+        print(
+            "[{}] Waiting for STARRS to propogate before starting VM.".format(
+                name))
         time.sleep(90)
+        print("[{}] Starting VM.".format(name))
         change_vm_power(proxmox, vmid, 'start')
+        print("[{}] Waiting for VM to start before SSHing.".format(name))
         time.sleep(20)
+        print("[{}] Creating SSH session.".format(name))
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         retry = 0
@@ -132,17 +142,22 @@ def setup_template(template_id, name, user, password, cores, memory):
             except:
                 retry += 1
                 time.sleep(3)
+        print("[{}] Running user creation commands.".format(name))
         stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
         exit_status = stdout.channel.recv_exit_status()
+        print(exit_status)
         root_password = gen_password(32)
         stdin, stdout, stderr = client.exec_command(
             "echo '{}' | passwd root --stdin".format(root_password))
         exit_status = stdout.channel.recv_exit_status()
+        print(exit_status)
         stdin, stdout, stderr = client.exec_command(
             "echo '{}' | passwd '{}' -e --stdin".format(password, user))
         exit_status = stdout.channel.recv_exit_status()
+        print(exit_status)
         stdin, stdout, stderr = client.exec_command(
             "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
                 user))
         exit_status = stdout.channel.recv_exit_status()
         client.close()
+        print("[{}] Template successfully provisioned.".format(name))
