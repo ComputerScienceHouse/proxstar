@@ -153,6 +153,9 @@ def setup_template(template_id, name, user, password, cores, memory):
             "echo '{}' | passwd '{}' --stdin".format(password, user))
         exit_status = stdout.channel.recv_exit_status()
         stdin, stdout, stderr = client.exec_command(
+            "passwd -e '{}'".format(user))
+        exit_status = stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = client.exec_command(
             "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
                 user))
         exit_status = stdout.channel.recv_exit_status()
