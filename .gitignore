@@ -2,3 +2,4 @@ config.local.py
 __pycache__/*
 */__pycache__/*
 rrd/*
+*.pyc
