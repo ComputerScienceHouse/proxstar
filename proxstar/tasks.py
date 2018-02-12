@@ -145,16 +145,13 @@ def setup_template(template_id, name, user, password, cores, memory):
         print("[{}] Running user creation commands.".format(name))
         stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
         exit_status = stdout.channel.recv_exit_status()
-        print(exit_status)
         root_password = gen_password(32)
         stdin, stdout, stderr = client.exec_command(
             "echo '{}' | passwd root --stdin".format(root_password))
         exit_status = stdout.channel.recv_exit_status()
-        print(exit_status)
         stdin, stdout, stderr = client.exec_command(
-            "echo '{}' | passwd '{}' -e --stdin".format(password, user))
+            "echo '{}' | passwd '{}' --stdin".format(password, user))
         exit_status = stdout.channel.recv_exit_status()
-        print(exit_status)
         stdin, stdout, stderr = client.exec_command(
             "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
                 user))
