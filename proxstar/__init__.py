@@ -200,9 +200,9 @@ def vm_console(vmid):
         print("Creating SSH tunnel to {} for VM {}.".format(node, vmid))
         try:
             tunnel = start_ssh_tunnel(node, port)
+            ssh_tunnels.append(tunnel)
         except:
             print('SSH tunnel already exists.')
-        ssh_tunnels.append(tunnel)
         start_vm_vnc(proxmox, vmid)
         return token, 200
     else:
