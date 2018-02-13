@@ -33,7 +33,8 @@ app.config["GIT_REVISION"] = subprocess.check_output(
 with open('proxmox_ssh_key', 'w') as key:
     key.write(app.config['PROXMOX_SSH_KEY'])
 
-start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])
+start_websockify(app.config['WEBSOCKIFY_PATH'],
+                 app.config['WEBSOCKIFY_TARGET_FILE'])
 
 ssh_tunnels = []
 
@@ -196,6 +197,7 @@ def vm_console(vmid):
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
     if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
+        start_vm_vnc(proxmox, vmid)
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
         node = "{}.csh.rit.edu".format(get_vm_node(proxmox, vmid))
@@ -463,7 +465,6 @@ def exit_handler():
 
 
 atexit.register(exit_handler)
-
 
 if __name__ == "__main__":
     app.run()

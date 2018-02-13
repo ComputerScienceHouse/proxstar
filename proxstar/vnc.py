@@ -1,3 +1,4 @@
+import os
 import time
 import subprocess
 from sshtunnel import SSHTunnelForwarder
@@ -10,9 +11,8 @@ def start_websockify(websockify_path, target_file):
     if not result.stdout:
         subprocess.call(
             [
-                websockify_path, '8081', '--token-plugin',
-                'TokenFile', '--token-source', target_file,
-                '-D'
+                websockify_path, '8081', '--token-plugin', 'TokenFile',
+                '--token-source', target_file, '-D'
             ],
             stdout=subprocess.PIPE)
 
@@ -33,16 +33,17 @@ def stop_websockify():
 
 
 def get_vnc_targets():
-    target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'])
     targets = []
-    for line in target_file:
-        target_dict = dict()
-        values = line.strip().split(':')
-        target_dict['token'] = values[0]
-        target_dict['port'] = values[2]
-        targets.append(target_dict)
-    target_file.close()
-    return (targets)
+    if os.path.exists(app.config['WEBSOCKIFY_TARGET_FILE']):
+        target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'])
+        for line in target_file:
+            target_dict = dict()
+            values = line.strip().split(':')
+            target_dict['token'] = values[0]
+            target_dict['port'] = values[2]
+            targets.append(target_dict)
+        target_file.close()
+    return targets
 
 
 def add_vnc_target(port):
