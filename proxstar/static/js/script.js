@@ -812,7 +812,7 @@ $("#console-vm").click(function(){
     }).then((response) => {
         return response.text()
     }).then((token) => {
-        window.location = `/static/noVNC/vnc.html?autoconnect=true&?encrypt=true&?host=proxstar-vnc.csh.rit.edu&?port=443&?path=path?token=${token}`;
+        window.open(`/static/noVNC/vnc.html?autoconnect=true&encrypt=true&host=proxstar-vnc.csh.rit.edu&port=443&path=path?token=${token}`, '_blank');
     }).catch(err => {
         if (err) {
             swal("Uh oh...", `Unable to start console for ${vmname}. Please try again later.`, "error");
