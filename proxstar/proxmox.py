@@ -261,9 +261,8 @@ def change_vm_mem(proxmox, vmid, mem):
 
 def start_vm_vnc(proxmox, vmid):
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
-    port = str(5900 + int(vmid))
     node.qemu(vmid).monitor.post(
-        command="change vnc 127.0.0.1:{}".format(port))
+        command="change vnc 127.0.0.1:{}".format(vmid))
 
 
 def get_isos(proxmox, storage):
