@@ -33,9 +33,6 @@ app.config["GIT_REVISION"] = subprocess.check_output(
 with open('proxmox_ssh_key', 'w') as key:
     key.write(app.config['PROXMOX_SSH_KEY'])
 
-start_websockify(app.config['WEBSOCKIFY_PATH'],
-                 app.config['WEBSOCKIFY_TARGET_FILE'])
-
 ssh_tunnels = []
 
 retry = 0
