@@ -194,12 +194,16 @@ def vm_console(vmid):
     rtp = 'rtp' in session['userinfo']['groups']
     proxmox = connect_proxmox()
     if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
-        start_vm_vnc(proxmox, vmid)
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
         node = "{}.csh.rit.edu".format(get_vm_node(proxmox, vmid))
-        tunnel = start_ssh_tunnel(node, port)
+        print("Creating SSH tunnel to {} for VM {}.".format(node, vmid))
+        try:
+            tunnel = start_ssh_tunnel(node, port)
+        except:
+            print('SSH tunnel already exists.')
         ssh_tunnels.append(tunnel)
+        start_vm_vnc(proxmox, vmid)
         return token, 200
     else:
         return '', 403
