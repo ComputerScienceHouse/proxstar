@@ -21,7 +21,7 @@
                     {% endif %}
                     {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
                     {% if vm['qmpstatus'] == 'running' %}
-                    <a href="https://proxmox01.csh.rit.edu/#v1:0:=qemu%2F{{ vm['vmid'] }}:4::::8::" target="_blank">Open VM Console</a>
+                    <button class="btn btn-success proxstar-actionbtn" id="console-vm" name="console" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">CONSOLE</button>
                     <button class="btn btn-info proxstar-actionbtn" id="suspend-vm" name="suspend" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SUSPEND</button>
                     {% endif %}
                     <button class="btn btn-info proxstar-actionbtn" id="shutdown-vm" name="shutdown" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SHUTDOWN</button>
@@ -82,6 +82,8 @@
                         <dd>{{ vm['vmid'] }}</dd>
                         <dt>Status</dt>
                         <dd>{{ vm['qmpstatus'] }}</dd>
+                        <dt>Node</dt>
+                        <dd>{{ vm['node'] }}</dd>
                         <dt>Cores</dt>
                         <dd>
                             {{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}

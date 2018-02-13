@@ -1,5 +1,6 @@
 import os
 import time
+import atexit
 import subprocess
 from rq import Queue
 from redis import Redis
@@ -10,6 +11,7 @@ from werkzeug.contrib.cache import SimpleCache
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask import Flask, render_template, request, redirect, send_from_directory, session
 from proxstar.db import *
+from proxstar.vnc import *
 from proxstar.util import *
 from proxstar.tasks import *
 from proxstar.starrs import *
@@ -27,6 +29,13 @@ else:
 app.config.from_pyfile(config)
 app.config["GIT_REVISION"] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
+
+with open('proxmox_ssh_key', 'w') as key:
+    key.write(app.config['PROXMOX_SSH_KEY'])
+
+start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])
+
+ssh_tunnels = []
 
 retry = 0
 while retry < 5:
@@ -132,6 +141,7 @@ def vm_details(vmid):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
+        vm['node'] = get_vm_node(proxmox, vmid)
         vm['disks'] = get_vm_disks(proxmox, vmid, config=vm['config'])
         vm['iso'] = get_vm_iso(proxmox, vmid, config=vm['config'])
         vm['interfaces'] = []
@@ -175,6 +185,23 @@ def vm_power(vmid, action):
                 return usage_check
         change_vm_power(proxmox, vmid, action)
         return '', 200
+    else:
+        return '', 403
+
+
+@app.route("/vm/<string:vmid>/console", methods=['POST'])
+@auth.oidc_auth
+def vm_console(vmid):
+    user = session['userinfo']['preferred_username']
+    rtp = 'rtp' in session['userinfo']['groups']
+    proxmox = connect_proxmox()
+    if rtp or int(vmid) in get_user_allowed_vms(proxmox, db, user):
+        port = str(5900 + int(vmid))
+        token = add_vnc_target(port)
+        node = "{}.csh.rit.edu".format(get_vm_node(proxmox, vmid))
+        tunnel = start_ssh_tunnel(node, port)
+        ssh_tunnels.append(tunnel)
+        return token, 200
     else:
         return '', 403
 
@@ -420,22 +447,22 @@ def template_disk(template_id):
     return get_template_disk(db, template_id)
 
 
-@app.route('/vm/<string:vmid>/rrd/<path:path>')
-@auth.oidc_auth
-def send_rrd(vmid, path):
-    return send_from_directory("rrd/{}".format(vmid), path)
-
-
-@app.route('/novnc/<path:path>')
-@auth.oidc_auth
-def send_novnc(path):
-    return send_from_directory('static/novnc-pve/novnc', path)
-
-
 @app.route("/logout")
 @auth.oidc_logout
 def logout():
     return redirect(url_for('list_vms'), 302)
+
+
+def exit_handler():
+    stop_websockify()
+    for tunnel in ssh_tunnels:
+        try:
+            tunnel.stop()
+        except:
+            pass
+
+
+atexit.register(exit_handler)
 
 
 if __name__ == "__main__":

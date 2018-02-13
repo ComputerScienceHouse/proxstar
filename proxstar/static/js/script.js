@@ -802,3 +802,23 @@ function hide_for_template(obj) {
         hide_area.style.display = 'none';
     }
 }
+
+$("#console-vm").click(function(){
+    const vmname = $(this).data('vmname');
+    const vmid = $(this).data('vmid');
+    fetch(`/vm/${vmid}/console`, {
+        credentials: 'same-origin',
+        method: 'post'
+    }).then((response) => {
+        return response.text()
+    }).then((token) => {
+        window.location = `/static/noVNC/vnc.html?autoconnect=true&?encrypt=true&?host=proxstar.csh.rit.edu&?port=8081&?path=path?token=${token}`;
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to start console for ${vmname}. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});

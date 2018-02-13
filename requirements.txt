@@ -10,3 +10,4 @@ rq-scheduler==0.7.0
 gunicorn
 raven
 paramiko
+websockify

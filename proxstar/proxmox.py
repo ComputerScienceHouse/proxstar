@@ -287,12 +287,6 @@ def get_pools(proxmox, db):
     return pools
 
 
-def get_rrd_for_vm(proxmox, vmid, source, time):
-    node = proxmox.nodes(get_vm_node(proxmox, vmid))
-    image = node.qemu(vmid).rrd.get(ds=source, timeframe=time)['image']
-    return image
-
-
 def delete_user_pool(proxmox, pool):
     proxmox.pools(pool).delete()
     users = proxmox.access.users.get()

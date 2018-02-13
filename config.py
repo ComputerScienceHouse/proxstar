@@ -31,6 +31,7 @@ PROXMOX_HOSTS = [
 PROXMOX_USER = environ.get('PROXSTAR_PROXMOX_USER', '')
 PROXMOX_PASS = environ.get('PROXSTAR_PROXMOX_PASS', '')
 PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'nfs-iso')
+PROXMOX_SSH_KEY = environ.get('PROXSTAR_PROXMOX_SSH_KEY', '')
 
 # STARRS
 STARRS_DB_HOST = environ.get('PROXSTAR_STARRS_DB_HOST', '')
@@ -50,3 +51,7 @@ SQLALCHEMY_DATABASE_URI = environ.get('PROXSTAR_SQLALCHEMY_DATABASE_URI', '')
 # REDIS
 REDIS_HOST = environ.get('PROXSTAR_REDIS_HOST', 'localhost')
 REDIS_PORT = int(environ.get('PROXSTAR_REDIS_PORT', '6379'))
+
+# VNC
+WEBSOCKIFY_PATH = environ.get('PROXSTAR_WEBSOCKIFY_PATH', '/opt/app-root/bin/websockify')
+WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE', '/opt/app-root/src/targets')
