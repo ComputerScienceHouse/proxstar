@@ -777,8 +777,9 @@ $(".delete-ignored-pool").click(function(){
     fetch(`/pool/${pool}/ignore`, {
         credentials: 'same-origin',
         method: 'delete'
-    });
+    }).then((response) => {
     location.reload();
+    });
 });
 
 $(".add-ignored-pool").click(function(){
@@ -786,8 +787,9 @@ $(".add-ignored-pool").click(function(){
     fetch(`/pool/${pool}/ignore`, {
         credentials: 'same-origin',
         method: 'post'
-    });
+    }).then((response) => {
     location.reload();
+    });
 });
 
 function hide_for_template(obj) {
@@ -820,5 +822,25 @@ $("#console-vm").click(function(){
             swal.stopLoading();
             swal.close();
         }
+    });
+});
+
+$(".delete-allowed-user").click(function(){
+    const user = $(this).data('user');
+    fetch(`/user/${user}/allow`, {
+        credentials: 'same-origin',
+        method: 'delete'
+    }).then((response) => {
+    location.reload();
+    });
+});
+
+$(".add-allowed-user").click(function(){
+    const user = document.getElementById('user').value;
+    fetch(`/user/${user}/allow`, {
+        credentials: 'same-origin',
+        method: 'post'
+    }).then((response) => {
+    location.reload();
     });
 });

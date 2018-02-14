@@ -60,6 +60,10 @@ def add_vnc_target(port):
         return token
 
 
+def clear_vnc_targets():
+    open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w').close()
+
+
 def start_ssh_tunnel(node, port):
     port = int(port)
     server = SSHTunnelForwarder(

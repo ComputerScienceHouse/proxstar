@@ -2,7 +2,7 @@ import datetime
 from sqlalchemy import exists
 from dateutil.relativedelta import relativedelta
 from proxstar.ldapdb import *
-from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Ignored_Pools, Template, Base
+from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Ignored_Pools, Template, Allowed_Users, Base
 
 
 def get_vm_expire(db, vmid, months):
@@ -180,3 +180,25 @@ def get_template_disk(db, template_id):
         template = db.query(Template).filter(Template.id == template_id).one()
         disk = template.disk
     return str(disk)
+
+
+def get_allowed_users(db):
+    allowed_users = []
+    for user in db.query(Allowed_Users).all():
+        allowed_users.append(user.id)
+    return allowed_users
+
+
+def add_allowed_user(db, user):
+    if not db.query(exists().where(Allowed_Users.id == user)).scalar():
+        allowed_user = Allowed_Users(id=user)
+        db.add(allowed_user)
+        db.commit()
+
+
+def delete_allowed_user(db, user):
+    if db.query(exists().where(Allowed_Users.id == user)).scalar():
+        allowed_user = db.query(Allowed_Users).filter(
+            Allowed_Users.id == user).one()
+        db.delete(allowed_user)
+        db.commit()

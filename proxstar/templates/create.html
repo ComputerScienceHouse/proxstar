@@ -3,7 +3,7 @@
 
 <div class="container">
     <div class="row">
-        {% if rtp %}
+        {% if user['rtp'] %}
         <div class="col-md-12 col-sm-12">
         {% else %}
         <div class="col-md-9 col-sm-12">
@@ -61,7 +61,7 @@
                             </select>
                         </div>
                     </div>
-                    {% if rtp %}
+                    {% if user['rtp'] %}
                     <div class="form-group">
                         <label for="user" class="pull-left">User</label>
                         <select name="user" id="user" class="form-control">
@@ -76,7 +76,7 @@
                 </div>
             </div>
         </div>
-        {% if not rtp %}
+        {% if not user['rtp'] %}
         <div class="col-md-3 col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">

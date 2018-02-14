@@ -43,3 +43,8 @@ class Template(Base):
 class Ignored_Pools(Base):
     __tablename__ = 'ignored_pools'
     id = Column(String(32), primary_key=True)
+
+
+class Allowed_Users(Base):
+    __tablename__ = 'allowed_users'
+    id = Column(String(32), primary_key=True)

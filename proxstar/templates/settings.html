@@ -3,7 +3,7 @@
 
 <div class="container">
     <div class="row">
-        <div class="col-md-9 col-sm-12">
+        <div class="col-md-6 col-sm-12">
             <div class="panel panel-default">
                 <div class="panel-heading">
                     <h3 class="panel-title">Templates</h3>
@@ -66,11 +66,48 @@
                             {% endfor %}
                         </tbody>
                     </table>
-                    <div class="col-md-9">
+                    <div class="col-md-9 col-xs-9">
                         <input type="text" id="pool" class="form-control">
                     </div>
-                    <div class="col-md-3">
-                    <button class="btn btn-sm btn-success add-ignored-pool" data-pool="{{ pool }}">
+                    <div class="col-md-3 col-xs-3">
+                    <button class="btn btn-sm btn-success add-ignored-pool">
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">Allowed Users</h3>
+                </div>
+                <div class="panel-body">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr role="row">
+                                <th>User</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for username in allowed_users %}
+                                <tr role="row">
+                                    <td class="col-md-9">{{ username }}</td>
+                                    <td class="col-md-3">
+                                        <button class="btn btn-sm btn-danger delete-allowed-user" data-user="{{ username }}">
+                                            <span class="glyphicon glyphicon-remove"></span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="col-md-9 col-xs-9">
+                        <input type="text" id="user" class="form-control">
+                    </div>
+                    <div class="col-md-3 col-xs-3">
+                    <button class="btn btn-sm btn-success add-allowed-user">
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
                     </div>
