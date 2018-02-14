@@ -96,10 +96,7 @@ def list_vms(user_view=None):
         else:
             vms = 'INACTIVE'
     return render_template(
-        'list_vms.html',
-        user=user,
-        rtp_view=rtp_view,
-        vms=vms)
+        'list_vms.html', user=user, rtp_view=rtp_view, vms=vms)
 
 
 @app.route("/isos")
@@ -127,7 +124,8 @@ def hostname(name):
 def vm_details(vmid):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user['username']):
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
         vm = get_vm(proxmox, vmid)
         vm['vmid'] = vmid
         vm['config'] = get_vm_config(proxmox, vmid)
@@ -163,11 +161,13 @@ def vm_details(vmid):
 def vm_power(vmid, action):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user['username']):
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
         if action == 'start':
             config = get_vm_config(proxmox, vmid)
-            usage_check = check_user_usage(proxmox, db, user['username'], config['cores'],
-                                           config['memory'], 0)
+            usage_check = check_user_usage(proxmox, db, user['username'],
+                                           config['cores'], config['memory'],
+                                           0)
             if usage_check:
                 return usage_check
         change_vm_power(proxmox, vmid, action)
@@ -181,7 +181,8 @@ def vm_power(vmid, action):
 def vm_console(vmid):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user['username']):
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
         node = "{}.csh.rit.edu".format(get_vm_node(proxmox, vmid))
@@ -202,7 +203,8 @@ def vm_console(vmid):
 def vm_cpu(vmid, cores):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user['username']):
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
         cur_cores = get_vm_config(proxmox, vmid)['cores']
         if cores >= cur_cores:
             status = get_vm(proxmox, vmid)['qmpstatus']
@@ -210,7 +212,8 @@ def vm_cpu(vmid, cores):
                 usage_check = check_user_usage(proxmox, db, user['username'],
                                                cores - cur_cores, 0, 0)
             else:
-                usage_check = check_user_usage(proxmox, db, user['username'], cores, 0, 0)
+                usage_check = check_user_usage(proxmox, db, user['username'],
+                                               cores, 0, 0)
             if usage_check:
                 return usage_check
         change_vm_cpu(proxmox, vmid, cores)
@@ -224,15 +227,17 @@ def vm_cpu(vmid, cores):
 def vm_mem(vmid, mem):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user['username']):
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
         cur_mem = get_vm_config(proxmox, vmid)['memory'] // 1024
         if mem >= cur_mem:
             status = get_vm(proxmox, vmid)['qmpstatus']
             if status == 'running' or status == 'paused':
-                usage_check = check_user_usage(proxmox, db, user['username'], 0,
-                                               mem - cur_mem, 0)
+                usage_check = check_user_usage(proxmox, db, user['username'],
+                                               0, mem - cur_mem, 0)
             else:
-                usage_check = check_user_usage(proxmox, db, user['username'], 0, mem, 0)
+                usage_check = check_user_usage(proxmox, db, user['username'],
+                                               0, mem, 0)
             if usage_check:
                 return usage_check
         change_vm_mem(proxmox, vmid, mem * 1024)
@@ -246,7 +251,8 @@ def vm_mem(vmid, mem):
 def vm_renew(vmid):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user['username']):
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
         renew_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         for interface in get_vm_interfaces(proxmox, vmid):
             renew_ip(starrs, get_ip_for_mac(starrs, interface[1]))
@@ -272,7 +278,8 @@ def iso_eject(vmid):
 def iso_mount(vmid, iso):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user['username']):
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
         iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
         mount_vm_iso(proxmox, vmid, iso)
         return '', 200
@@ -286,7 +293,8 @@ def delete(vmid):
     user = build_user_dict(session, db)
     proxmox = connect_proxmox()
     if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']) or 'rtp' in session['userinfo']['groups']:
+            proxmox, db,
+            user['username']) or 'rtp' in session['userinfo']['groups']:
         q.enqueue(delete_vm_task, vmid)
         return '', 200
     else:
@@ -302,7 +310,8 @@ def create():
         if request.method == 'GET':
             usage = get_user_usage(proxmox, db, user['username'])
             limits = get_user_usage_limits(db, user['username'])
-            percents = get_user_usage_percent(proxmox, user['username'], usage, limits)
+            percents = get_user_usage_percent(proxmox, user['username'], usage,
+                                              limits)
             isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
             pools = get_pools(proxmox, db)
             templates = get_templates(db)
@@ -326,7 +335,8 @@ def create():
                 iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'],
                                          iso)
             if not user['rtp']:
-                usage_check = check_user_usage(proxmox, db, user['username'], 0, 0, disk)
+                usage_check = check_user_usage(proxmox, db, user['username'],
+                                               0, 0, disk)
             else:
                 usage_check = None
                 user['username'] = request.form['user']

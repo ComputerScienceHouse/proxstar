@@ -15,9 +15,10 @@ def connect_proxmox():
             version = proxmox.version.get()
             return proxmox
         except:
-            pass
-        print("Unable to connect to Proxmox!")
-        raise
+            if app.config['PROXMOX_HOSTS'].index(host) == (
+                    len(app.config['PROXMOX_HOSTS']) - 1):
+                print('Unable to connect to any of the given Proxmox servers!')
+                raise
 
 
 def create_user(proxmox, user):

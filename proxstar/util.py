@@ -14,6 +14,8 @@ def gen_password(
 def build_user_dict(session, db):
     user_dict = dict()
     user_dict['username'] = session['userinfo']['preferred_username']
-    user_dict['active'] = 'active' in session['userinfo']['groups'] or user_dict['username'] in get_allowed_users(db)
+    user_dict[
+        'active'] = 'active' in session['userinfo']['groups'] or user_dict['username'] in get_allowed_users(
+            db)
     user_dict['rtp'] = 'rtp' in session['userinfo']['groups']
     return user_dict
