@@ -21,20 +21,13 @@ def connect_proxmox():
                 raise
 
 
-def create_user(proxmox, user):
-    if not is_rtp(user):
-        proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
-        users = proxmox.access.users.get()
-        username = "{}@csh.rit.edu".format(user)
-        proxmox.access.users.post(userid=username)
-        proxmox.access.acl.put(
-            path="/pool/{}".format(user), roles='PVEVMConsole', users=username)
-
-
 def get_vms_for_user(proxmox, db, user):
     pools = get_pools(proxmox, db)
     if user not in pools:
-        create_user(proxmox, user)
+        if is_user(user) and not is_rtp(user):
+                proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
+        else:
+            return []
     vms = proxmox.pools(user).get()['members']
     for vm in vms:
         if 'name' not in vm:
