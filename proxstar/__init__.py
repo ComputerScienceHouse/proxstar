@@ -457,7 +457,7 @@ def allowed_users(user):
         return '', 403
 
 
-@app.route("/vnc/cleanup")
+@app.route("/console/cleanup")
 @auth.oidc_auth
 def cleanup_vnc():
     if 'rtp' in session['userinfo']['groups']:
