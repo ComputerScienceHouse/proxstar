@@ -68,7 +68,8 @@ def delete_vnc_target(port):
         targets.remove(target)
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w')
         for target in targets:
-            target_file.write("{}\n".format(target))
+            target_file.write("{}: 127.0.0.1:{}\n".format(
+                target['token'], target['port']))
         target_file.close()
 
 
