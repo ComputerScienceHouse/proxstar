@@ -1,5 +1,6 @@
 import os
 import time
+import psutil
 import atexit
 import subprocess
 from rq import Queue
@@ -456,11 +457,24 @@ def allowed_users(user):
         return '', 403
 
 
-@app.route("/targets/clear")
+@app.route("/vnc/cleanup")
 @auth.oidc_auth
-def clear_targets():
+def cleanup_vnc():
     if 'rtp' in session['userinfo']['groups']:
-        clear_vnc_targets()
+        for target in get_vnc_targets():
+            tunnel = next((tunnel for tunnel in ssh_tunnels
+                           if tunnel.local_bind_port == int(target['port'])),
+                          None)
+            if tunnel:
+                if not next((conn for conn in psutil.net_connections()
+                             if conn.laddr[1] == int(target['port'])
+                             and conn.status == 'ESTABLISHED'), None):
+                    try:
+                        tunnel.stop()
+                    except:
+                        pass
+                    ssh_tunnels.remove(tunnel)
+                    delete_vnc_target(target['port'])
         return '', 200
     else:
         return '', 403

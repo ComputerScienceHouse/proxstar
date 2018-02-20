@@ -12,3 +12,4 @@ raven
 paramiko
 websockify
 sshtunnel
+psutil

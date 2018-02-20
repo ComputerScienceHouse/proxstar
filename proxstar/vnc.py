@@ -60,8 +60,16 @@ def add_vnc_target(port):
         return token
 
 
-def clear_vnc_targets():
-    open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w').close()
+def delete_vnc_target(port):
+    targets = get_vnc_targets()
+    target = next((target for target in targets if target['port'] == port),
+                  None)
+    if target:
+        targets.remove(target)
+        target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w')
+        for target in targets:
+            target_file.write("{}\n".format(target))
+        target_file.close()
 
 
 def start_ssh_tunnel(node, port):
