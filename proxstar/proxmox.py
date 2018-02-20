@@ -25,7 +25,7 @@ def get_vms_for_user(proxmox, db, user):
     pools = get_pools(proxmox, db)
     if user not in pools:
         if is_user(user) and not is_rtp(user):
-                proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
+            proxmox.pools.post(poolid=user, comment='Managed by Proxstar')
         else:
             return []
     vms = proxmox.pools(user).get()['members']
@@ -253,10 +253,11 @@ def change_vm_mem(proxmox, vmid, mem):
     node.qemu(vmid).config.put(memory=mem)
 
 
-def start_vm_vnc(proxmox, vmid):
+def start_vm_vnc(proxmox, vmid, port):
     node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    port = str(int(port) - 5900)
     node.qemu(vmid).monitor.post(
-        command="change vnc 127.0.0.1:{}".format(vmid))
+        command="change vnc 127.0.0.1:{}".format(port))
 
 
 def get_isos(proxmox, storage):

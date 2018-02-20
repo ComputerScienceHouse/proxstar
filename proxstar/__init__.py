@@ -68,7 +68,7 @@ if 'generate_pool_cache' not in scheduler:
         id='generate_pool_cache',
         scheduled_time=datetime.datetime.utcnow(),
         func=generate_pool_cache_task,
-        interval=60)
+        interval=90)
 
 if 'process_expiring_vms' not in scheduler:
     scheduler.cron(
@@ -176,7 +176,7 @@ def vm_power(vmid, action):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/console", methods=['POST'])
+@app.route("/console/vm/<string:vmid>", methods=['POST'])
 @auth.oidc_auth
 def vm_console(vmid):
     user = build_user_dict(session, db)
@@ -186,13 +186,28 @@ def vm_console(vmid):
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
         node = "{}.csh.rit.edu".format(get_vm_node(proxmox, vmid))
-        print("Creating SSH tunnel to {} for VM {}.".format(node, vmid))
-        try:
+        tunnel = next((tunnel for tunnel in ssh_tunnels
+                       if tunnel.local_bind_port == int(port)), None)
+        if tunnel:
+            if tunnel.ssh_host != node:
+                print(
+                    "Tunnel already exists for VM {} to the wrong Proxmox node.".
+                    format(vmid))
+                tunnel.stop()
+                ssh_tunnels.remove(tunnel)
+                print("Creating SSH tunnel to {} for VM {}.".format(
+                    node, vmid))
+                tunnel = start_ssh_tunnel(node, port)
+                ssh_tunnels.append(tunnel)
+                start_vm_vnc(proxmox, vmid, port)
+            else:
+                print("Tunnel already exists to {} for VM {}.".format(
+                    node, vmid))
+        else:
+            print("Creating SSH tunnel to {} for VM {}.".format(node, vmid))
             tunnel = start_ssh_tunnel(node, port)
             ssh_tunnels.append(tunnel)
-        except:
-            print('SSH tunnel already exists.')
-        start_vm_vnc(proxmox, vmid)
+            start_vm_vnc(proxmox, vmid, port)
         return token, 200
     else:
         return '', 403

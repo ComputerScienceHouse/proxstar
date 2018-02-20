@@ -808,7 +808,7 @@ function hide_for_template(obj) {
 $("#console-vm").click(function(){
     const vmname = $(this).data('vmname');
     const vmid = $(this).data('vmid');
-    fetch(`/vm/${vmid}/console`, {
+    fetch(`https://proxstar-vnc.csh.rit.edu/console/vm/${vmid}`, {
         credentials: 'same-origin',
         method: 'post'
     }).then((response) => {
