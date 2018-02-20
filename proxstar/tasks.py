@@ -1,4 +1,5 @@
 import os
+import requests
 import paramiko
 from flask import Flask
 from sqlalchemy import create_engine
@@ -161,3 +162,10 @@ def setup_template(template_id, name, user, password, cores, memory):
         exit_status = stdout.channel.recv_exit_status()
         client.close()
         print("[{}] Template successfully provisioned.".format(name))
+
+
+def cleanup_vnc_task():
+    requests.post(
+        'https://proxstar.csh.rit.edu/console/cleanup',
+        data={'token': app.config['VNC_CLEANUP_TOKEN']},
+        verify=False)

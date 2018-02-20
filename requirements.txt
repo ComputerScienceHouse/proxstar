@@ -13,3 +13,4 @@ paramiko
 websockify
 sshtunnel
 psutil
+requests

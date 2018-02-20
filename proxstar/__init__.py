@@ -75,6 +75,13 @@ if 'process_expiring_vms' not in scheduler:
     scheduler.cron(
         '0 5 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
 
+if 'cleanup_vnc' not in scheduler:
+    scheduler.schedule(
+        id='cleanup_vnc',
+        scheduled_time=datetime.datetime.utcnow(),
+        func=cleanup_vnc_task,
+        interval=3600)
+
 
 @app.route("/")
 @app.route("/user/<string:user_view>")
@@ -457,10 +464,9 @@ def allowed_users(user):
         return '', 403
 
 
-@app.route("/console/cleanup")
-@auth.oidc_auth
+@app.route("/console/cleanup", methods=['POST'])
 def cleanup_vnc():
-    if 'rtp' in session['userinfo']['groups']:
+    if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
         for target in get_vnc_targets():
             tunnel = next((tunnel for tunnel in ssh_tunnels
                            if tunnel.local_bind_port == int(target['port'])),

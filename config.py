@@ -2,6 +2,7 @@ from os import environ
 
 # Proxstar
 VM_EXPIRE_MONTHS = int(environ.get('PROXSTAR_VM_EXPIRE_MONTHS', '3'))
+VNC_CLEANUP_TOKEN = environ.get('PROXSTAR_VNC_CLEANUP_TOKEN', '')
 
 # Flask
 IP = environ.get('PROXSTAR_IP', '0.0.0.0')
