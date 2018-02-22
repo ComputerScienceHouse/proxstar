@@ -49,7 +49,12 @@
                         {% endfor %}
                         <li class="nav-header">Disks</li>
                         {% for disk in vm['disks'] %}
-                        <li>{{ disk[0] }}: {{ disk[1] }}GB</li>
+                        <li>
+                            {{ disk[0] }}: {{ disk[1] }}GB
+                            <button class="btn btn-default proxstar-changebtn resize-disk" id="resize-disk" name="resize" data-vmid="{{ vm['vmid'] }}" data-disk="{{ disk[0] }}" data-usage="{{ usage['disk'] }}" data-limit="{{ limits['disk'] }}">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </button>
+                        </li>
                         {% endfor %}
                         <li class="nav-header">ISO</li>
                         <li>
@@ -88,11 +93,11 @@
                         <dd>
                             {{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}
                             {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage="{{ usage['cpu'] - (vm['config']['cores'] * vm['config'].get('sockets', 1)) }}" data-limit="{{ limits['cpu'] }}">
+                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-usage="{{ usage['cpu'] - (vm['config']['cores'] * vm['config'].get('sockets', 1)) }}" data-limit="{{ limits['cpu'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% else %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}" data-usage=0 data-limit="{{ limits['cpu'] }}">
+                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-usage=0 data-limit="{{ limits['cpu'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% endif %}
@@ -105,11 +110,11 @@
                             {{ vm['config']['memory'] // 1024 }}GB
                             {% endif %}
                             {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-mem="{{ vm['config']['memory'] // 1024 }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
+                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% else %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-cores="{{ vm['config']['memory'] // 1024 }}" data-usage=0 data-limit="{{ limits['mem'] }}">
+                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-usage=0 data-limit="{{ limits['mem'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% endif %}

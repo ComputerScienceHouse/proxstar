@@ -317,3 +317,8 @@ def clone_vm(proxmox, template_id, name, pool):
             retry += 1
             time.sleep(3)
     return newid, mac
+
+
+def resize_vm_disk(proxmox, vmid, disk, size):
+    node = proxmox.nodes(get_vm_node(proxmox, vmid))
+    node.qemu(vmid).resize.put(disk=disk, size="+{}G".format(size))

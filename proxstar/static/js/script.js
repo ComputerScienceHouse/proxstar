@@ -319,7 +319,7 @@ $("#change-iso").click(function(){
                 select: {
                     text: "Select",
                     closeModal: false,
-                    className: "swal-button--danger",
+                    className: "",
                 }
             },
             dangerMode: true,
@@ -503,7 +503,6 @@ $("#create-vm").click(function(){
 
 $("#change-cores").click(function(){
     const vmid = $(this).data('vmid');
-    const cur_cores = $(this).data('cores');
     const usage = $(this).data('usage');
     const limit = $(this).data('limit');
     var core_list = document.createElement('select');
@@ -561,7 +560,6 @@ $("#change-cores").click(function(){
 
 $("#change-mem").click(function(){
     const vmid = $(this).data('vmid');
-    const cur_mem = $(this).data('mem');
     const usage = $(this).data('usage');
     const limit = $(this).data('limit');
     var mem_list = document.createElement('select');
@@ -842,5 +840,66 @@ $(".add-allowed-user").click(function(){
         method: 'post'
     }).then((response) => {
     location.reload();
+    });
+});
+
+$(".resize-disk").click(function(){
+    const vmid = $(this).data('vmid');
+    const disk = $(this).data('disk');
+    const usage = $(this).data('usage');
+    const limit = $(this).data('limit');
+    swal({
+        title: 'Enter how many GB you would like to expand this disk by:',
+        content: {
+            element: 'input',
+            attributes: {
+                type: 'number',
+            },
+        },
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            confirm: {
+                text: "Select",
+                closeModal: false,
+                className: "swal-button",
+            }
+        },
+    })
+    .then((size) => {
+        if (size) {
+            if ((parseInt(usage) + parseInt(size)) <= parseInt(limit)) {
+                fetch(`/vm/${vmid}/disk/${disk}/${size}`, {
+                    credentials: 'same-origin',
+                    method: 'post'
+                }).then((response) => {
+                    return swal(`Disk size has been increased!`, {
+                        icon: "success",
+                        buttons: {
+                            ok: {
+                                text: "OK",
+                                closeModal: true,
+                                className: "",
+                            }
+                        }
+                    });
+                }).then(() => {
+                    window.location = `/vm/${vmid}`;
+                });
+            } else {
+                swal("Uh oh...", `You don't have enough disk resources! Try again with a smaller size.`, "error");
+            }
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to resize the disk. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
     });
 });

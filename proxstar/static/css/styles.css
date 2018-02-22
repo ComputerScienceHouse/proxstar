@@ -128,3 +128,12 @@ table, th, td {
     float: right;
     padding-bottom: 2px;
 }
+
+.swal-button {
+  padding: 6px 16px;
+  font-family: inherit;
+  font-weight: normal;
+  font-size: 13px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}

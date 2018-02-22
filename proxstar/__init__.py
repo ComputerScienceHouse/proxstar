@@ -269,6 +269,23 @@ def vm_mem(vmid, mem):
         return '', 403
 
 
+@app.route("/vm/<string:vmid>/disk/<string:disk>/<int:size>", methods=['POST'])
+@auth.oidc_auth
+def vm_disk(vmid, disk, size):
+    user = build_user_dict(session, db)
+    proxmox = connect_proxmox()
+    if user['rtp'] or int(vmid) in get_user_allowed_vms(
+            proxmox, db, user['username']):
+        cur_cores = get_vm_config(proxmox, vmid)['cores']
+        usage_check = check_user_usage(proxmox, db, user['username'], 0, 0, size)
+        if usage_check:
+            return usage_check
+        resize_vm_disk(proxmox, vmid, disk, size)
+        return '', 200
+    else:
+        return '', 403
+
+
 @app.route("/vm/<string:vmid>/renew", methods=['POST'])
 @auth.oidc_auth
 def vm_renew(vmid):
