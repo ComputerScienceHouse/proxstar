@@ -137,3 +137,11 @@ table, th, td {
   border-radius: 3px;
   text-transform: uppercase;
 }
+
+.swal-button--confirm {
+  background-color: #4caf50;
+}
+
+.swal-button--ok {
+  background-color: #4caf50;
+}

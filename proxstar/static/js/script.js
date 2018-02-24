@@ -316,13 +316,12 @@ $("#change-iso").click(function(){
                     closeModal: true,
                     className: "",
                 },
-                select: {
+                confirm: {
                     text: "Select",
                     closeModal: false,
                     className: "",
                 }
             },
-            dangerMode: true,
         })
         .then((willChange) => {
             if (willChange) {
@@ -431,10 +430,9 @@ $("#create-vm").click(function(){
                             icon: "info",
                             buttons: {
                                 cancel: true,
-                                create: {
+                                confirm: {
                                     text: "Create",
                                     closeModal: false,
-                                    className: "swal-button",
                                 }
                             }
                         })
@@ -520,10 +518,9 @@ $("#change-cores").click(function(){
                 closeModal: true,
                 className: "",
             },
-            select: {
+            confirm: {
                 text: "Select",
                 closeModal: false,
-                className: "swal-button",
             }
         },
     })
@@ -577,10 +574,9 @@ $("#change-mem").click(function(){
                 closeModal: true,
                 className: "",
             },
-            select: {
+            confirm: {
                 text: "Select",
                 closeModal: false,
-                className: "swal-button",
             }
         },
     })
@@ -652,10 +648,9 @@ $(".edit-limit").click(function(){
                 closeModal: true,
                 className: "",
             },
-            select: {
+            confirm: {
                 text: "Submit",
                 closeModal: false,
-                className: "swal-button",
             }
         },
     })
@@ -690,44 +685,6 @@ $(".edit-limit").click(function(){
         } else {
             swal.stopLoading();
             swal.close();
-        }
-    });
-});
-
-$(".reset-limit").click(function(){
-    const user = $(this).data('user');
-    swal({
-        title: `Are you sure you want to reset the usage limits for ${user} to the defaults?`,
-        icon: "warning",
-        buttons: {
-            cancel: true,
-            reset: {
-                text: "reset",
-                closeModal: false,
-                className: "swal-button--danger",
-            }
-        },
-        dangerMode: true,
-    })
-    .then((willReset) => {
-        if (willReset) {
-            fetch(`/limits/${user}/reset`, {
-                credentials: 'same-origin',
-                method: 'post'
-            }).then((response) => {
-                return swal(`Usage limits for ${user} are now reset to defaults!`, {
-                    icon: "success",
-                });
-            }).then(() => {
-                window.location = "/";
-            }).catch(err => {
-                if (err) {
-                    swal("Uh oh...", `Unable to reset the usage limits for ${user}. Please try again later.`, "error");
-                } else {
-                    swal.stopLoading();
-                    swal.close();
-                }
-            });
         }
     });
 });
@@ -866,7 +823,6 @@ $(".resize-disk").click(function(){
             confirm: {
                 text: "Select",
                 closeModal: false,
-                className: "swal-button",
             }
         },
     })
@@ -945,10 +901,9 @@ $(".edit-template").click(function(){
                 closeModal: true,
                 className: "",
             },
-            select: {
+            confirm: {
                 text: "Submit",
                 closeModal: false,
-                className: "swal-button",
             }
         },
     })
