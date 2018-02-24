@@ -903,3 +903,87 @@ $(".resize-disk").click(function(){
         }
     });
 });
+
+$(".edit-template").click(function(){
+    const template_id = $(this).data('template_id');
+    const template_name = $(this).data('template_name');
+    const template_username = $(this).data('template_username');
+    const template_disk = $(this).data('template_disk');
+    var options = document.createElement('div');
+    name_text = document.createElement('p');
+    name_text.innerHTML = 'Name';
+    options.append(name_text);
+    var name = document.createElement('input');
+    name.defaultValue = template_name;
+    options.append(name);
+    username_text = document.createElement('p');
+    username_text.innerHTML = 'Username';
+    options.append(username_text);
+    var username = document.createElement('input');
+    username.defaultValue = template_username;
+    options.append(username);
+    password_text = document.createElement('p');
+    password_text.innerHTML = 'Password';
+    options.append(password_text);
+    var password = document.createElement('input');
+    password.type = 'password';
+    options.append(password);
+    disk_text = document.createElement('p');
+    disk_text.innerHTML = 'Disk Size (GB)';
+    options.append(disk_text);
+    var disk = document.createElement('input');
+    disk.type = 'number';
+    disk.defaultValue = template_disk;
+    options.append(disk);
+    swal({
+        title: `Template ${template_id}:`,
+        content: options,
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            select: {
+                text: "Submit",
+                closeModal: false,
+                className: "swal-button",
+            }
+        },
+    })
+    .then((willChange) => {
+        if (willChange) {
+            var data  = new FormData();
+            data.append('name', $(name).val());
+            data.append('username', $(username).val());
+            data.append('password', $(password).val());
+            data.append('disk', $(disk).val());
+            fetch(`/template/${template_id}/edit`, {
+                credentials: 'same-origin',
+                method: 'post',
+                body: data
+            }).then((response) => {
+                return swal(`Template info changed!`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
+                });
+            }).then(() => {
+                location.reload();
+            });
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to change the template info. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});

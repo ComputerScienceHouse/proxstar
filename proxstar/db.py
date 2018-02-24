@@ -201,3 +201,14 @@ def delete_allowed_user(db, user):
             Allowed_Users.id == user).one()
         db.delete(allowed_user)
         db.commit()
+
+
+def set_template_info(db, template_id, name, username, password, disk):
+    if db.query(exists().where(Template.id == template_id,)).scalar():
+        template = db.query(Template).filter(Template.id == template_id,).one()
+        template.name = name
+        template.username = username
+        if password:
+            template.password = password
+        template.disk = disk
+        db.commit()

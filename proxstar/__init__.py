@@ -511,6 +511,20 @@ def template_disk(template_id):
     return get_template_disk(db, template_id)
 
 
+@app.route('/template/<string:template_id>/edit', methods=['POST'])
+@auth.oidc_auth
+def template_edit(template_id):
+    if 'rtp' in session['userinfo']['groups']:
+        name = request.form['name']
+        username = request.form['username']
+        password = request.form['password']
+        disk = request.form['disk']
+        set_template_info(db, template_id, name, username, password, disk)
+        return '', 200
+    else:
+        return '', 403
+
+
 @app.route("/logout")
 @auth.oidc_logout
 def logout():
