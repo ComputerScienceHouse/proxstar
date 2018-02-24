@@ -419,7 +419,7 @@ def set_limits(user):
         cpu = request.form['cpu']
         mem = request.form['mem']
         disk = request.form['disk']
-        set_user_usage_limits(user, cpu, mem, disk)
+        set_user_usage_limits(db, user, cpu, mem, disk)
         return '', 200
     else:
         return '', 403
