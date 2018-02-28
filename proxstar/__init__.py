@@ -2,16 +2,17 @@ import os
 import time
 import psutil
 import atexit
+import psycopg2
 import subprocess
 from rq import Queue
 from redis import Redis
 from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from werkzeug.contrib.cache import SimpleCache
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
-from flask import Flask, render_template, request, redirect, send_from_directory, session
+from flask import Flask, render_template, request, redirect, session
 from proxstar.db import *
+from proxstar.vm import VM
 from proxstar.vnc import *
 from proxstar.util import *
 from proxstar.tasks import *
@@ -48,8 +49,6 @@ while retry < 5:
         retry += 1
         time.sleep(2)
 
-cache = SimpleCache()
-
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
 q = Queue(connection=redis_conn)
 scheduler = Scheduler(connection=redis_conn)
@@ -82,25 +81,27 @@ if 'cleanup_vnc' not in scheduler:
         func=cleanup_vnc_task,
         interval=3600)
 
+from proxstar.user import User
+
 
 @app.route("/")
 @app.route("/user/<string:user_view>")
 @auth.oidc_auth
 def list_vms(user_view=None):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     rtp_view = False
     proxmox = connect_proxmox()
-    if user_view and not user['rtp']:
+    if user_view and not user.rtp:
         return '', 403
-    elif user_view and user['rtp']:
-        vms = get_vms_for_user(proxmox, db, user_view)
+    elif user_view and user.rtp:
+        vms = User(user_view).vms
         rtp_view = user_view
-    elif user['rtp']:
+    elif user.rtp:
         vms = get_pool_cache(db)
         rtp_view = True
     else:
-        if user['active']:
-            vms = get_vms_for_user(proxmox, db, user['username'])
+        if user.active:
+            vms = user.vms
         else:
             vms = 'INACTIVE'
     return render_template(
@@ -130,35 +131,31 @@ def hostname(name):
 @app.route("/vm/<string:vmid>")
 @auth.oidc_auth
 def vm_details(vmid):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
-        vm = get_vm(proxmox, vmid)
-        vm['vmid'] = vmid
-        vm['config'] = get_vm_config(proxmox, vmid)
-        vm['node'] = get_vm_node(proxmox, vmid)
-        vm['disks'] = get_vm_disks(proxmox, vmid, config=vm['config'])
-        vm['iso'] = get_vm_iso(proxmox, vmid, config=vm['config'])
-        vm['interfaces'] = []
-        for interface in get_vm_interfaces(
-                proxmox, vm['vmid'], config=vm['config']):
-            vm['interfaces'].append(
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm_dict = vm.info
+        vm_dict['vmid'] = vmid
+        vm_dict['config'] = vm.config
+        vm_dict['node'] = vm.node
+        vm_dict['disks'] = vm.get_disks()
+        vm_dict['iso'] = vm.get_iso()
+        vm_dict['interfaces'] = []
+        for interface in vm.get_interfaces():
+            vm_dict['interfaces'].append(
                 [interface[0],
                  get_ip_for_mac(starrs, interface[1])])
-        vm['expire'] = get_vm_expire(
+        vm_dict['expire'] = get_vm_expire(
             db, vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
-        usage = get_user_usage(proxmox, db, user['username'])
-        limits = get_user_usage_limits(db, user['username'])
-        usage_check = check_user_usage(proxmox, db, user['username'],
-                                       vm['config']['cores'],
-                                       vm['config']['memory'], 0)
+        usage_check = user.check_usage(vm_dict['config']['cores'],
+                                       vm_dict['config']['memory'], 0)
         return render_template(
             'vm_details.html',
             user=user,
-            vm=vm,
-            usage=usage,
-            limits=limits,
+            vm=vm_dict,
+            usage=user.usage,
+            limits=user.limits,
             usage_check=usage_check)
     else:
         return '', 403
@@ -167,18 +164,27 @@ def vm_details(vmid):
 @app.route("/vm/<string:vmid>/power/<string:action>", methods=['POST'])
 @auth.oidc_auth
 def vm_power(vmid, action):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
         if action == 'start':
-            config = get_vm_config(proxmox, vmid)
-            usage_check = check_user_usage(proxmox, db, user['username'],
-                                           config['cores'], config['memory'],
+            config = vm.config
+            usage_check = user.check_usage(config['cores'], config['memory'],
                                            0)
             if usage_check:
                 return usage_check
-        change_vm_power(proxmox, vmid, action)
+            vm.start()
+        elif action == 'stop':
+            vm.stop()
+        elif action == 'shutdown':
+            vm.shutdown()
+        elif action == 'reset':
+            vm.reset()
+        elif action == 'suspend':
+            vm.suspend()
+        elif action == 'resume':
+            vm.resume()
         return '', 200
     else:
         return '', 403
@@ -187,13 +193,13 @@ def vm_power(vmid, action):
 @app.route("/console/vm/<string:vmid>", methods=['POST'])
 @auth.oidc_auth
 def vm_console(vmid):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
-        node = "{}.csh.rit.edu".format(get_vm_node(proxmox, vmid))
+        node = "{}.csh.rit.edu".format(vm.node)
         tunnel = next((tunnel for tunnel in ssh_tunnels
                        if tunnel.local_bind_port == int(port)), None)
         if tunnel:
@@ -207,7 +213,7 @@ def vm_console(vmid):
                     node, vmid))
                 tunnel = start_ssh_tunnel(node, port)
                 ssh_tunnels.append(tunnel)
-                start_vm_vnc(proxmox, vmid, port)
+                vm.start_vnc(port)
             else:
                 print("Tunnel already exists to {} for VM {}.".format(
                     node, vmid))
@@ -215,7 +221,7 @@ def vm_console(vmid):
             print("Creating SSH tunnel to {} for VM {}.".format(node, vmid))
             tunnel = start_ssh_tunnel(node, port)
             ssh_tunnels.append(tunnel)
-            start_vm_vnc(proxmox, vmid, port)
+            vm.start_vnc(port)
         return token, 200
     else:
         return '', 403
@@ -224,22 +230,19 @@ def vm_console(vmid):
 @app.route("/vm/<string:vmid>/cpu/<int:cores>", methods=['POST'])
 @auth.oidc_auth
 def vm_cpu(vmid, cores):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
-        cur_cores = get_vm_config(proxmox, vmid)['cores']
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        cur_cores = vm.cpu
         if cores >= cur_cores:
-            status = get_vm(proxmox, vmid)['qmpstatus']
-            if status == 'running' or status == 'paused':
-                usage_check = check_user_usage(proxmox, db, user['username'],
-                                               cores - cur_cores, 0, 0)
+            if vm.qmpstatus == 'running' or vm.qmpstatus == 'paused':
+                usage_check = user.check_usage(cores - cur_cores, 0, 0)
             else:
-                usage_check = check_user_usage(proxmox, db, user['username'],
-                                               cores, 0, 0)
+                usage_check = user.check_usage(cores, 0, 0)
             if usage_check:
                 return usage_check
-        change_vm_cpu(proxmox, vmid, cores)
+        vm.set_cpu(cores)
         return '', 200
     else:
         return '', 403
@@ -248,22 +251,19 @@ def vm_cpu(vmid, cores):
 @app.route("/vm/<string:vmid>/mem/<int:mem>", methods=['POST'])
 @auth.oidc_auth
 def vm_mem(vmid, mem):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
-        cur_mem = get_vm_config(proxmox, vmid)['memory'] // 1024
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        cur_mem = vm.mem // 1024
         if mem >= cur_mem:
-            status = get_vm(proxmox, vmid)['qmpstatus']
-            if status == 'running' or status == 'paused':
-                usage_check = check_user_usage(proxmox, db, user['username'],
-                                               0, mem - cur_mem, 0)
+            if vm.qmpstatus == 'running' or vm.qmpstatus == 'paused':
+                usage_check = user.check_usage(0, mem - cur_mem, 0)
             else:
-                usage_check = check_user_usage(proxmox, db, user['username'],
-                                               0, mem, 0)
+                usage_check = user.check_usage(0, mem, 0)
             if usage_check:
                 return usage_check
-        change_vm_mem(proxmox, vmid, mem * 1024)
+        vm.set_mem(mem * 1024)
         return '', 200
     else:
         return '', 403
@@ -272,15 +272,15 @@ def vm_mem(vmid, mem):
 @app.route("/vm/<string:vmid>/disk/<string:disk>/<int:size>", methods=['POST'])
 @auth.oidc_auth
 def vm_disk(vmid, disk, size):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
-        cur_cores = get_vm_config(proxmox, vmid)['cores']
-        usage_check = check_user_usage(proxmox, db, user['username'], 0, 0, size)
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        cur_cores = vm.cpu
+        usage_check = user.check_usage(0, 0, size)
         if usage_check:
             return usage_check
-        resize_vm_disk(proxmox, vmid, disk, size)
+        vm.resize_disk(disk, size)
         return '', 200
     else:
         return '', 403
@@ -289,12 +289,12 @@ def vm_disk(vmid, disk, size):
 @app.route("/vm/<string:vmid>/renew", methods=['POST'])
 @auth.oidc_auth
 def vm_renew(vmid):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
         renew_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
-        for interface in get_vm_interfaces(proxmox, vmid):
+        for interface in vm.get_interfaces():
             renew_ip(starrs, get_ip_for_mac(starrs, interface[1]))
         return '', 200
     else:
@@ -304,10 +304,11 @@ def vm_renew(vmid):
 @app.route("/vm/<string:vmid>/eject", methods=['POST'])
 @auth.oidc_auth
 def iso_eject(vmid):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(proxmox, db, user):
-        eject_vm_iso(proxmox, vmid)
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm.eject_iso()
         return '', 200
     else:
         return '', 403
@@ -316,12 +317,12 @@ def iso_eject(vmid):
 @app.route("/vm/<string:vmid>/mount/<string:iso>", methods=['POST'])
 @auth.oidc_auth
 def iso_mount(vmid, iso):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db, user['username']):
+    if user.rtp or int(vmid) in user.allowed_vms:
         iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
-        mount_vm_iso(proxmox, vmid, iso)
+        vm = VM(vmid)
+        vm.mount_iso(iso)
         return '', 200
     else:
         return '', 403
@@ -330,11 +331,9 @@ def iso_mount(vmid, iso):
 @app.route("/vm/<string:vmid>/delete", methods=['POST'])
 @auth.oidc_auth
 def delete(vmid):
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['rtp'] or int(vmid) in get_user_allowed_vms(
-            proxmox, db,
-            user['username']) or 'rtp' in session['userinfo']['groups']:
+    if user.rtp or int(vmid) in user.allowed_vms:
         q.enqueue(delete_vm_task, vmid)
         return '', 200
     else:
@@ -344,23 +343,19 @@ def delete(vmid):
 @app.route("/vm/create", methods=['GET', 'POST'])
 @auth.oidc_auth
 def create():
-    user = build_user_dict(session, db)
+    user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user['active']:
+    if user.active:
         if request.method == 'GET':
-            usage = get_user_usage(proxmox, db, user['username'])
-            limits = get_user_usage_limits(db, user['username'])
-            percents = get_user_usage_percent(proxmox, user['username'], usage,
-                                              limits)
             isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
             pools = get_pools(proxmox, db)
             templates = get_templates(db)
             return render_template(
                 'create.html',
                 user=user,
-                usage=usage,
-                limits=limits,
-                percents=percents,
+                usage=user.usage,
+                limits=user.limits,
+                percents=user.usage_percent,
                 isos=isos,
                 pools=pools,
                 templates=templates)
@@ -374,12 +369,12 @@ def create():
             if iso != 'none':
                 iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'],
                                          iso)
-            if not user['rtp']:
-                usage_check = check_user_usage(proxmox, db, user['username'],
-                                               0, 0, disk)
+            if not user.rtp:
+                usage_check = user.check_usage(0, 0, disk)
+                username = user.name
             else:
                 usage_check = None
-                user['username'] = request.form['user']
+                username = request.form['user']
             if usage_check:
                 return usage_check
             else:
@@ -388,7 +383,7 @@ def create():
                     if template == 'none':
                         q.enqueue(
                             create_vm_task,
-                            user['username'],
+                            username,
                             name,
                             cores,
                             memory,
@@ -401,7 +396,7 @@ def create():
                             setup_template,
                             template,
                             name,
-                            user['username'],
+                            username,
                             password,
                             cores,
                             memory,
@@ -440,8 +435,8 @@ def delete_user(user):
 @app.route("/settings")
 @auth.oidc_auth
 def settings():
-    user = build_user_dict(session, db)
-    if user['rtp']:
+    user = User(session['userinfo']['preferred_username'])
+    if user.rtp:
         templates = get_templates(db)
         ignored_pools = get_ignored_pools(db)
         allowed_users = get_allowed_users(db)

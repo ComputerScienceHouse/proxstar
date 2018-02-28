@@ -27,7 +27,7 @@
             </div>
             <div id="navbar" class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    {% if user['active'] %}
+                    {% if user.active %}
                     <li>
                         <a href="/">
                             <span class="glyphicon glyphicon-th-list"></span>
@@ -40,7 +40,7 @@
                             Create VM
                         </a>
                     </li>
-                    {% if user['rtp'] %}
+                    {% if user.rtp %}
                     <li>
                         <a href="/settings">
                             <span class="glyphicon glyphicon-cog"></span>
@@ -54,14 +54,14 @@
                     <li class="dropdown navbar-user">
                         <a href="#" class="dropdown-toggle" data-toggle="dropdown"
                            role="button" aria-expanded="false">
-                            <img src="https://profiles.csh.rit.edu/image/{{ user['username'] }}"
-                                 title="{{ user['username'] }}">
-                            {{ user['username'] }}
+                            <img src="https://profiles.csh.rit.edu/image/{{ user.name }}"
+                                 title="{{ user.name }}">
+                            {{ user.name }}
                             <span class="caret"></span>
                         </a>
                         <ul class="dropdown-menu" role="menu">
                             <li>
-                                <a href="https://profiles.csh.rit.edu/user/{{ user['username'] }}">
+                                <a href="https://profiles.csh.rit.edu/user/{{ user.name }}">
                                     <span class="glyphicon glyphicon-user"></span>
                                     Profile
                                 </a>

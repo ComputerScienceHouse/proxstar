@@ -123,6 +123,7 @@ def get_pool_cache(db):
         pool_dict['limits'] = pool.limits
         pool_dict['percents'] = pool.percents
         pools.append(pool_dict)
+    pools = sorted(pools, key=lambda x: x['user'])
     return pools
 
 
@@ -204,8 +205,9 @@ def delete_allowed_user(db, user):
 
 
 def set_template_info(db, template_id, name, username, password, disk):
-    if db.query(exists().where(Template.id == template_id,)).scalar():
-        template = db.query(Template).filter(Template.id == template_id,).one()
+    if db.query(exists().where(Template.id == template_id, )).scalar():
+        template = db.query(Template).filter(Template.id == template_id,
+                                             ).one()
         template.name = name
         template.username = username
         if password:

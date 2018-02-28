@@ -1,7 +1,3 @@
-import psycopg2
-from flask import current_app as app
-
-
 def get_next_ip(starrs, range_name):
     c = starrs.cursor()
     try:

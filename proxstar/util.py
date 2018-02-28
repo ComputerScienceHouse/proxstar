@@ -11,11 +11,14 @@ def gen_password(
     return ''.join(random.choice(charset) for x in range(length))
 
 
-def build_user_dict(session, db):
-    user_dict = dict()
-    user_dict['username'] = session['userinfo']['preferred_username']
-    user_dict[
-        'active'] = 'active' in session['userinfo']['groups'] or 'current_student' in session['userinfo']['groups'] or user_dict['username'] in get_allowed_users(
-            db)
-    user_dict['rtp'] = 'rtp' in session['userinfo']['groups']
-    return user_dict
+def lazy_property(fn):
+    # Decorator that makes a property lazy-evaluated (https://stevenloria.com/lazy-properties/)
+    attr_name = '_lazy_' + fn.__name__
+
+    @property
+    def _lazy_property(self):
+        if not hasattr(self, attr_name):
+            setattr(self, attr_name, fn(self))
+        return getattr(self, attr_name)
+
+    return _lazy_property

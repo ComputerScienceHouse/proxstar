@@ -1004,7 +1004,7 @@
   -o-transform: rotate(360deg);
   transform: rotate(360deg);
 }
-.c100:hover {
+/*.c100:hover {
   cursor: default;
 }
 .c100:hover > span {
@@ -1018,7 +1018,7 @@
   left: 0.04em;
   width: 0.92em;
   height: 0.92em;
-}
+}*/
 .c100.dark {
   background-color: #777777;
 }

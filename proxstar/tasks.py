@@ -1,10 +1,12 @@
 import os
 import requests
 import paramiko
+import psycopg2
 from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from proxstar.db import *
+from proxstar.vm import VM
 from proxstar.util import *
 from proxstar.mail import *
 from proxstar.starrs import *
@@ -50,12 +52,11 @@ def create_vm_task(user, name, cores, memory, disk, iso):
 
 def delete_vm_task(vmid):
     with app.app_context():
-        proxmox = connect_proxmox()
         db = connect_db()
         starrs = connect_starrs()
-        vmname = get_vm_config(proxmox, vmid)['name']
-        delete_vm(proxmox, vmid)
-        delete_starrs(starrs, vmname)
+        vm = VM(vmid)
+        vm.delete()
+        delete_starrs(starrs, vm.name)
         delete_vm_expire(db, vmid)
 
 
@@ -67,9 +68,10 @@ def process_expired_vms_task():
         print(expired_vms)
 
     #    for vmid in expired_vms:
-    #        vmname = get_vm_config(proxmox, vmid)['name']
+
+    #        vm = VM(vmid)
     #        delete_vm(proxmox, starrs, vmid)
-    #        delete_starrs(starrs, vmname)
+    #        delete_starrs(starrs, vm.name)
     #        delete_vm_expire(vmid)
 
 
@@ -88,10 +90,10 @@ def process_expiring_vms_task():
                                        app.config['VM_EXPIRE_MONTHS'])
                 days = (expire - datetime.date.today()).days
                 if days in [10, 7, 3, 1, 0]:
-                    name = get_vm_config(proxmox, vmid)['name']
+                    name = VM(vmid).config['name']
                     expiring_vms.append([name, days])
                     if days == 0:
-                        change_vm_power(proxmox, vmid, 'stop')
+                        VM(vmid).stop()
             if expiring_vms:
                 send_vm_expire_email('com6056', expiring_vms)
 
@@ -119,14 +121,15 @@ def setup_template(template_id, name, user, password, cores, memory):
         register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         print("[{}] Setting CPU and memory.".format(name))
-        change_vm_cpu(proxmox, vmid, cores)
-        change_vm_mem(proxmox, vmid, memory)
+        vm = VM(vmid)
+        vm.set_cpu(cores)
+        vm.set_mem(memory)
         print(
             "[{}] Waiting for STARRS to propogate before starting VM.".format(
                 name))
         time.sleep(90)
         print("[{}] Starting VM.".format(name))
-        change_vm_power(proxmox, vmid, 'start')
+        vm.start()
         print("[{}] Waiting for VM to start before SSHing.".format(name))
         time.sleep(20)
         print("[{}] Creating SSH session.".format(name))

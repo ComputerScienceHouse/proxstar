@@ -19,8 +19,14 @@ def is_rtp(user):
 
 def is_active(user):
     ldap = connect_ldap()
-    rtp_group = ldap.get_group('active')
-    return rtp_group.check_member(ldap.get_member(user, uid=True))
+    active_group = ldap.get_group('active')
+    return active_group.check_member(ldap.get_member(user, uid=True))
+
+
+def is_current_student(user):
+    ldap = connect_ldap()
+    current_student_group = ldap.get_group('current_student')
+    return current_student_group.check_member(ldap.get_member(user, uid=True))
 
 
 def is_user(user):
