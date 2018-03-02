@@ -1,5 +1,6 @@
+import time
 from proxstar.util import *
-from proxstar.proxmox import *
+from proxstar.proxmox import connect_proxmox, get_node_least_mem, get_free_vmid, get_vm_node
 
 
 class VM(object):
@@ -40,12 +41,10 @@ class VM(object):
     def set_cpu(self, cores):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).config.put(cores=cores)
-        self.cpu = cores
 
     def set_mem(self, mem):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).config.put(memory=mem)
-        self.mem = mem
 
     def start(self):
         proxmox = connect_proxmox()
@@ -154,3 +153,50 @@ class VM(object):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).resize.put(
             disk=disk, size="+{}G".format(size))
+
+
+def create_vm(proxmox, user, name, cores, memory, disk, iso):
+    node = proxmox.nodes(get_node_least_mem(proxmox))
+    vmid = get_free_vmid(proxmox)
+    node.qemu.create(
+        vmid=vmid,
+        name=name,
+        cores=cores,
+        memory=memory,
+        storage='ceph',
+        virtio0="ceph:{}".format(disk),
+        ide2="{},media=cdrom".format(iso),
+        net0='virtio,bridge=vmbr0',
+        pool=user,
+        description='Managed by Proxstar')
+    retry = 0
+    while retry < 5:
+        try:
+            mac = VM(vmid).get_mac()
+            break
+        except:
+            retry += 1
+            time.sleep(3)
+    return vmid, mac
+
+
+def clone_vm(proxmox, template_id, name, pool):
+    node = proxmox.nodes(get_vm_node(proxmox, template_id))
+    newid = get_free_vmid(proxmox)
+    target = get_node_least_mem(proxmox)
+    node.qemu(template_id).clone.post(
+        newid=newid,
+        name=name,
+        pool=pool,
+        full=1,
+        description='Managed by Proxstar',
+        target=target)
+    retry = 0
+    while retry < 60:
+        try:
+            mac = VM(newid).get_mac()
+            break
+        except:
+            retry += 1
+            time.sleep(3)
+    return newid, mac

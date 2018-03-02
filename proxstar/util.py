@@ -1,6 +1,5 @@
 import string
 import random
-from proxstar.db import *
 
 
 def gen_password(

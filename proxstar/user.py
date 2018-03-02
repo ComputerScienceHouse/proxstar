@@ -1,5 +1,6 @@
 from proxstar import db
 from proxstar.db import *
+from proxstar.vm import VM
 from proxstar.util import *
 from proxstar.proxmox import *
 
@@ -85,3 +86,18 @@ class User(object):
                     self.name)).get()['groups']:
                 proxmox.access.users("{}@csh.rit.edu".format(
                     self.name)).delete()
+
+
+def get_vms_for_rtp(proxmox, db):
+    pools = []
+    for pool in get_pools(proxmox, db):
+        user = User(pool)
+        pool_dict = dict()
+        pool_dict['user'] = user.name
+        pool_dict['vms'] = user.vms
+        pool_dict['num_vms'] = len(pool_dict['vms'])
+        pool_dict['usage'] = user.usage
+        pool_dict['limits'] = user.limits
+        pool_dict['percents'] = user.usage_percent
+        pools.append(pool_dict)
+    return pools

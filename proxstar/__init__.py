@@ -14,8 +14,7 @@ from flask import Flask, render_template, request, redirect, session
 from proxstar.db import *
 from proxstar.vm import VM
 from proxstar.vnc import *
-from proxstar.util import *
-from proxstar.tasks import *
+from proxstar.util import gen_password
 from proxstar.starrs import *
 from proxstar.ldapdb import *
 from proxstar.proxmox import *
@@ -63,6 +62,9 @@ starrs = psycopg2.connect(
         app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
         app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
 
+from proxstar.user import User
+from proxstar.tasks import generate_pool_cache_task, process_expiring_vms_task, cleanup_vnc_task, delete_vm_task, create_vm_task, setup_template_task
+
 if 'generate_pool_cache' not in scheduler:
     scheduler.schedule(
         id='generate_pool_cache',
@@ -80,8 +82,6 @@ if 'cleanup_vnc' not in scheduler:
         scheduled_time=datetime.datetime.utcnow(),
         func=cleanup_vnc_task,
         interval=3600)
-
-from proxstar.user import User
 
 
 @app.route("/")
@@ -393,7 +393,7 @@ def create():
                     else:
                         password = gen_password(16)
                         q.enqueue(
-                            setup_template,
+                            setup_template_task,
                             template,
                             name,
                             username,

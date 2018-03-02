@@ -1,4 +1,5 @@
 import os
+import time
 import requests
 import paramiko
 import psycopg2
@@ -6,11 +7,12 @@ from flask import Flask
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from proxstar.db import *
-from proxstar.vm import VM
 from proxstar.util import *
 from proxstar.mail import *
 from proxstar.starrs import *
-from proxstar.proxmox import *
+from proxstar.vm import VM, create_vm, clone_vm
+from proxstar.user import User, get_vms_for_rtp
+from proxstar.proxmox import connect_proxmox, get_pools
 
 app = Flask(__name__)
 if os.path.exists(
@@ -82,8 +84,9 @@ def process_expiring_vms_task():
         starrs = connect_starrs()
         pools = get_pools(proxmox, db)
         for pool in pools:
+            user = User(pool)
             expiring_vms = []
-            vms = get_vms_for_user(proxmox, db, pool)
+            vms = user.vms
             for vm in vms:
                 vmid = vm['vmid']
                 expire = get_vm_expire(db, vmid,
@@ -106,7 +109,7 @@ def generate_pool_cache_task():
         store_pool_cache(db, pools)
 
 
-def setup_template(template_id, name, user, password, cores, memory):
+def setup_template_task(template_id, name, user, password, cores, memory):
     with app.app_context():
         proxmox = connect_proxmox()
         starrs = connect_starrs()
