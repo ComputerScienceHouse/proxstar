@@ -16,10 +16,10 @@
                     Insufficient resources to start VM.
                     {% endif %}
                     {% endif %}
-                    {% if vm['qmpstatus'] == 'paused' %}
+                    {% if vm['qmpstatus'] == 'suspended' %}
                     <button class="btn btn-success proxstar-actionbtn" id="resume-vm" name="resume" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESUME</button>
                     {% endif %}
-                    {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
+                    {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'suspended' %}
                     {% if vm['qmpstatus'] == 'running' %}
                     <button class="btn btn-success proxstar-actionbtn" id="console-vm" name="console" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">CONSOLE</button>
                     <button class="btn btn-info proxstar-actionbtn" id="suspend-vm" name="suspend" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SUSPEND</button>
@@ -92,7 +92,7 @@
                         <dt>Cores</dt>
                         <dd>
                             {{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}
-                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
+                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'suspended' %}
                             <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-usage="{{ usage['cpu'] - (vm['config']['cores'] * vm['config'].get('sockets', 1)) }}" data-limit="{{ limits['cpu'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
@@ -109,7 +109,7 @@
                             {% else %}
                             {{ vm['config']['memory'] // 1024 }}GB
                             {% endif %}
-                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'paused' %}
+                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'suspended' %}
                             <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
