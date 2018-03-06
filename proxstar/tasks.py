@@ -4,6 +4,7 @@ import requests
 import paramiko
 import psycopg2
 from flask import Flask
+from rq import get_current_job
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from proxstar.db import *
@@ -43,13 +44,22 @@ def connect_starrs():
 
 def create_vm_task(user, name, cores, memory, disk, iso):
     with app.app_context():
+        job = get_current_job()
         proxmox = connect_proxmox()
         db = connect_db()
         starrs = connect_starrs()
+        job.meta['status'] = 'creating VM'
+        job.save_meta()
         vmid, mac = create_vm(proxmox, user, name, cores, memory, disk, iso)
+        job.meta['status'] = 'registering in STARRS'
+        job.save_meta()
         register_starrs(starrs, name, app.config['STARRS_USER'], mac,
                         get_next_ip(starrs, app.config['STARRS_IP_RANGE']))
+        job.meta['status'] = 'setting VM expiration'
+        job.save_meta()
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
+        job.meta['status'] = 'complete'
+        job.save_meta()
 
 
 def delete_vm_task(vmid):
@@ -111,6 +121,7 @@ def generate_pool_cache_task():
 
 def setup_template_task(template_id, name, user, password, cores, memory):
     with app.app_context():
+        job = get_current_job()
         proxmox = connect_proxmox()
         starrs = connect_starrs()
         db = connect_db()
@@ -118,24 +129,38 @@ def setup_template_task(template_id, name, user, password, cores, memory):
             name, template_id))
         template = get_template(db, template_id)
         print("[{}] Cloning template {}.".format(name, template_id))
+        job.meta['status'] = 'cloning template'
+        job.save_meta()
         vmid, mac = clone_vm(proxmox, template_id, name, user)
         print("[{}] Registering in STARRS.".format(name))
+        job.meta['status'] = 'registering in STARRS'
+        job.save_meta()
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
         register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         print("[{}] Setting CPU and memory.".format(name))
+        job.meta['status'] = 'setting CPU and memory'
+        job.save_meta()
         vm = VM(vmid)
         vm.set_cpu(cores)
         vm.set_mem(memory)
         print(
             "[{}] Waiting for STARRS to propogate before starting VM.".format(
                 name))
+        job.meta['status'] = 'waiting for STARRS'
+        job.save_meta()
         time.sleep(90)
         print("[{}] Starting VM.".format(name))
+        job.meta['status'] = 'starting VM'
+        job.save_meta()
         vm.start()
         print("[{}] Waiting for VM to start before SSHing.".format(name))
+        job.meta['status'] = 'waiting for VM to start'
+        job.save_meta()
         time.sleep(20)
         print("[{}] Creating SSH session.".format(name))
+        job.meta['status'] = 'creating SSH session'
+        job.save_meta()
         client = paramiko.SSHClient()
         client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         retry = 0
@@ -150,6 +175,8 @@ def setup_template_task(template_id, name, user, password, cores, memory):
                 retry += 1
                 time.sleep(3)
         print("[{}] Running user creation commands.".format(name))
+        job.meta['status'] = 'running user creation commands'
+        job.save_meta()
         stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
         exit_status = stdout.channel.recv_exit_status()
         root_password = gen_password(32)
@@ -168,6 +195,8 @@ def setup_template_task(template_id, name, user, password, cores, memory):
         exit_status = stdout.channel.recv_exit_status()
         client.close()
         print("[{}] Template successfully provisioned.".format(name))
+        job.meta['status'] = 'completed'
+        job.save_meta()
 
 
 def cleanup_vnc_task():

@@ -94,14 +94,29 @@ def list_vms(user_view=None):
     if user_view and not user.rtp:
         return '', 403
     elif user_view and user.rtp:
-        vms = User(user_view).vms
-        rtp_view = user_view
+        user_view = User(user_view)
+        vms = user_view.vms
+        for pending_vm in user_view.pending_vms:
+            vm = next((vm for vm in vms if vm['name'] == pending_vm['name']), None)
+            if vm:
+                vms[vms.index(vm)]['status'] = pending_vm['status']
+                vms[vms.index(vm)]['pending'] = True
+            else:
+                vms.append(pending_vm)
+        rtp_view = user_view.name
     elif user.rtp:
         vms = get_pool_cache(db)
         rtp_view = True
     else:
         if user.active:
             vms = user.vms
+            for pending_vm in user.pending_vms:
+                vm = next((vm for vm in vms if vm['name'] == pending_vm['name']), None)
+                if vm:
+                    vms[vms.index(vm)]['status'] = pending_vm['status']
+                    vms[vms.index(vm)]['pending'] = True
+                else:
+                    vms.append(pending_vm)
         else:
             vms = 'INACTIVE'
     return render_template(

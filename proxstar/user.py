@@ -1,8 +1,9 @@
-from proxstar import db
+from proxstar import db, q, redis_conn
 from proxstar.db import *
 from proxstar.vm import VM
 from proxstar.util import *
 from proxstar.proxmox import *
+from rq.registry import StartedJobRegistry
 
 
 class User(object):
@@ -29,6 +30,23 @@ class User(object):
                 vms.remove(vm)
         vms = sorted(vms, key=lambda k: k['name'])
         return vms
+
+    @lazy_property
+    def pending_vms(self):
+        jobs = StartedJobRegistry('default', connection=redis_conn).get_job_ids()
+        for job_id in q.job_ids:
+            jobs.append(job_id)
+        pending_vms = []
+        for job in jobs:
+            job = q.fetch_job(job)
+            if len(job.args) > 2:
+                if job.args[0] == self.name or job.args[2] == self.name:
+                    vm_dict = dict()
+                    vm_dict['name'] = job.args[1]
+                    vm_dict['status'] = job.meta.get('status', 'no status yet')
+                    vm_dict['pending'] = True
+                    pending_vms.append(vm_dict)
+        return pending_vms
 
     @lazy_property
     def allowed_vms(self):

@@ -33,9 +33,13 @@
                 <div class="col-md-3 col-sm-4 col-xs-6">
                     <div class="panel panel-default">
                         <div class="panel-body">
+                            {% if not vm.get('pending', False) %}
                             <a href="/vm/{{ vm['vmid'] }}">
                                 <p>{{ vm['name'] }}</p>
                             </a>
+                            {% else %}
+                            <p>{{ vm['name'] }}</p>
+                            {% endif %}
                             <p>Status: {{ vm['status'] }}</p>
                         </div>
                     </div>
