@@ -392,7 +392,7 @@ def create():
                 pools=pools,
                 templates=templates)
         elif request.method == 'POST':
-            name = request.form['name']
+            name = request.form['name'].lower()
             cores = request.form['cores']
             memory = request.form['mem']
             template = request.form['template']

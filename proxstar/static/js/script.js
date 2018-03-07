@@ -386,7 +386,7 @@ $("#renew-vm").click(function(){
 });
 
 $("#create-vm").click(function(){
-    const name = document.getElementById('name').value;
+    const name = document.getElementById('name').value.toLowerCase();
     const cores = document.getElementById('cores').value;
     const mem = document.getElementById('mem').value;
     const template = document.getElementById('template').value;
