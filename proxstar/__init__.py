@@ -11,7 +11,7 @@ from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
-from flask import Flask, render_template, request, redirect, session
+from flask import Flask, render_template, request, redirect, session, abort
 from proxstar.db import *
 from proxstar.vm import VM
 from proxstar.vnc import *
@@ -91,12 +91,24 @@ def add_rq_dashboard_auth(blueprint):
     @auth.oidc_auth
     def rq_dashboard_auth(*args, **kwargs):
         if 'rtp' not in session['userinfo']['groups']:
-            return '', 403
+            abort(403)
 
 
 rq_dashboard_blueprint = rq_dashboard.blueprint
 add_rq_dashboard_auth(rq_dashboard_blueprint)
 app.register_blueprint(rq_dashboard_blueprint, url_prefix="/rq")
+
+
+@app.errorhandler(404)
+def not_found(e):
+    user = User(session['userinfo']['preferred_username'])
+    return render_template('404.html', user=user), 404
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    user = User(session['userinfo']['preferred_username'])
+    return render_template('403.html', user=user), 403
 
 
 @app.route("/")
@@ -107,7 +119,7 @@ def list_vms(user_view=None):
     rtp_view = False
     proxmox = connect_proxmox()
     if user_view and not user.rtp:
-        return '', 403
+        abort(403)
     elif user_view and user.rtp:
         user_view = User(user_view)
         vms = user_view.vms
@@ -190,7 +202,7 @@ def vm_details(vmid):
             limits=user.limits,
             usage_check=usage_check)
     else:
-        return '', 403
+        abort(403)
 
 
 @app.route("/vm/<string:vmid>/power/<string:action>", methods=['POST'])
@@ -479,7 +491,7 @@ def settings():
             ignored_pools=ignored_pools,
             allowed_users=allowed_users)
     else:
-        return '', 403
+        abort(403)
 
 
 @app.route("/pool/<string:pool>/ignore", methods=['POST', 'DELETE'])
