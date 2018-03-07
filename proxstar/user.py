@@ -33,7 +33,8 @@ class User(object):
 
     @lazy_property
     def pending_vms(self):
-        jobs = StartedJobRegistry('default', connection=redis_conn).get_job_ids()
+        jobs = StartedJobRegistry(
+            'default', connection=redis_conn).get_job_ids()
         for job_id in q.job_ids:
             jobs.append(job_id)
         pending_vms = []

@@ -14,3 +14,4 @@ websockify
 sshtunnel
 psutil
 requests
+rq_dashboard

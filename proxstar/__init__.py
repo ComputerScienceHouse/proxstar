@@ -4,6 +4,7 @@ import psutil
 import atexit
 import psycopg2
 import subprocess
+import rq_dashboard
 from rq import Queue
 from redis import Redis
 from rq_scheduler import Scheduler
@@ -20,6 +21,7 @@ from proxstar.ldapdb import *
 from proxstar.proxmox import *
 
 app = Flask(__name__)
+app.config.from_object(rq_dashboard.default_settings)
 if os.path.exists(
         os.path.join(
             app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")):
@@ -84,6 +86,19 @@ if 'cleanup_vnc' not in scheduler:
         interval=3600)
 
 
+def add_rq_dashboard_auth(blueprint):
+    @blueprint.before_request
+    @auth.oidc_auth
+    def rq_dashboard_auth(*args, **kwargs):
+        if 'rtp' not in session['userinfo']['groups']:
+            return '', 403
+
+
+rq_dashboard_blueprint = rq_dashboard.blueprint
+add_rq_dashboard_auth(rq_dashboard_blueprint)
+app.register_blueprint(rq_dashboard_blueprint, url_prefix="/rq")
+
+
 @app.route("/")
 @app.route("/user/<string:user_view>")
 @auth.oidc_auth
@@ -97,7 +112,8 @@ def list_vms(user_view=None):
         user_view = User(user_view)
         vms = user_view.vms
         for pending_vm in user_view.pending_vms:
-            vm = next((vm for vm in vms if vm['name'] == pending_vm['name']), None)
+            vm = next((vm for vm in vms if vm['name'] == pending_vm['name']),
+                      None)
             if vm:
                 vms[vms.index(vm)]['status'] = pending_vm['status']
                 vms[vms.index(vm)]['pending'] = True
@@ -111,7 +127,8 @@ def list_vms(user_view=None):
         if user.active:
             vms = user.vms
             for pending_vm in user.pending_vms:
-                vm = next((vm for vm in vms if vm['name'] == pending_vm['name']), None)
+                vm = next((vm for vm in vms
+                           if vm['name'] == pending_vm['name']), None)
                 if vm:
                     vms[vms.index(vm)]['status'] = pending_vm['status']
                     vms[vms.index(vm)]['pending'] = True
