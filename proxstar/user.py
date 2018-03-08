@@ -40,7 +40,7 @@ class User(object):
         pending_vms = []
         for job in jobs:
             job = q.fetch_job(job)
-            if len(job.args) > 2:
+            if job and len(job.args) > 2:
                 if job.args[0] == self.name or job.args[2] == self.name:
                     vm_dict = dict()
                     vm_dict['name'] = job.args[1]
