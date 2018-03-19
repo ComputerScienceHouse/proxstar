@@ -989,7 +989,6 @@ $("#edit-boot-order").click(function(){
             for (k = 0; k < boot_order.length; k++) {
                 e = document.getElementById(`boot-order-${k + 1}`);
                 data.append(`${k + 1}`, e.options[e.selectedIndex].value);
-                console.log(e.options[e.selectedIndex].value);
             }
             fetch(`/vm/${vmid}/boot_order`, {
                 credentials: 'same-origin',
