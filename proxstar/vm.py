@@ -115,7 +115,6 @@ class VM(object):
         raw_boot_order = ''
         for i in range(0, len(boot_order)):
             raw_boot_order += boot_order_lookup[boot_order[i]]
-        print(raw_boot_order)
         proxmox.nodes(self.node).qemu(self.id).config.put(boot=raw_boot_order)
 
     @lazy_property

@@ -377,12 +377,10 @@ def boot_order(vmid):
     user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
-        print(request.form)
         boot_order = []
         for key, value in request.form.items():
             boot_order.append(value)
         vm = VM(vmid)
-        print(boot_order)
         vm.set_boot_order(boot_order)
         return '', 200
     else:
