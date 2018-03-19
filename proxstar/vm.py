@@ -1,6 +1,11 @@
 import time
-from proxstar.util import *
+import json
+from proxstar import db, starrs
+from proxstar.db import get_vm_expire
+from proxstar.util import lazy_property
+from proxstar.starrs import get_ip_for_mac
 from proxstar.proxmox import connect_proxmox, get_node_least_mem, get_free_vmid, get_vm_node
+from flask import current_app as app
 
 
 class VM(object):
@@ -13,7 +18,7 @@ class VM(object):
 
     @lazy_property
     def cpu(self):
-        return self.config['cores']
+        return self.config['cores'] * self.config.get('sockets', 1)
 
     @lazy_property
     def mem(self):
@@ -40,7 +45,8 @@ class VM(object):
 
     def set_cpu(self, cores):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(self.id).config.put(cores=cores)
+        proxmox.nodes(self.node).qemu(self.id).config.put(
+            cores=cores, sockets=1)
 
     def set_mem(self, mem):
         proxmox = connect_proxmox()
@@ -80,7 +86,39 @@ class VM(object):
         proxmox = connect_proxmox()
         return proxmox.nodes(self.node).qemu(self.id).config.get()
 
-    def get_interfaces(self):
+    @lazy_property
+    def boot_order(self):
+        boot_order_lookup = {
+            'a': 'Floppy',
+            'c': 'Hard Disk',
+            'd': 'CD-ROM',
+            'n': 'Network'
+        }
+        raw_boot_order = self.config.get('boot', 'cdn')
+        boot_order = []
+        for i in range(0, len(raw_boot_order)):
+            boot_order.append(boot_order_lookup[raw_boot_order[i]])
+        return boot_order
+
+    @lazy_property
+    def boot_order_json(self):
+        return json.dumps(self.boot_order)
+
+    def set_boot_order(self, boot_order):
+        proxmox = connect_proxmox()
+        boot_order_lookup = {
+            'Floppy': 'a',
+            'Hard Disk': 'c',
+            'CD-ROM': 'd',
+            'Network': 'n'
+        }
+        raw_boot_order = ''
+        for i in range(0, len(boot_order)):
+            raw_boot_order += boot_order_lookup[boot_order[i]]
+        proxmox.nodes(self.node).qemu(self.id).config.put(boot=raw_boot_order)
+
+    @lazy_property
+    def interfaces(self):
         interfaces = []
         for key, val in self.config.items():
             if 'net' in key:
@@ -90,7 +128,8 @@ class VM(object):
                     mac = mac[0].split('=')[1]
                 else:
                     mac = mac[1].split('=')[1]
-                interfaces.append([key, mac])
+                ip = get_ip_for_mac(starrs, mac)
+                interfaces.append([key, mac, ip])
         interfaces = sorted(interfaces, key=lambda x: x[0])
         return interfaces
 
@@ -109,7 +148,8 @@ class VM(object):
                 disk_size = split.split('=')[1].rstrip('G')
         return disk_size
 
-    def get_disks(self):
+    @lazy_property
+    def disks(self):
         disks = []
         for key, val in self.config.items():
             valid_disk_types = ['virtio', 'ide', 'sata', 'scsi']
@@ -123,7 +163,8 @@ class VM(object):
         disks = sorted(disks, key=lambda x: x[0])
         return disks
 
-    def get_iso(self):
+    @lazy_property
+    def iso(self):
         if self.config.get('ide2'):
             if self.config['ide2'].split(',')[0] == 'none':
                 iso = 'None'
@@ -153,6 +194,10 @@ class VM(object):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).resize.put(
             disk=disk, size="+{}G".format(size))
+
+    @lazy_property
+    def expire(self):
+        return get_vm_expire(db, self.id, app.config['VM_EXPIRE_MONTHS'])
 
 
 def create_vm(proxmox, user, name, cores, memory, disk, iso):

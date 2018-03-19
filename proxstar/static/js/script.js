@@ -392,6 +392,8 @@ $("#create-vm").click(function(){
     const template = document.getElementById('template').value;
     const iso = document.getElementById('iso').value;
     const user = document.getElementById('user');
+    const max_cpu = $(this).data('max_cpu');
+    const max_mem = $(this).data('max_mem');
     const max_disk = $(this).data('max_disk');
     var disk = document.getElementById('disk').value;
     fetch(`/template/${template}/disk`, {
@@ -407,6 +409,10 @@ $("#create-vm").click(function(){
         if (name && disk) {
             if (disk > max_disk) {
                 swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk}GB or lower.`, "error");
+            } else if (template != 'none' && cores > max_cpu) {
+                swal("Uh oh...", `You do not have enough CPU resources available! Please lower the VM cores to ${max_cpu} or lower.`, "error");
+            } else if (template != 'none' && mem/1024 > max_mem) {
+                swal("Uh oh...", `You do not have enough memory resources available! Please lower the VM memory to ${max_mem}GB or lower.`, "error");
             } else {
                 fetch(`/hostname/${name}`, {
                     credentials: 'same-origin',
@@ -939,6 +945,87 @@ $(".edit-template").click(function(){
         } else {
             swal.stopLoading();
             swal.close();
+        }
+    });
+});
+
+$("#edit-boot-order").click(function(){
+    const vmid = $(this).data('vmid');
+    const vmname = $(this).data('vmname');
+    const boot_order = $(this).data('boot_order');
+    var options = document.createElement('div');
+    for (i = 0; i < boot_order.length; i++) {
+        text = document.createElement('span');
+        text.innerHTML = `${i + 1}. `;
+        options.append(text);
+        var entry = document.createElement('select');
+        entry.setAttribute("id", `boot-order-${i + 1}`);
+        for (j = 0; j < boot_order.length; j++) {
+            entry.appendChild(new Option(boot_order[j], boot_order[j]));
+        }
+        entry.selectedIndex = i;
+        entry.setAttribute('style', 'width: 85px');
+        options.append(entry);
+        options.append(document.createElement('br'));
+    }
+    swal({
+        title: `Select the new boot order for ${vmname} (full shutdown required for settings to take effect):`,
+        content: options,
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+            },
+            confirm: {
+                text: "Submit",
+                closeModal: false,
+            }
+        },
+    })
+    .then((willChange) => {
+        if (willChange) {
+            var data  = new FormData();
+            for (k = 0; k < boot_order.length; k++) {
+                e = document.getElementById(`boot-order-${k + 1}`);
+                data.append(`${k + 1}`, e.options[e.selectedIndex].value);
+            }
+            fetch(`/vm/${vmid}/boot_order`, {
+                credentials: 'same-origin',
+                method: 'post',
+                body: data
+            }).then((response) => {
+                return swal(`Now applying the new boot order to ${vmname}!`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                        }
+                    }
+                });
+            }).then(() => {
+                window.location = `/vm/${vmid}`;
+            });
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to change the boot order for ${vmname}. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});
+
+$(document).on('focus click', "[id^=boot-order-]", function() {
+    previous = $(this).val();
+}).on('change', "[id^=boot-order-]", function() {
+    current = $(this).val();
+    id = $(this).attr("id");
+    $("[id^=boot-order-]").each(function() {
+        if ($(this).attr("id") != id && $(this).val() == current) {
+            $(this).val(previous);
         }
     });
 });

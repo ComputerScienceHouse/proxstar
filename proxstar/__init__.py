@@ -13,7 +13,6 @@ from sqlalchemy.orm import sessionmaker
 from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask import Flask, render_template, request, redirect, session, abort
 from proxstar.db import *
-from proxstar.vm import VM
 from proxstar.vnc import *
 from proxstar.util import gen_password
 from proxstar.starrs import *
@@ -64,6 +63,7 @@ starrs = psycopg2.connect(
         app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
         app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
 
+from proxstar.vm import VM
 from proxstar.user import User
 from proxstar.tasks import generate_pool_cache_task, process_expiring_vms_task, cleanup_vnc_task, delete_vm_task, create_vm_task, setup_template_task
 
@@ -179,25 +179,11 @@ def vm_details(vmid):
     proxmox = connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
-        vm_dict = vm.info
-        vm_dict['vmid'] = vmid
-        vm_dict['config'] = vm.config
-        vm_dict['node'] = vm.node
-        vm_dict['disks'] = vm.get_disks()
-        vm_dict['iso'] = vm.get_iso()
-        vm_dict['interfaces'] = []
-        for interface in vm.get_interfaces():
-            vm_dict['interfaces'].append(
-                [interface[0],
-                 get_ip_for_mac(starrs, interface[1])])
-        vm_dict['expire'] = get_vm_expire(
-            db, vmid, app.config['VM_EXPIRE_MONTHS']).strftime('%m/%d/%Y')
-        usage_check = user.check_usage(vm_dict['config']['cores'],
-                                       vm_dict['config']['memory'], 0)
+        usage_check = user.check_usage(vm.cpu, vm.mem, 0)
         return render_template(
             'vm_details.html',
             user=user,
-            vm=vm_dict,
+            vm=vm,
             usage=user.usage,
             limits=user.limits,
             usage_check=usage_check)
@@ -338,8 +324,9 @@ def vm_renew(vmid):
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         renew_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
-        for interface in vm.get_interfaces():
-            renew_ip(starrs, get_ip_for_mac(starrs, interface[1]))
+        for interface in vm.interfaces:
+            if interface[2] != 'No IP':
+                renew_ip(starrs, interface[2])
         return '', 200
     else:
         return '', 403
@@ -384,6 +371,22 @@ def delete(vmid):
         return '', 403
 
 
+@app.route("/vm/<string:vmid>/boot_order", methods=['POST'])
+@auth.oidc_auth
+def boot_order(vmid):
+    user = User(session['userinfo']['preferred_username'])
+    proxmox = connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        boot_order = []
+        for key, value in request.form.items():
+            boot_order.append(value)
+        vm = VM(vmid)
+        vm.set_boot_order(boot_order)
+        return '', 200
+    else:
+        return '', 403
+
+
 @app.route("/vm/create", methods=['GET', 'POST'])
 @auth.oidc_auth
 def create():
@@ -414,7 +417,10 @@ def create():
                 iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'],
                                          iso)
             if not user.rtp:
-                usage_check = user.check_usage(0, 0, disk)
+                if template == 'none':
+                    usage_check = user.check_usage(0, 0, disk)
+                else:
+                    usage_check = user.check_usage(cores, memory, disk)
                 username = user.name
             else:
                 usage_check = None

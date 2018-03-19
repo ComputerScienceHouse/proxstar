@@ -98,15 +98,13 @@ def process_expiring_vms_task():
             expiring_vms = []
             vms = user.vms
             for vm in vms:
-                vmid = vm['vmid']
-                expire = get_vm_expire(db, vmid,
-                                       app.config['VM_EXPIRE_MONTHS'])
-                days = (expire - datetime.date.today()).days
+                vm = VM(vm['vmid'])
+                days = (vm.expire - datetime.date.today()).days
                 if days in [10, 7, 3, 1, 0]:
-                    name = VM(vmid).config['name']
-                    expiring_vms.append([name, days])
+                    name = vm.name
+                    expiring_vms.append([vm.name, days])
                     if days == 0:
-                        VM(vmid).stop()
+                        vm.stop()
             if expiring_vms:
                 send_vm_expire_email('com6056', expiring_vms)
 

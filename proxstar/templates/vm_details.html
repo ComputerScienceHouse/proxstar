@@ -9,27 +9,27 @@
                     <h3 class="panel-title">Actions</h3>
                 </div>
                 <div class="panel-body">
-                    {% if vm['qmpstatus'] == 'stopped' %}
+                    {% if vm.qmpstatus == 'stopped' %}
                     {% if not usage_check %}
-                    <button class="btn btn-success proxstar-actionbtn" id="start-vm" name="start" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">START</button>
+                    <button class="btn btn-success proxstar-actionbtn" id="start-vm" name="start" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">START</button>
                     {% else %}
                     Insufficient resources to start VM.
                     {% endif %}
                     {% endif %}
-                    {% if vm['qmpstatus'] == 'suspended' or vm['qmpstatus'] == 'paused' %}
-                    <button class="btn btn-success proxstar-actionbtn" id="resume-vm" name="resume" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESUME</button>
+                    {% if vm.qmpstatus == 'suspended' or vm.qmpstatus == 'paused' %}
+                    <button class="btn btn-success proxstar-actionbtn" id="resume-vm" name="resume" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">RESUME</button>
                     {% endif %}
-                    {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'suspended' or vm['qmpstatus'] == 'paused' %}
-                    {% if vm['qmpstatus'] == 'running' %}
-                    <button class="btn btn-success proxstar-actionbtn" id="console-vm" name="console" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">CONSOLE</button>
-                    <button class="btn btn-info proxstar-actionbtn" id="suspend-vm" name="suspend" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SUSPEND</button>
+                    {% if vm.qmpstatus == 'running' or vm.qmpstatus == 'suspended' or vm.qmpstatus == 'paused' %}
+                    {% if vm.qmpstatus == 'running' %}
+                    <button class="btn btn-success proxstar-actionbtn" id="console-vm" name="console" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">CONSOLE</button>
+                    <button class="btn btn-info proxstar-actionbtn" id="suspend-vm" name="suspend" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">SUSPEND</button>
                     {% endif %}
-                    <button class="btn btn-info proxstar-actionbtn" id="shutdown-vm" name="shutdown" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">SHUTDOWN</button>
-                    <button class="btn btn-warning proxstar-actionbtn" id="stop-vm" name="stop" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">STOP</button>
-                    <button class="btn btn-warning proxstar-actionbtn" id="reset-vm" name="reset" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">RESET</button>
+                    <button class="btn btn-info proxstar-actionbtn" id="shutdown-vm" name="shutdown" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">SHUTDOWN</button>
+                    <button class="btn btn-warning proxstar-actionbtn" id="stop-vm" name="stop" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">STOP</button>
+                    <button class="btn btn-warning proxstar-actionbtn" id="reset-vm" name="reset" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">RESET</button>
                     {% endif %}
-                    {% if vm['qmpstatus'] == 'stopped' %}
-                    <button class="btn btn-danger proxstar-actionbtn" id="delete-vm" name="delete" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">DELETE</button>
+                    {% if vm.qmpstatus == 'stopped' %}
+                    <button class="btn btn-danger proxstar-actionbtn" id="delete-vm" name="delete" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">DELETE</button>
                     {% else %}
                     To delete VM, power it off.
                     {% endif %}
@@ -43,28 +43,35 @@
                 </div>
                 <div class="panel-body">
                     <ul class="nav nav-list">
+                        <li class="nav-header">Boot Order</li>
+                        <li>
+                            {{ vm.boot_order|join(', ') }}
+                            <button class="btn btn-default proxstar-changebtn" id="edit-boot-order" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}" data-boot_order="{{ vm.boot_order_json }}">
+                                <span class="glyphicon glyphicon-cog"></span>
+                            </button>
+                        </li>
                         <li class="nav-header">Interfaces</li>
-                        {% for interface in vm['interfaces'] %}
-                        <li>{{ interface[0] }}: {{ interface[1] }}</li>
+                        {% for interface in vm.interfaces %}
+                        <li>{{ interface[0] }}: {{ interface[2] }}</li>
                         {% endfor %}
                         <li class="nav-header">Disks</li>
-                        {% for disk in vm['disks'] %}
+                        {% for disk in vm.disks %}
                         <li>
                             {{ disk[0] }}: {{ disk[1] }}GB
-                            <button class="btn btn-default proxstar-changebtn resize-disk" id="resize-disk" name="resize" data-vmid="{{ vm['vmid'] }}" data-disk="{{ disk[0] }}" data-usage="{{ usage['disk'] }}" data-limit="{{ limits['disk'] }}">
+                            <button class="btn btn-default proxstar-changebtn resize-disk" id="resize-disk" name="resize" data-vmid="{{ vm.id }}" data-disk="{{ disk[0] }}" data-usage="{{ usage['disk'] }}" data-limit="{{ limits['disk'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                         </li>
                         {% endfor %}
                         <li class="nav-header">ISO</li>
                         <li>
-                            {{ vm['iso'] }}
-                            {% if vm['iso'] != 'None' %}
-                            <button class="btn btn-danger proxstar-ejectbtn" id="eject-iso" name="eject" data-vmid="{{ vm['vmid'] }}" data-iso="{{ vm['iso'] }}">
+                            {{ vm.iso }}
+                            {% if vm.iso != 'None' %}
+                            <button class="btn btn-danger proxstar-ejectbtn" id="eject-iso" name="eject" data-vmid="{{ vm.id }}" data-iso="{{ vm.iso }}">
                                 <span class="glyphicon glyphicon-eject"></span>
                             </button>
                             {% endif %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-iso" name="change" data-vmid="{{ vm['vmid'] }}" data-iso="{{ vm['iso'] }}">
+                            <button class="btn btn-default proxstar-changebtn" id="change-iso" name="change" data-vmid="{{ vm.id }}" data-iso="{{ vm.iso }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                         </li>
@@ -80,49 +87,49 @@
                 <div class="panel-body">
                     <dl class="dl-horizontal">
                         <dt>Name</dt>
-                        <dd>{{ vm['name'] }}</dd>
+                        <dd>{{ vm.name }}</dd>
                         <dt>DNS Name</dt>
-                        <dd>{{ vm['name'] }}.csh.rit.edu</dd>
+                        <dd>{{ vm.name }}.csh.rit.edu</dd>
                         <dt>ID</dt>
-                        <dd>{{ vm['vmid'] }}</dd>
+                        <dd>{{ vm.id }}</dd>
                         <dt>Status</dt>
-                        <dd>{{ vm['qmpstatus'] }}</dd>
+                        <dd>{{ vm.qmpstatus }}</dd>
                         <dt>Node</dt>
-                        <dd>{{ vm['node'] }}</dd>
+                        <dd>{{ vm.node }}</dd>
                         <dt>Cores</dt>
                         <dd>
-                            {{ vm['config']['cores'] * vm['config'].get('sockets', 1) }}
-                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'suspended' or vm['qmpstatus'] == 'paused' %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-usage="{{ usage['cpu'] - (vm['config']['cores'] * vm['config'].get('sockets', 1)) }}" data-limit="{{ limits['cpu'] }}">
+                            {{ vm.cpu }}
+                            {% if vm.qmpstatus == 'running' or vm.qmpstatus == 'suspended' or vm.qmpstatus == 'paused' %}
+                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm.id }}" data-usage="{{ usage['cpu'] - vm.cpu }}" data-limit="{{ limits['cpu'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% else %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm['vmid'] }}" data-usage=0 data-limit="{{ limits['cpu'] }}">
+                            <button class="btn btn-default proxstar-changebtn" id="change-cores" data-vmid="{{ vm.id }}" data-usage=0 data-limit="{{ limits['cpu'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% endif %}
                         </dd>
                         <dt>Memory</dt>
                         <dd>
-                            {% if vm['config']['memory'] < 1024 %}
-                            {{ vm['config']['memory'] }}MB
+                            {% if vm.mem < 1024 %}
+                            {{ vm.mem }}MB
                             {% else %}
-                            {{ vm['config']['memory'] // 1024 }}GB
+                            {{ vm.mem // 1024 }}GB
                             {% endif %}
-                            {% if vm['qmpstatus'] == 'running' or vm['qmpstatus'] == 'suspended' or vm['qmpstatus'] == 'paused' %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-usage="{{ usage['mem'] - vm['config']['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
+                            {% if vm.qmpstatus == 'running' or vm.qmpstatus == 'suspended' or vm.qmpstatus == 'paused' %}
+                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm.id }}" data-usage="{{ usage['mem'] - vm.config['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% else %}
-                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm['vmid'] }}" data-usage=0 data-limit="{{ limits['mem'] }}">
+                            <button class="btn btn-default proxstar-changebtn" id="change-mem" data-vmid="{{ vm.id }}" data-usage=0 data-limit="{{ limits['mem'] }}">
                                 <span class="glyphicon glyphicon-cog"></span>
                             </button>
                             {% endif %}
                         </dd>
                         <dt>Expiration</dt>
                         <dd>
-                            {{ vm['expire'] }}
-                            <button class="btn btn-success proxstar-renewbtn" id="renew-vm" name="renew" data-vmid="{{ vm['vmid'] }}" data-vmname="{{ vm['name'] }}">
+                            {{ vm.expire.strftime('%m/%d/%Y') }}
+                            <button class="btn btn-success proxstar-renewbtn" id="renew-vm" name="renew" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}">
                                 <span class="glyphicon glyphicon-plus"></span>
                             </button>
                         </dd>

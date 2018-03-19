@@ -71,7 +71,7 @@
                         </select>
                     </div>
                     {% endif %}
-                    <button class="btn btn-success" id="create-vm" name="create" data-max_disk="{{ limits['disk'] - usage['disk'] }}">CREATE</button>
+                    <button class="btn btn-success" id="create-vm" name="create" data-max_cpu="{{ limits['cpu'] - usage['cpu'] }}" data-max_mem="{{ limits['mem'] - usage['mem'] }}" data-max_disk="{{ limits['disk'] - usage['disk'] }}">CREATE</button>
                     {% endif %}
                 </div>
             </div>
