@@ -28,10 +28,10 @@
                                     <td>{{ template['disk'] }}</td>
                                     <td>
                                         <button class="btn btn-sm btn-info edit-template" data-template_id="{{ template['id'] }}" data-template_name="{{ template['name'] }}" data-template_username="{{ template['username'] }}" data-template_disk="{{ template['disk'] }}">
-                                            <span class="glyphicon glyphicon-pencil"></span>
+                                            <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="btn btn-sm btn-danger delete-template" data-template_id="{{ template['id'] }}">
-                                            <span class="glyphicon glyphicon-remove"></span>
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </td>
                                 </tr>
@@ -60,20 +60,20 @@
                                     <td class="col-md-9">{{ pool }}</td>
                                     <td class="col-md-3">
                                         <button class="btn btn-sm btn-danger delete-ignored-pool" data-pool="{{ pool }}">
-                                            <span class="glyphicon glyphicon-remove"></span>
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
-                    <div class="col-md-9 col-xs-9">
-                        <input type="text" id="pool" class="form-control">
-                    </div>
-                    <div class="col-md-3 col-xs-3">
-                    <button class="btn btn-sm btn-success add-ignored-pool">
-                        <span class="glyphicon glyphicon-plus"></span>
-                    </button>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="pool">
+                        <span class="input-group-btn">
+                            <button class="btn btn-sm btn-success add-ignored-pool" type="button">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </span>
                     </div>
                 </div>
             </div>
@@ -97,20 +97,20 @@
                                     <td class="col-md-9">{{ username }}</td>
                                     <td class="col-md-3">
                                         <button class="btn btn-sm btn-danger delete-allowed-user" data-user="{{ username }}">
-                                            <span class="glyphicon glyphicon-remove"></span>
+                                            <i class="fas fa-trash-alt"></i>
                                         </button>
                                     </td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
-                    <div class="col-md-9 col-xs-9">
-                        <input type="text" id="user" class="form-control">
-                    </div>
-                    <div class="col-md-3 col-xs-3">
-                    <button class="btn btn-sm btn-success add-allowed-user">
-                        <span class="glyphicon glyphicon-plus"></span>
-                    </button>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="user">
+                        <span class="input-group-btn">
+                            <button class="btn btn-sm btn-success add-allowed-user" type="button">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </span>
                     </div>
                 </div>
             </div>

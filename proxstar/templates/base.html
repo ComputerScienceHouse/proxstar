@@ -6,102 +6,82 @@
     <meta name="viewport" content="width=device-width, initial-scale=1"/>
     <meta name="theme-color" content="#B0197E">
     <link rel="shortcut icon" href="https://assets.csh.rit.edu/uploads/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/static/css/csh-material-bootstrap/dist/css/csh-material-bootstrap.css">
+    <link rel="stylesheet" href="https://s3.csh.rit.edu/csh-material-bootstrap/4.0.0/dist/csh-material-bootstrap.min.css" media="screen">
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/circle.css">
     <link rel="manifest" href="/static/manifest.json">
 </head>
 <body>
 {% block nav %}
-    <nav class="navbar navbar-inverse navbar-fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary justify-content-center">
         <div class="container">
-            <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
-                        aria-expanded="false" aria-controls="navbar">
-                    <span class="sr-only">Toggle navigation</span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                    <span class="icon-bar"></span>
-                </button>
-                <a class="navbar-brand" href="/">Proxstar</a>
-            </div>
-            <div id="navbar" class="navbar-collapse collapse">
-                <ul class="nav navbar-nav">
+            <a class="navbar-brand abs" href="/">Proxstar</a>
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarResponsive">
+                <ul class="navbar-nav mr-auto">
                     {% if user.active %}
-                    <li>
-                        <a href="/">
-                            <span class="glyphicon glyphicon-th-list"></span>
+                    <li class="nav-item navbar-user dropdown">
+                        <a class="nav-link" href="/">
+                            <i class="fas fa-th-list"></i>
                             VM List
                         </a>
                     </li>
-                    <li>
-                        <a href="/vm/create">
-                            <span class="glyphicon glyphicon-plus-sign"></span>
+                    <li class="nav-item navbar-user dropdown">
+                        <a class="nav-link" href="/vm/create">
+                            <i class="fas fa-plus-circle"></i>
                             Create VM
                         </a>
                     </li>
                     {% if user.rtp %}
-                    <li>
-                        <a href="/rq">
-                            <span class="glyphicon glyphicon-eye-open"></span>
+                    <li class="nav-item navbar-user dropdown">
+                        <a class="nav-link" href="/rq">
+                            <i class="fas fa-tachometer-alt"></i>
                             RQ Dashboard
                         </a>
                     </li>
-                    <li>
-                        <a href="/settings">
-                            <span class="glyphicon glyphicon-cog"></span>
+                    <li class="nav-item navbar-user dropdown">
+                        <a class="nav-link" href="/settings">
+                            <i class="fas fa-cog"></i>
                             Settings
                         </a>
                     </li>
                     {% endif %}
                     {% endif %}
                 </ul>
-                <ul class="nav navbar-nav navbar-right">
-                    <li class="dropdown navbar-user">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown"
-                           role="button" aria-expanded="false">
-                            <img src="https://profiles.csh.rit.edu/image/{{ user.name }}"
-                                 title="{{ user.name }}">
+                <ul class="nav navbar-nav ml-auto">
+                    <li class="nav-item navbar-user dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#" id="user01">
+                            <img src="https://profiles.csh.rit.edu/image/{{ user.name }}">
                             {{ user.name }}
                             <span class="caret"></span>
                         </a>
-                        <ul class="dropdown-menu" role="menu">
-                            <li>
-                                <a href="https://profiles.csh.rit.edu/user/{{ user.name }}">
-                                    <span class="glyphicon glyphicon-user"></span>
-                                    Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a href="https://members.csh.rit.edu/">
-                                    <span class="glyphicon glyphicon-globe"></span>
-                                    Members Portal
-                                </a>
-                            </li>
-                            <li>
-                                <a href="/logout">
-                                    Logout
-                                </a>
-                            </li>
-                        </ul>
+                        <div class="dropdown-menu" aria-labelledby="user01">
+                            <a class="dropdown-item" href="/logout">Logout</a>
+                        </div>
                     </li>
                 </ul>
             </div>
         </div>
     </nav>
 {% endblock %}
-<body>
+<div class="content">
 {% block body %}
 {% endblock %}
+</div>
 <footer>
     <br>
     <div class="version">
 	<a class="footer-version" href="https://github.com/com6056/proxstar/tree/{{config["GIT_REVISION"]}}">Proxstar ({{config["GIT_REVISION"]}})</a>
     </div>
 </footer>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js" integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l" crossorigin="anonymous"></script>
+<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>
 <script src="/static/js/script.js"></script>
 </body>
 </body>

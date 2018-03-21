@@ -6,13 +6,13 @@
         {% if user['rtp'] %}
         <div class="col-md-12 col-sm-12">
         {% else %}
-        <div class="col-md-9 col-sm-12">
+        <div class="col-lg-9 col-md-8 col-sm-12">
         {% endif %}
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Create VM</h3>
+            <div class="card bg-light mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Create VM</h3>
                 </div>
-                <div class="panel-body">
+                <div class="card-body">
                     {% if limits['disk'] - usage['disk'] <= 0 %}
                         <p>Before you can create any more VMs, you must first delete existing VMs until you have enough disk resources available.</p>
                     {% else %}
@@ -71,27 +71,29 @@
                         </select>
                     </div>
                     {% endif %}
-                    <button class="btn btn-success" id="create-vm" name="create" data-max_cpu="{{ limits['cpu'] - usage['cpu'] }}" data-max_mem="{{ limits['mem'] - usage['mem'] }}" data-max_disk="{{ limits['disk'] - usage['disk'] }}">CREATE</button>
+                    <div class="text-center">
+                        <button class="btn btn-success" id="create-vm" name="create" data-max_cpu="{{ limits['cpu'] - usage['cpu'] }}" data-max_mem="{{ limits['mem'] - usage['mem'] }}" data-max_disk="{{ limits['disk'] - usage['disk'] }}">CREATE</button>
+                    </div>
                     {% endif %}
                 </div>
             </div>
         </div>
         {% if not user['rtp'] %}
-        <div class="col-md-3 col-sm-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">Current Usage</h3>
+        <div class="col-lg-3 col-md-4 col-sm-12">
+            <div class="card bg-light mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Current Usage</h3>
                 </div>
-                <div class="panel-body">
+                <div class="card-body">
                     <div class="resource-usage">
-                        <div class="col-md-12 col-sm-4">
-                            CPU Cores
-                            {% if percents['cpu'] <= 50 %}
+                        <div class="col-md-12 text-center">
+                            <p>CPU Cores</p>
+                            {% if percents['cpu'] <= 60 %}
                             <div class="c100 p{{ percents['cpu'] }} green">
-                            {% elif percents['cpu'] <= 75 %}
-                            <div class="c100 p{{ percents['cpu'] }} blue">
-                            {% else %}
+                            {% elif percents['cpu'] <= 80 %}
                             <div class="c100 p{{ percents['cpu'] }} orange">
+                            {% else %}
+                            <div class="c100 p{{ percents['cpu'] }} red">
                             {% endif %}
                                 <span>{{ usage['cpu'] }}/{{ limits['cpu'] }}</span>
                                 <div class="slice">
@@ -100,14 +102,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-12 col-sm-4">
-                            Memory (GB)
-                            {% if percents['mem'] <= 50 %}
+                        <div class="col-md-12 text-center">
+                            <p>Memory (GB)</p>
+                            {% if percents['mem'] <= 60 %}
                             <div class="c100 p{{ percents['mem'] }} green">
-                            {% elif percents['mem'] <= 75 %}
-                            <div class="c100 p{{ percents['mem'] }} blue">
-                            {% else %}
+                            {% elif percents['mem'] <= 80 %}
                             <div class="c100 p{{ percents['mem'] }} orange">
+                            {% else %}
+                            <div class="c100 p{{ percents['mem'] }} red">
                             {% endif %}
                                 <span>{{ usage['mem'] }}/{{ limits['mem'] }}</span>
                                 <div class="slice">
@@ -116,14 +118,14 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-12 col-sm-4">
-                            Disk (GB)
-                            {% if percents['disk'] <= 50 %}
+                        <div class="col-md-12 text-center">
+                            <p>Disk (GB)</p>
+                            {% if percents['disk'] <= 60 %}
                             <div class="c100 p{{ percents['disk'] }} green">
-                            {% elif percents['disk'] <= 75 %}
-                            <div class="c100 p{{ percents['disk'] }} blue">
-                            {% else %}
+                            {% elif percents['disk'] <= 80 %}
                             <div class="c100 p{{ percents['disk'] }} orange">
+                            {% else %}
+                            <div class="c100 p{{ percents['disk'] }} red">
                             {% endif %}
                                 <span>{{ usage['disk'] }}/{{ limits['disk'] }}</span>
                                 <div class="slice">

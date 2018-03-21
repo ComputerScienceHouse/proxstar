@@ -1,6 +1,3 @@
-[submodule "proxstar/static/css/csh-material-bootstrap"]
-	path = proxstar/static/css/csh-material-bootstrap
-	url = https://github.com/ComputerScienceHouse/csh-material-bootstrap.git
 [submodule "proxstar/static/noVNC"]
 	path = proxstar/static/noVNC
 	url = https://github.com/novnc/noVNC.git

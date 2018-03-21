@@ -1,7 +1,3 @@
-body {
-    padding-top: 100px;
-}
-
 footer {
     text-align: center;
     margin: 20px 0;
@@ -9,6 +5,10 @@ footer {
 
 table, th, td {
     border: 1px solid black;
+}
+
+.content {
+    padding-top: 20px;
 }
 
 .panel {
@@ -47,6 +47,7 @@ table, th, td {
 
 .nav-list {
     text-align: left;
+    display: block;
 }
 
 .nav-list .nav-header {
@@ -65,29 +66,12 @@ table, th, td {
     margin-top: 5px;
 }
 
-.proxstar-ejectbtn {
+.proxstar-vmbtn {
     width: 20px;
     height: 20px;
     text-align: center;
-    padding: 0px 1px 0px 0px;
+    padding: 1px 0px 0px 0px;
     border-radius: 15px;
-}
-
-.proxstar-changebtn {
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    padding: 0px 0px 0px 1px;
-    border-radius: 15px;
-}
-
-.proxstar-renewbtn {
-    width: 20px;
-    height: 20px;
-    text-align: center;
-    padding: 0px 0px 0px 0px;
-    border-radius: 15px;
-    line-height: 1;
 }
 
 .proxstar-poolbtn {
