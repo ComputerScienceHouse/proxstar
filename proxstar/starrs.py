@@ -1,3 +1,6 @@
+import psycopg2
+
+
 def get_next_ip(starrs, range_name):
     c = starrs.cursor()
     try:
@@ -42,6 +45,10 @@ def renew_ip(starrs, addr):
 def check_hostname(starrs, hostname):
     c = starrs.cursor()
     try:
+        c.execute("BEGIN")
+        c.callproc("api.initialize", ('root', ))
+        c.callproc("api.validate_name", (hostname, ))
+        c.execute("COMMIT")
         c.execute("BEGIN")
         c.callproc("api.initialize", ('root', ))
         c.callproc("api.validate_domain", (hostname, 'csh.rit.edu'))
