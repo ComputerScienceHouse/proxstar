@@ -62,8 +62,8 @@ def add_vnc_target(port):
 
 def delete_vnc_target(port):
     targets = get_vnc_targets()
-    target = next((target for target in targets if target['port'] == port),
-                  None)
+    target = next(
+        (target for target in targets if target['port'] == str(port)), None)
     if target:
         targets.remove(target)
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w')
