@@ -83,3 +83,17 @@ def start_ssh_tunnel(node, port):
         local_bind_address=('127.0.0.1', port))
     server.start()
     return server
+
+
+def stop_ssh_tunnel(vmid, ssh_tunnels):
+    # Tear down the SSH tunnel and VNC target entry for a given VM
+    port = 5900 + int(vmid)
+    tunnel = next((tunnel for tunnel in ssh_tunnels
+                   if tunnel.local_bind_port == port), None)
+    if tunnel:
+        try:
+            tunnel.stop()
+        except:
+            pass
+        ssh_tunnels.remove(tunnel)
+        delete_vnc_target(port)

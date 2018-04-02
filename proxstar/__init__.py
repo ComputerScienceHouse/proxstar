@@ -207,8 +207,10 @@ def vm_power(vmid, action):
             vm.start()
         elif action == 'stop':
             vm.stop()
+            stop_ssh_tunnel(vmid, ssh_tunnels)
         elif action == 'shutdown':
             vm.shutdown()
+            stop_ssh_tunnel(vmid, ssh_tunnels)
         elif action == 'reset':
             vm.reset()
         elif action == 'suspend':
@@ -365,17 +367,7 @@ def delete(vmid):
     user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
-        # Tear down the SSH tunnel and VNC stuff for the VM
-        port = 5900 + int(vmid)
-        tunnel = next((tunnel for tunnel in ssh_tunnels
-                       if tunnel.local_bind_port == port), None)
-        if tunnel:
-            try:
-                tunnel.stop()
-            except:
-                pass
-            ssh_tunnels.remove(tunnel)
-            delete_vnc_target(port)
+        stop_ssh_tunnel(vmid, ssh_tunnels)
         # Submit the delete VM task to RQ
         q.enqueue(delete_vm_task, vmid)
         return '', 200
