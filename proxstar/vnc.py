@@ -1,5 +1,6 @@
 import os
 import time
+import requests
 import subprocess
 from sshtunnel import SSHTunnelForwarder
 from proxstar.util import *
@@ -91,9 +92,18 @@ def stop_ssh_tunnel(vmid, ssh_tunnels):
     tunnel = next((tunnel for tunnel in ssh_tunnels
                    if tunnel.local_bind_port == port), None)
     if tunnel:
+        print("Tearing down SSH tunnel for VM {}.".format(vmid))
         try:
             tunnel.stop()
         except:
             pass
         ssh_tunnels.remove(tunnel)
         delete_vnc_target(port)
+
+
+def send_stop_ssh_tunnel(vmid):
+    requests.post(
+        "https://{}/console/vm/{}/stop".format(app.config['SERVER_NAME'],
+                                               vmid),
+        data={'token': app.config['VNC_CLEANUP_TOKEN']},
+        verify=False)

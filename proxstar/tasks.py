@@ -199,6 +199,6 @@ def setup_template_task(template_id, name, user, password, cores, memory):
 
 def cleanup_vnc_task():
     requests.post(
-        'https://proxstar.csh.rit.edu/console/cleanup',
+        "https://{}/console/cleanup".format(app.config['SERVER_NAME']),
         data={'token': app.config['VNC_CLEANUP_TOKEN']},
         verify=False)

@@ -207,16 +207,25 @@ def vm_power(vmid, action):
             vm.start()
         elif action == 'stop':
             vm.stop()
-            stop_ssh_tunnel(vmid, ssh_tunnels)
+            send_stop_ssh_tunnel(vmid)
         elif action == 'shutdown':
             vm.shutdown()
-            stop_ssh_tunnel(vmid, ssh_tunnels)
+            send_stop_ssh_tunnel(vmid)
         elif action == 'reset':
             vm.reset()
         elif action == 'suspend':
             vm.suspend()
         elif action == 'resume':
             vm.resume()
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route("/console/vm/<string:vmid>/stop", methods=['POST'])
+def vm_console_stop(vmid):
+    if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
+        stop_ssh_tunnel(vmid, ssh_tunnels)
         return '', 200
     else:
         return '', 403
@@ -367,7 +376,7 @@ def delete(vmid):
     user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
-        stop_ssh_tunnel(vmid, ssh_tunnels)
+        send_stop_ssh_tunnel(vmid)
         # Submit the delete VM task to RQ
         q.enqueue(delete_vm_task, vmid)
         return '', 200
