@@ -11,6 +11,7 @@ from proxstar.db import *
 from proxstar.util import *
 from proxstar.mail import *
 from proxstar.starrs import *
+from proxstar.vnc import send_stop_ssh_tunnel
 from proxstar.vm import VM, create_vm, clone_vm
 from proxstar.user import User, get_vms_for_rtp
 from proxstar.proxmox import connect_proxmox, get_pools
@@ -72,21 +73,6 @@ def delete_vm_task(vmid):
         delete_vm_expire(db, vmid)
 
 
-def process_expired_vms_task():
-    with app.app_context():
-        proxmox = connect_proxmox()
-        starrs = connect_starrs()
-        expired_vms = get_expired_vms()
-        print(expired_vms)
-
-    #    for vmid in expired_vms:
-
-    #        vm = VM(vmid)
-    #        delete_vm(proxmox, starrs, vmid)
-    #        delete_starrs(starrs, vm.name)
-    #        delete_vm_expire(vmid)
-
-
 def process_expiring_vms_task():
     with app.app_context():
         proxmox = connect_proxmox()
@@ -96,17 +82,26 @@ def process_expiring_vms_task():
         for pool in pools:
             user = User(pool)
             expiring_vms = []
+            expired_vms = []
             vms = user.vms
             for vm in vms:
                 vm = VM(vm['vmid'])
                 days = (vm.expire - datetime.date.today()).days
-                if days in [10, 7, 3, 1, 0]:
+                if days in [10, 7, 3, 1, 0, -1, -2, -3, -4, -5, -6]:
                     name = vm.name
-                    expiring_vms.append([vm.name, days])
-                    if days == 0:
+                    expiring_vms.append([vm.id, vm.name, days])
+                    if days <= 0:
+                        expired_vms.append([vm.id, vm.name, days])
+                    if days <= 0:
                         vm.stop()
+                elif days == -7:
+                    print("Deleting {} ({}) as it has been a week since expiration.".format(vm.name, vm.id))
+                    send_stop_ssh_tunnel(vm.id)
+                    delete_vm_task(vm.id)
             if expiring_vms:
-                send_vm_expire_email('com6056', expiring_vms)
+                send_vm_expire_email(pool, expiring_vms)
+            if expired_vms:
+                send_rtp_vm_delete_email(expired_vms)
 
 
 def generate_pool_cache_task():

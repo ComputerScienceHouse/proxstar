@@ -37,16 +37,6 @@ def delete_vm_expire(db, vmid):
         db.commit()
 
 
-def get_expired_vms(db):
-    expired = []
-    today = datetime.date.today().strftime('%Y-%m-%d')
-    expire = db.query(VM_Expiration).filter(
-        VM_Expiration.expire_date < today).all()
-    for vm in expire:
-        expired.append(vm.id)
-    return expired
-
-
 def get_expiring_vms(db):
     expiring = []
     today = datetime.date.today()

@@ -14,7 +14,10 @@ class VM(object):
 
     @lazy_property
     def name(self):
-        return self.config['name']
+        try:
+            return self.config['name']
+        except KeyError:
+            return self.id
 
     @lazy_property
     def cpu(self):
