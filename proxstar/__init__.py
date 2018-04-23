@@ -488,8 +488,7 @@ def set_limits(user):
 def delete_user(user):
     if 'rtp' in session['userinfo']['groups']:
         proxmox = connect_proxmox()
-        delete_user_pool(proxmox, user)
-        cache.delete('vms')
+        User(user).delete()
         return '', 200
     else:
         return '', 403

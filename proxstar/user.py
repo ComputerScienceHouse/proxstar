@@ -102,6 +102,7 @@ class User(object):
             return 'exceeds_disk_limit'
 
     def delete(self):
+        proxmox = connect_proxmox()
         proxmox.pools(self.name).delete()
         users = proxmox.access.users.get()
         if any(user['userid'] == "{}@csh.rit.edu".format(self.name)
