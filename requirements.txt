@@ -4,7 +4,7 @@ proxmoxer
 psycopg2-binary
 sqlalchemy
 python-dateutil
-csh_ldap
+csh_ldap==2.0.1
 rq
 rq-scheduler==0.7.0
 gunicorn
