@@ -215,6 +215,7 @@ def vm_power(vmid, action):
             vm.reset()
         elif action == 'suspend':
             vm.suspend()
+            send_stop_ssh_tunnel(vmid)
         elif action == 'resume':
             vm.resume()
         return '', 200
@@ -238,31 +239,14 @@ def vm_console(vmid):
     proxmox = connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
+        stop_ssh_tunnel(vm.id, ssh_tunnels)
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
         node = "{}.csh.rit.edu".format(vm.node)
-        tunnel = next((tunnel for tunnel in ssh_tunnels
-                       if tunnel.local_bind_port == int(port)), None)
-        if tunnel:
-            if tunnel.ssh_host != node:
-                print(
-                    "Tunnel already exists for VM {} to the wrong Proxmox node.".
-                    format(vmid))
-                tunnel.stop()
-                ssh_tunnels.remove(tunnel)
-                print("Creating SSH tunnel to {} for VM {}.".format(
-                    node, vmid))
-                tunnel = start_ssh_tunnel(node, port)
-                ssh_tunnels.append(tunnel)
-                vm.start_vnc(port)
-            else:
-                print("Tunnel already exists to {} for VM {}.".format(
-                    node, vmid))
-        else:
-            print("Creating SSH tunnel to {} for VM {}.".format(node, vmid))
-            tunnel = start_ssh_tunnel(node, port)
-            ssh_tunnels.append(tunnel)
-            vm.start_vnc(port)
+        print("Creating SSH tunnel to {} for VM {}.".format(node, vm.id))
+        tunnel = start_ssh_tunnel(node, port)
+        ssh_tunnels.append(tunnel)
+        vm.start_vnc(port)
         return token, 200
     else:
         return '', 403

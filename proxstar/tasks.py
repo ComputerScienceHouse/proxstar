@@ -95,7 +95,9 @@ def process_expiring_vms_task():
                     if days <= 0:
                         vm.stop()
                 elif days == -7:
-                    print("Deleting {} ({}) as it has been a week since expiration.".format(vm.name, vm.id))
+                    print(
+                        "Deleting {} ({}) as it has been a week since expiration.".
+                        format(vm.name, vm.id))
                     send_stop_ssh_tunnel(vm.id)
                     delete_vm_task(vm.id)
             if expiring_vms:
