@@ -5,7 +5,7 @@ from proxstar import db, starrs
 from proxstar.db import get_vm_expire
 from proxstar.util import lazy_property
 from proxstar.starrs import get_ip_for_mac
-from proxstar.proxmox import connect_proxmox, get_node_least_mem, get_free_vmid, get_vm_node
+from proxstar.proxmox import connect_proxmox, connect_proxmox_ssh, get_node_least_mem, get_free_vmid, get_vm_node
 from flask import current_app as app
 
 
@@ -204,16 +204,16 @@ class VM(object):
         return get_vm_expire(db, self.id, app.config['VM_EXPIRE_MONTHS'])
 
     def set_ci_user(self, user):
-        proxmox = connect_proxmox()
+        proxmox = connect_proxmox_ssh()
         proxmox.nodes(self.node).qemu(self.id).config.put(ciuser=user)
 
     def set_ci_ssh_key(self, ssh_key):
-        proxmox = connect_proxmox()
+        proxmox = connect_proxmox_ssh()
         escaped_key = urllib.parse.quote(ssh_key, safe='')
         proxmox.nodes(self.node).qemu(self.id).config.put(sshkey=escaped_key)
 
     def set_ci_network(self):
-        proxmox = connect_proxmox()
+        proxmox = connect_proxmox_ssh()
         proxmox.nodes(self.node).qemu(self.id).config.put(ipconfig0='ip=dhcp')
 
 

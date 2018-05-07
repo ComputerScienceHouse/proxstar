@@ -30,7 +30,9 @@ PROXMOX_HOSTS = [
     for host in environ.get('PROXSTAR_PROXMOX_HOSTS', '').split(',')
 ]
 PROXMOX_USER = environ.get('PROXSTAR_PROXMOX_USER', '')
+PROXMOX_PASS = environ.get('PROXSTAR_PROXMOX_PASS', '')
 PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'nfs-iso')
+PROXMOX_SSH_USER = environ.get('PROXSTAR_PROXMOX_SSH_USER', '')
 PROXMOX_SSH_KEY = environ.get('PROXSTAR_PROXMOX_SSH_KEY', '')
 PROXMOX_SSH_KEY_PASS = environ.get('PROXSTAR_PROXMOX_SSH_KEY_PASS', '')
 

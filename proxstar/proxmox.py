@@ -10,6 +10,23 @@ def connect_proxmox():
             proxmox = ProxmoxAPI(
                 host,
                 user=app.config['PROXMOX_USER'],
+                password=app.config['PROXMOX_PASS'],
+                verify_ssl=False)
+            version = proxmox.version.get()
+            return proxmox
+        except:
+            if app.config['PROXMOX_HOSTS'].index(host) == (
+                    len(app.config['PROXMOX_HOSTS']) - 1):
+                print('Unable to connect to any of the given Proxmox servers!')
+                raise
+
+
+def connect_proxmox_ssh():
+    for host in app.config['PROXMOX_HOSTS']:
+        try:
+            proxmox = ProxmoxAPI(
+                host,
+                user=app.config['PROXMOX_SSH_USER'],
                 private_key_file='proxmox_ssh_key',
                 password=app.config['PROXMOX_SSH_KEY_PASS'],
                 backend='ssh_paramiko')

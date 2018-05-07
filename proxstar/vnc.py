@@ -78,7 +78,7 @@ def start_ssh_tunnel(node, port):
     port = int(port)
     server = SSHTunnelForwarder(
         node,
-        ssh_username='root',
+        ssh_username=app.config['PROXMOX_SSH_USER'],
         ssh_pkey='proxmox_ssh_key',
         ssh_private_key_password=app.config['PROXMOX_SSH_KEY_PASS'],
         remote_bind_address=('127.0.0.1', port),
