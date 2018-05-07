@@ -1,5 +1,6 @@
 import time
 import json
+import urllib
 from proxstar import db, starrs
 from proxstar.db import get_vm_expire
 from proxstar.util import lazy_property
@@ -202,6 +203,19 @@ class VM(object):
     def expire(self):
         return get_vm_expire(db, self.id, app.config['VM_EXPIRE_MONTHS'])
 
+    def set_ci_user(self, user):
+        proxmox = connect_proxmox()
+        proxmox.nodes(self.node).qemu(self.id).config.put(ciuser=user)
+
+    def set_ci_ssh_key(self, ssh_key):
+        proxmox = connect_proxmox()
+        escaped_key = urllib.parse.quote(ssh_key, safe='')
+        proxmox.nodes(self.node).qemu(self.id).config.put(sshkey=escaped_key)
+
+    def set_ci_network(self):
+        proxmox = connect_proxmox()
+        proxmox.nodes(self.node).qemu(self.id).config.put(ipconfig0='ip=dhcp')
+
 
 def create_vm(proxmox, user, name, cores, memory, disk, iso):
     node = proxmox.nodes(get_node_least_mem(proxmox))
@@ -237,7 +251,7 @@ def clone_vm(proxmox, template_id, name, pool):
         name=name,
         pool=pool,
         full=1,
-        description='Managed by Proxstar',
+        description='Managed\ by\ Proxstar',
         target=target)
     retry = 0
     while retry < 60:

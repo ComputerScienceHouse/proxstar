@@ -1,6 +1,6 @@
 flask
 flask_pyoidc
-proxmoxer
+git+https://github.com/merinos/proxmoxer.git@python3#egg=bad01313d9f32a239882195325b21767a25f72e0
 psycopg2-binary
 sqlalchemy
 python-dateutil

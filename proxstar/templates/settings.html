@@ -14,7 +14,6 @@
                             <tr role="row">
                                 <th>Proxmox ID</th>
                                 <th>Name</th>
-                                <th>Username</th>
                                 <th>Disk Size (GB)</th>
                                 <th>Delete</th>
                             </tr>
@@ -24,10 +23,9 @@
                                 <tr role="row">
                                     <td>{{ template['id'] }}</td>
                                     <td>{{ template['name'] }}</td>
-                                    <td>{{ template['username'] }}</td>
                                     <td>{{ template['disk'] }}</td>
                                     <td>
-                                        <button class="btn btn-sm btn-info edit-template" data-template_id="{{ template['id'] }}" data-template_name="{{ template['name'] }}" data-template_username="{{ template['username'] }}" data-template_disk="{{ template['disk'] }}">
+                                        <button class="btn btn-sm btn-info edit-template" data-template_id="{{ template['id'] }}" data-template_name="{{ template['name'] }}" data-template_disk="{{ template['disk'] }}">
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         <button class="btn btn-sm btn-danger delete-template" data-template_id="{{ template['id'] }}">

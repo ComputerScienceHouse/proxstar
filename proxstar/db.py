@@ -145,8 +145,6 @@ def get_templates(db):
         template_dict = dict()
         template_dict['id'] = template.id
         template_dict['name'] = template.name
-        template_dict['username'] = template.username
-        template_dict['password'] = template.password
         template_dict['disk'] = template.disk
         templates.append(template_dict)
     return templates
@@ -158,8 +156,6 @@ def get_template(db, template_id):
         template = db.query(Template).filter(Template.id == template_id).one()
         template_dict['id'] = template.id
         template_dict['name'] = template.name
-        template_dict['username'] = template.username
-        template_dict['password'] = template.password
         template_dict['disk'] = template.disk
     return template_dict
 
@@ -194,13 +190,10 @@ def delete_allowed_user(db, user):
         db.commit()
 
 
-def set_template_info(db, template_id, name, username, password, disk):
+def set_template_info(db, template_id, name, disk):
     if db.query(exists().where(Template.id == template_id, )).scalar():
         template = db.query(Template).filter(Template.id == template_id,
                                              ).one()
         template.name = name
-        template.username = username
-        if password:
-            template.password = password
         template.disk = disk
         db.commit()

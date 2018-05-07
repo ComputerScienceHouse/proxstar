@@ -410,6 +410,7 @@ def create():
             template = request.form['template']
             disk = request.form['disk']
             iso = request.form['iso']
+            ssh_key = request.form['ssh_key']
             if iso != 'none':
                 iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'],
                                          iso)
@@ -438,17 +439,16 @@ def create():
                             iso,
                             timeout=300)
                     else:
-                        password = gen_password(16)
                         q.enqueue(
                             setup_template_task,
                             template,
                             name,
                             username,
-                            password,
+                            ssh_key,
                             cores,
                             memory,
                             timeout=600)
-                        return password, 200
+                        return '', 200
             return '', 200
     else:
         return '', 403
@@ -557,10 +557,8 @@ def template_disk(template_id):
 def template_edit(template_id):
     if 'rtp' in session['userinfo']['groups']:
         name = request.form['name']
-        username = request.form['username']
-        password = request.form['password']
         disk = request.form['disk']
-        set_template_info(db, template_id, name, username, password, disk)
+        set_template_info(db, template_id, name, disk)
         return '', 200
     else:
         return '', 403
@@ -584,4 +582,4 @@ def exit_handler():
 atexit.register(exit_handler)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(threaded=False)

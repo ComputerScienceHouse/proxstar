@@ -58,6 +58,7 @@ def create_vm_task(user, name, cores, memory, disk, iso):
                         get_next_ip(starrs, app.config['STARRS_IP_RANGE']))
         job.meta['status'] = 'setting VM expiration'
         job.save_meta()
+        delete_vm_expire(db, vmid)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         job.meta['status'] = 'complete'
         job.save_meta()
@@ -114,7 +115,7 @@ def generate_pool_cache_task():
         store_pool_cache(db, pools)
 
 
-def setup_template_task(template_id, name, user, password, cores, memory):
+def setup_template_task(template_id, name, user, ssh_key, cores, memory):
     with app.app_context():
         job = get_current_job()
         proxmox = connect_proxmox()
@@ -139,6 +140,11 @@ def setup_template_task(template_id, name, user, password, cores, memory):
         vm = VM(vmid)
         vm.set_cpu(cores)
         vm.set_mem(memory)
+        print("[{}] Applying cloud-init config.".format(name))
+        job.meta['status'] = 'applying cloud-init'
+        vm.set_ci_user(user)
+        vm.set_ci_ssh_key(ssh_key)
+        vm.set_ci_network()
         print(
             "[{}] Waiting for STARRS to propogate before starting VM.".format(
                 name))
@@ -149,46 +155,6 @@ def setup_template_task(template_id, name, user, password, cores, memory):
         job.meta['status'] = 'starting VM'
         job.save_meta()
         vm.start()
-        print("[{}] Waiting for VM to start before SSHing.".format(name))
-        job.meta['status'] = 'waiting for VM to start'
-        job.save_meta()
-        time.sleep(20)
-        print("[{}] Creating SSH session.".format(name))
-        job.meta['status'] = 'creating SSH session'
-        job.save_meta()
-        client = paramiko.SSHClient()
-        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        retry = 0
-        while retry < 30:
-            try:
-                client.connect(
-                    ip,
-                    username=template['username'],
-                    password=template['password'])
-                break
-            except:
-                retry += 1
-                time.sleep(3)
-        print("[{}] Running user creation commands.".format(name))
-        job.meta['status'] = 'running user creation commands'
-        job.save_meta()
-        stdin, stdout, stderr = client.exec_command("useradd {}".format(user))
-        exit_status = stdout.channel.recv_exit_status()
-        root_password = gen_password(32)
-        stdin, stdout, stderr = client.exec_command(
-            "echo '{}' | passwd root --stdin".format(root_password))
-        exit_status = stdout.channel.recv_exit_status()
-        stdin, stdout, stderr = client.exec_command(
-            "echo '{}' | passwd '{}' --stdin".format(password, user))
-        exit_status = stdout.channel.recv_exit_status()
-        stdin, stdout, stderr = client.exec_command(
-            "passwd -e '{}'".format(user))
-        exit_status = stdout.channel.recv_exit_status()
-        stdin, stdout, stderr = client.exec_command(
-            "echo '{} ALL=(ALL:ALL) ALL' | sudo EDITOR='tee -a' visudo".format(
-                user))
-        exit_status = stdout.channel.recv_exit_status()
-        client.close()
         print("[{}] Template successfully provisioned.".format(name))
         job.meta['status'] = 'completed'
         job.save_meta()

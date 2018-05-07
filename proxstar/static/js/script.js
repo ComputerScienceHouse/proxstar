@@ -390,6 +390,7 @@ $("#create-vm").click(function(){
     const cores = document.getElementById('cores').value;
     const mem = document.getElementById('mem').value;
     const template = document.getElementById('template').value;
+    const ssh_key = document.getElementById('ssh-key').value;
     const iso = document.getElementById('iso').value;
     const user = document.getElementById('user');
     const max_cpu = $(this).data('max_cpu');
@@ -451,6 +452,7 @@ $("#create-vm").click(function(){
                                 data.append('template', template);
                                 data.append('disk', disk);
                                 data.append('iso', iso);
+                                data.append('ssh_key', ssh_key);
                                 if (user) {
                                     data.append('user', user.value);
                                 }
@@ -459,12 +461,10 @@ $("#create-vm").click(function(){
                                     method: 'post',
                                     body: data
                                 }).then((response) => {
-                                    return response.text()
-                                }).then((password) => {
                                     if (template == 'none') {
                                         var swal_text = `${name} is now being created. Check back soon and it should be good to go.`
                                     } else {
-                                        var swal_text = `${name} is now being created. Check back soon and it should be good to go. The SSH credentials are your CSH username for the user and ${password} for the password. Save this password because you will not be able to retrieve it again!`
+                                        var swal_text = `${name} is now being created. Check back soon and it should be good to go. The SSH credentials are your CSH username for the user and the SSH key you provided.`
                                     }
                                     return swal(`${swal_text}`, {
                                         icon: "success",
@@ -753,16 +753,19 @@ $(".add-ignored-pool").click(function(){
     });
 });
 
-function hide_for_template(obj) {
+function change_for_template(obj) {
     var template_element = obj;
     var selected = template_element.options[template_element.selectedIndex].value;
     var hide_area = document.getElementById('hide-for-template');
+    var show_area = document.getElementById('show-for-template');
 
-    if(selected === 'none'){
+    if (selected === 'none') {
         hide_area.style.display = 'block';
+        show_area.style.display = 'none';
     }
-    else{
+    else {
         hide_area.style.display = 'none';
+        show_area.style.display = 'block';
     }
 }
 
@@ -869,7 +872,6 @@ $(".resize-disk").click(function(){
 $(".edit-template").click(function(){
     const template_id = $(this).data('template_id');
     const template_name = $(this).data('template_name');
-    const template_username = $(this).data('template_username');
     const template_disk = $(this).data('template_disk');
     var options = document.createElement('div');
     name_text = document.createElement('p');
@@ -878,18 +880,6 @@ $(".edit-template").click(function(){
     var name = document.createElement('input');
     name.defaultValue = template_name;
     options.append(name);
-    username_text = document.createElement('p');
-    username_text.innerHTML = 'Username';
-    options.append(username_text);
-    var username = document.createElement('input');
-    username.defaultValue = template_username;
-    options.append(username);
-    password_text = document.createElement('p');
-    password_text.innerHTML = 'Password';
-    options.append(password_text);
-    var password = document.createElement('input');
-    password.type = 'password';
-    options.append(password);
     disk_text = document.createElement('p');
     disk_text.innerHTML = 'Disk Size (GB)';
     options.append(disk_text);
@@ -917,8 +907,6 @@ $(".edit-template").click(function(){
         if (willChange) {
             var data  = new FormData();
             data.append('name', $(name).val());
-            data.append('username', $(username).val());
-            data.append('password', $(password).val());
             data.append('disk', $(disk).val());
             fetch(`/template/${template_id}/edit`, {
                 credentials: 'same-origin',

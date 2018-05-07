@@ -10,8 +10,9 @@ def connect_proxmox():
             proxmox = ProxmoxAPI(
                 host,
                 user=app.config['PROXMOX_USER'],
-                password=app.config['PROXMOX_PASS'],
-                verify_ssl=False)
+                private_key_file='proxmox_ssh_key',
+                password=app.config['PROXMOX_SSH_KEY_PASS'],
+                backend='ssh_paramiko')
             version = proxmox.version.get()
             return proxmox
         except:
