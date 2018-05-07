@@ -4,3 +4,4 @@ __pycache__/*
 rrd/*
 *.pyc
 *_key
+Pipfile*
