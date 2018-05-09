@@ -182,7 +182,7 @@ class VM(object):
         proxmox = connect_proxmox()
         port = str(int(port) - 5900)
         proxmox.nodes(self.node).qemu(self.id).monitor.post(
-            command="change\ vnc\ 127.0.0.1:{}".format(port))
+            command="change vnc 127.0.0.1:{}".format(port))
 
     def eject_iso(self):
         proxmox = connect_proxmox()
@@ -230,7 +230,7 @@ def create_vm(proxmox, user, name, cores, memory, disk, iso):
         ide2="{},media=cdrom".format(iso),
         net0='virtio,bridge=vmbr0',
         pool=user,
-        description='Managed\ by\ Proxstar')
+        description='Managed by Proxstar')
     retry = 0
     while retry < 5:
         try:
@@ -251,7 +251,7 @@ def clone_vm(proxmox, template_id, name, pool):
         name=name,
         pool=pool,
         full=1,
-        description='Managed\ by\ Proxstar',
+        description='Managed by Proxstar',
         target=target)
     retry = 0
     while retry < 60:
