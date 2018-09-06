@@ -80,10 +80,10 @@ def process_expiring_vms_task():
         db = connect_db()
         starrs = connect_starrs()
         pools = get_pools(proxmox, db)
+        expired_vms = []
         for pool in pools:
             user = User(pool)
             expiring_vms = []
-            expired_vms = []
             vms = user.vms
             for vm in vms:
                 vm = VM(vm['vmid'])
@@ -103,8 +103,8 @@ def process_expiring_vms_task():
                     delete_vm_task(vm.id)
             if expiring_vms:
                 send_vm_expire_email(pool, expiring_vms)
-            if expired_vms:
-                send_rtp_vm_delete_email(expired_vms)
+        if expired_vms:
+            send_rtp_vm_delete_email(expired_vms)
 
 
 def generate_pool_cache_task():
