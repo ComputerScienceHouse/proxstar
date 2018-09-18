@@ -4,36 +4,34 @@ $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
 
-$("#delete-vm").click(function(){
-    const vmname = $(this).data('vmname');
+function confirmDialog(url, confirm, confirmButton, complete, error, location) {
     swal({
-        title: `Are you sure you want to delete ${vmname}?`,
+        title: confirm,
         icon: "warning",
         buttons: {
             cancel: true,
-            delete: {
-                text: "Delete",
+            action: {
+                text: confirmButton,
                 closeModal: false,
                 className: "swal-button--danger",
             }
         },
         dangerMode: true,
     })
-    .then((willDelete) => {
-        if (willDelete) {
-            const vmid = $(this).data('vmid');
-            fetch(`/vm/${vmid}/delete`, {
+    .then((willComplete) => {
+        if (willComplete) {
+            fetch(url, {
                 credentials: 'same-origin',
                 method: 'post'
             }).then((response) => {
-                return swal(`${vmname} is now being deleted.`, {
+                return swal(complete, {
                     icon: "success",
                 });
             }).then(() => {
-                window.location = "/";
+                window.location = location;
             }).catch(err => {
                 if (err) {
-                    swal("Uh oh...", `Unable to delete ${vmname}. Please try again later.`, "error");
+                    swal("Uh oh...", error, "error");
                 } else {
                     swal.stopLoading();
                     swal.close();
@@ -41,162 +39,36 @@ $("#delete-vm").click(function(){
             });
         }
     });
+}
+
+$("#delete-vm").click(function(){
+    const vmname = $(this).data('vmname');
+    const vmid = $(this).data('vmid')
+    confirmDialog(`/vm/${vmid}/delete`, `Are you sure you want to delete ${vmname}?`, "Delete", `${vmname} is now being deleted.`, `Unable to delete ${vmname}. Please try again later.`, '/')
 });
 
 $("#stop-vm").click(function(){
     const vmname = $(this).data('vmname');
-    swal({
-        title: `Are you sure you want to stop ${vmname}?`,
-        icon: "warning",
-        buttons: {
-            cancel: true,
-            delete: {
-                text: "Stop",
-                closeModal: false,
-                className: "swal-button--danger",
-            }
-        },
-        dangerMode: true,
-    })
-    .then((willStop) => {
-        if (willStop) {
-            const vmid = $(this).data('vmid')
-            fetch(`/vm/${vmid}/power/stop`, {
-                credentials: 'same-origin',
-                method: 'post'
-            }).then((response) => {
-                return swal(`${vmname} is now stopping!`, {
-                    icon: "success",
-                });
-            }).then(() => {
-                window.location = `/vm/${vmid}`;
-            }).catch(err => {
-                if (err) {
-                    swal("Uh oh...", `Unable to stop ${vmname}. Please try again later.`, "error");
-                } else {
-                    swal.stopLoading();
-                    swal.close();
-                }
-            });
-        }
-    });
+    const vmid = $(this).data('vmid')
+    confirmDialog(`/vm/${vmid}/power/stop`, `Are you sure you want to stop ${vmname}?`, "Stop", `${vmname} is now stopping!`, `Unable to stop ${vmname}. Please try again later.`, `/vm/${vmid}`)
 });
 
 $("#reset-vm").click(function(){
     const vmname = $(this).data('vmname');
-    swal({
-        title: `Are you sure you want to reset ${vmname}?`,
-        icon: "warning",
-        buttons: {
-            cancel: true,
-            delete: {
-                text: "Reset",
-                closeModal: false,
-                className: "swal-button--danger",
-            }
-        },
-        dangerMode: true,
-    })
-    .then((willReset) => {
-        if (willReset) {
-            const vmid = $(this).data('vmid');
-            fetch(`/vm/${vmid}/power/reset`, {
-                credentials: 'same-origin',
-                method: 'post'
-            }).then((response) => {
-                return swal(`${vmname} is now resetting!`, {
-                    icon: "success",
-                });
-            }).then(() => {
-                window.location = `/vm/${vmid}`;
-            }).catch(err => {
-                if (err) {
-                    swal("Uh oh...", `Unable to reset ${vmname}. Please try again later.`, "error");
-                } else {
-                    swal.stopLoading();
-                    swal.close();
-                }
-            });
-        }
-    });
+    const vmid = $(this).data('vmid')
+    confirmDialog(`/vm/${vmid}/power/reset`, `Are you sure you want to reset ${vmname}?`, "Reset", `${vmname} is now resetting!`, `Unable to reset ${vmname}. Please try again later.`, `/vm/${vmid}`)
 });
 
 $("#shutdown-vm").click(function(){
     const vmname = $(this).data('vmname');
-    swal({
-        title: `Are you sure you want to shutdown ${vmname}?`,
-        icon: "warning",
-        buttons: {
-            cancel: true,
-            delete: {
-                text: "Shutdown",
-                closeModal: false,
-                className: "swal-button--danger",
-            }
-        },
-        dangerMode: true,
-    })
-    .then((willShutdown) => {
-        if (willShutdown) {
-            const vmid = $(this).data('vmid');
-            fetch(`/vm/${vmid}/power/shutdown`, {
-                credentials: 'same-origin',
-                method: 'post'
-            }).then((response) => {
-                return swal(`${vmname} is now shutting down!`, {
-                    icon: "success",
-                });
-            }).then(() => {
-                window.location = `/vm/${vmid}`;
-            }).catch(err => {
-                if (err) {
-                    swal("Uh oh...", `Unable to shutdown ${vmname}. Please try again later.`, "error");
-                } else {
-                    swal.stopLoading();
-                    swal.close();
-                }
-            });
-        }
-    });
+    const vmid = $(this).data('vmid')
+    confirmDialog(`/vm/${vmid}/power/shutdown`, `Are you sure you want to shutdown ${vmname}?`, "Shutdown", `${vmname} is now shutting down!`, `Unable to shutdown ${vmname}. Please try again later.`, `/vm/${vmid}`)
 });
 
 $("#suspend-vm").click(function(){
     const vmname = $(this).data('vmname');
-    swal({
-        title: `Are you sure you want to suspend ${vmname}?`,
-        icon: "warning",
-        buttons: {
-            cancel: true,
-            delete: {
-                text: "Suspend",
-                closeModal: false,
-                className: "swal-button--danger",
-            }
-        },
-        dangerMode: true,
-    })
-    .then((willSuspend) => {
-        if (willSuspend) {
-            const vmid = $(this).data('vmid');
-            fetch(`/vm/${vmid}/power/suspend`, {
-                credentials: 'same-origin',
-                method: 'post'
-            }).then((response) => {
-                return swal(`${vmname} is now suspending!`, {
-                    icon: "success",
-                });
-            }).then(() => {
-                window.location = `/vm/${vmid}`;
-            }).catch(err => {
-                if (err) {
-                    swal("Uh oh...", `Unable to suspend ${vmname}. Please try again later.`, "error");
-                } else {
-                    swal.stopLoading();
-                    swal.close();
-                }
-            });
-        }
-    });
+    const vmid = $(this).data('vmid')
+    confirmDialog(`/vm/${vmid}/power/suspend`, `Are you sure you want to suspend ${vmname}?`, "Suspend", `${vmname} is now suspending!`, `Unable to suspend ${vmname}. Please try again later.`, `/vm/${vmid}`)
 });
 
 $("#start-vm").click(function(){

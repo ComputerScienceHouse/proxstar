@@ -389,7 +389,7 @@ def boot_order(vmid):
 def create():
     user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
-    if user.active:
+    if user.active or user.rtp:
         if request.method == 'GET':
             isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
             pools = get_pools(proxmox, db)
