@@ -1,12 +1,12 @@
 flask
-flask_pyoidc
-git+https://github.com/merinos/proxmoxer.git@python3#egg=bad01313d9f32a239882195325b21767a25f72e0
+flask_pyoidc==1.3.0
+proxmoxer
 psycopg2-binary
 sqlalchemy
 python-dateutil
-csh_ldap==2.0.1
+csh_ldap
 rq
-rq-scheduler==0.7.0
+rq-scheduler
 gunicorn
 raven
 paramiko
