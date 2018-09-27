@@ -133,6 +133,9 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
         register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
+        print("[{}] Giving Proxmox some time to finish cloning.".format(name))
+        job.meta['status'] = 'waiting for Proxmox'
+        time.sleep(15)
         print("[{}] Setting CPU and memory.".format(name))
         job.meta['status'] = 'setting CPU and memory'
         job.save_meta()

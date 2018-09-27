@@ -1,6 +1,7 @@
 import time
 import json
 import urllib
+from tenacity import retry, wait_fixed, stop_after_attempt
 from proxstar import db, starrs
 from proxstar.db import get_vm_expire
 from proxstar.util import lazy_property
@@ -43,39 +44,48 @@ class VM(object):
             if vm['vmid'] == int(self.id):
                 return vm['node']
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def delete(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).delete()
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_cpu(self, cores):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).config.put(
             cores=cores, sockets=1)
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_mem(self, mem):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).config.put(memory=mem)
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def start(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).status.start.post()
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def stop(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).status.stop.post()
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def shutdown(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).status.shutdown.post()
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def reset(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).status.reset.post()
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def suspend(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).status.suspend.post()
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def resume(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).status.resume.post()
@@ -108,6 +118,7 @@ class VM(object):
     def boot_order_json(self):
         return json.dumps(self.boot_order)
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_boot_order(self, boot_order):
         proxmox = connect_proxmox()
         boot_order_lookup = {
@@ -184,11 +195,13 @@ class VM(object):
         proxmox.nodes(self.node).qemu(self.id).monitor.post(
             command="change vnc 127.0.0.1:{}".format(port))
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def eject_iso(self):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(
             self.id).config.post(ide2='none,media=cdrom')
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def mount_iso(self, iso):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(
@@ -203,15 +216,18 @@ class VM(object):
     def expire(self):
         return get_vm_expire(db, self.id, app.config['VM_EXPIRE_MONTHS'])
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_ci_user(self, user):
         proxmox = connect_proxmox_ssh()
         proxmox.nodes(self.node).qemu(self.id).config.put(ciuser=user)
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_ci_ssh_key(self, ssh_key):
         proxmox = connect_proxmox_ssh()
         escaped_key = urllib.parse.quote(ssh_key, safe='')
         proxmox.nodes(self.node).qemu(self.id).config.put(sshkey=escaped_key)
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_ci_network(self):
         proxmox = connect_proxmox_ssh()
         proxmox.nodes(self.node).qemu(self.id).config.put(ipconfig0='ip=dhcp')
@@ -232,7 +248,7 @@ def create_vm(proxmox, user, name, cores, memory, disk, iso):
         pool=user,
         description='Managed by Proxstar')
     retry = 0
-    while retry < 5:
+    while retry < 20:
         try:
             mac = VM(vmid).get_mac()
             break
@@ -254,7 +270,7 @@ def clone_vm(proxmox, template_id, name, pool):
         description='Managed by Proxstar',
         target=target)
     retry = 0
-    while retry < 60:
+    while retry < 100:
         try:
             mac = VM(newid).get_mac()
             break

@@ -1,4 +1,5 @@
 import os
+import json
 import time
 import psutil
 import atexit
@@ -157,7 +158,7 @@ def list_vms(user_view=None):
 def isos():
     proxmox = connect_proxmox()
     isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
-    return ','.join(isos)
+    return json.dumps({"isos": isos})
 
 
 @app.route("/hostname/<string:name>")

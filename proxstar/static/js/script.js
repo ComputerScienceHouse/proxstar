@@ -171,12 +171,11 @@ $("#change-iso").click(function(){
     fetch(`/isos`, {
         credentials: 'same-origin',
     }).then((response) => {
-        return response.text()
-    }).then((text) => {
-        var isos = text.split(',');
+        return response.json()
+    }).then((json) => {
         var iso_list = document.createElement('select');
-        for (i = 0; i < isos.length; i++) {
-            iso_list.appendChild(new Option(isos[i], isos[i]));
+        for (i = 0; i < json.isos.length; i++) {
+            iso_list.appendChild(new Option(json.isos[i], json.isos[i]));
         }
         swal({
             title: 'Choose an ISO to mount:',
