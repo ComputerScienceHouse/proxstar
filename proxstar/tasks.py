@@ -69,6 +69,14 @@ def delete_vm_task(vmid):
         db = connect_db()
         starrs = connect_starrs()
         vm = VM(vmid)
+        if vm.status != 'stopped':
+            vm.stop()
+            retry = 0
+            while retry < 10:
+                time.sleep(3)
+                if vm.status == 'stopped':
+                    break
+                retry += 1
         vm.delete()
         delete_starrs(starrs, vm.name)
         delete_vm_expire(db, vmid)
