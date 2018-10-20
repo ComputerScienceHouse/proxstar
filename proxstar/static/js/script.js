@@ -280,7 +280,7 @@ $("#create-vm").click(function(){
         return disk
     }).then((disk) => {
         if (name && disk) {
-            if (!ssh_regex.test(ssh_key)) {
+            if (template != 'none' && !ssh_regex.test(ssh_key)) {
                 swal("Uh oh...", "Invalid SSH key!", "error");
             } else if (disk > max_disk) {
                 swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk}GB or lower.`, "error");
