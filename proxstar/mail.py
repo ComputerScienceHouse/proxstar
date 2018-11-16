@@ -1,4 +1,5 @@
 import smtplib
+from email.utils import formatdate
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -9,6 +10,7 @@ def send_email(toaddr, subject, body):
     msg['From'] = fromaddr
     msg['To'] = toaddr
     msg['Subject'] = subject
+    msg['Date'] = formatdate(localtime=True)
     body = body
     msg.attach(MIMEText(body, 'plain'))
     server = smtplib.SMTP('mail.csh.rit.edu', 25)
