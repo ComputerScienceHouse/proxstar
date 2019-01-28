@@ -104,8 +104,8 @@ def process_expiring_vms_task():
                         vm.stop()
                 elif days <= -7:
                     print(
-                        "Deleting {} ({}) as it has been at least a week since expiration.".
-                        format(vm.name, vm.id))
+                        "Deleting {} ({}) as it has been at least a week since expiration."
+                        .format(vm.name, vm.id))
                     send_stop_ssh_tunnel(vm.id)
                     delete_vm_task(vm.id)
             if expiring_vms:
@@ -135,15 +135,29 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         job.meta['status'] = 'cloning template'
         job.save_meta()
         vmid, mac = clone_vm(proxmox, template_id, name, user)
+        print("[{}] Waiting until Proxmox is done provisioning.".format(name))
+        job.meta['status'] = 'waiting for Proxmox'
+        job.save_meta()
+        timeout = 200
+        retry = 0
+        while retry < timeout:
+            if not VM(vmid).is_provisioned():
+                retry += 1
+                time.sleep(3)
+                continue
+            break
+        if retry == timeout:
+            print("[{}] Failed to provision, deleting.".format(name))
+            job.meta['status'] = 'failed to provision'
+            job.save_meta()
+            delete_vm_task(vmid)
+            return
         print("[{}] Registering in STARRS.".format(name))
         job.meta['status'] = 'registering in STARRS'
         job.save_meta()
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
         register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
-        print("[{}] Giving Proxmox some time to finish cloning.".format(name))
-        job.meta['status'] = 'waiting for Proxmox'
-        time.sleep(15)
         print("[{}] Setting CPU and memory.".format(name))
         job.meta['status'] = 'setting CPU and memory'
         job.save_meta()
@@ -152,12 +166,12 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         vm.set_mem(memory)
         print("[{}] Applying cloud-init config.".format(name))
         job.meta['status'] = 'applying cloud-init'
+        job.save_meta()
         vm.set_ci_user(user)
         vm.set_ci_ssh_key(ssh_key)
         vm.set_ci_network()
-        print(
-            "[{}] Waiting for STARRS to propogate before starting VM.".format(
-                name))
+        print("[{}] Waiting for STARRS to propogate before starting VM.".
+              format(name))
         job.meta['status'] = 'waiting for STARRS'
         job.save_meta()
         time.sleep(90)
