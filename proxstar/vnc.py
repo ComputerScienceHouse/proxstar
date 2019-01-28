@@ -10,12 +10,11 @@ from flask import current_app as app
 def start_websockify(websockify_path, target_file):
     result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE)
     if not result.stdout:
-        subprocess.call(
-            [
-                websockify_path, '8081', '--token-plugin', 'TokenFile',
-                '--token-source', target_file, '-D'
-            ],
-            stdout=subprocess.PIPE)
+        subprocess.call([
+            websockify_path, '8081', '--token-plugin', 'TokenFile',
+            '--token-source', target_file, '-D'
+        ],
+                        stdout=subprocess.PIPE)
 
 
 def stop_websockify():
@@ -24,11 +23,11 @@ def stop_websockify():
         pid = result.stdout.strip()
         subprocess.run(['kill', pid], stdout=subprocess.PIPE)
         time.sleep(3)
-        if subprocess.run(
-            ['pgrep', 'websockify'], stdout=subprocess.PIPE).stdout:
+        if subprocess.run(['pgrep', 'websockify'],
+                          stdout=subprocess.PIPE).stdout:
             time.sleep(10)
-            if subprocess.run(
-                ['pgrep', 'websockify'], stdout=subprocess.PIPE).stdout:
+            if subprocess.run(['pgrep', 'websockify'],
+                              stdout=subprocess.PIPE).stdout:
                 print('Websockify didn\'t stop, killing forcefully.')
                 subprocess.run(['kill', '-9', pid], stdout=subprocess.PIPE)
 
@@ -90,8 +89,9 @@ def start_ssh_tunnel(node, port):
 def stop_ssh_tunnel(vmid, ssh_tunnels):
     # Tear down the SSH tunnel and VNC target entry for a given VM
     port = 5900 + int(vmid)
-    tunnel = next((tunnel for tunnel in ssh_tunnels
-                   if tunnel.local_bind_port == port), None)
+    tunnel = next(
+        (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port),
+        None)
     if tunnel:
         print("Tearing down SSH tunnel for VM {}.".format(vmid))
         try:

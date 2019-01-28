@@ -140,8 +140,9 @@ def list_vms(user_view=None):
         if user.active:
             vms = user.vms
             for pending_vm in user.pending_vms:
-                vm = next((vm for vm in vms
-                           if vm['name'] == pending_vm['name']), None)
+                vm = next(
+                    (vm for vm in vms if vm['name'] == pending_vm['name']),
+                    None)
                 if vm:
                     vms[vms.index(vm)]['status'] = pending_vm['status']
                     vms[vms.index(vm)]['pending'] = True

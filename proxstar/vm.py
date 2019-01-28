@@ -37,6 +37,13 @@ class VM(object):
     def qmpstatus(self):
         return self.info['qmpstatus']
 
+    def is_provisioned(self):
+        try:
+            self.set_cpu(self.cpu)
+            return True
+        except:
+            return False
+
     @lazy_property
     def node(self):
         proxmox = connect_proxmox()

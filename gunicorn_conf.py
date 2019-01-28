@@ -16,12 +16,11 @@ app.config.from_pyfile(config)
 def start_websockify(websockify_path, target_file):
     result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE)
     if not result.stdout:
-        subprocess.call(
-            [
-                websockify_path, '8081', '--token-plugin', 'TokenFile',
-                '--token-source', target_file, '-D'
-            ],
-            stdout=subprocess.PIPE)
+        subprocess.call([
+            websockify_path, '8081', '--token-plugin', 'TokenFile',
+            '--token-source', target_file, '-D'
+        ],
+                        stdout=subprocess.PIPE)
 
 
 def on_starting(server):
