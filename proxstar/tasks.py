@@ -138,7 +138,7 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         print("[{}] Waiting until Proxmox is done provisioning.".format(name))
         job.meta['status'] = 'waiting for Proxmox'
         job.save_meta()
-        timeout = 200
+        timeout = 20
         retry = 0
         while retry < timeout:
             if not VM(vmid).is_provisioned():
