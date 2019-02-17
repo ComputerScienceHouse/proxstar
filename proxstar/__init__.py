@@ -38,17 +38,10 @@ with open('proxmox_ssh_key', 'w') as key:
 
 ssh_tunnels = []
 
-retry = 0
-while retry < 5:
-    try:
-        auth = OIDCAuthentication(
-            app,
-            issuer=app.config['OIDC_ISSUER'],
-            client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
-        break
-    except:
-        retry += 1
-        time.sleep(2)
+auth = OIDCAuthentication(
+    app,
+    issuer=app.config['OIDC_ISSUER'],
+    client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
 
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
 q = Queue(connection=redis_conn)

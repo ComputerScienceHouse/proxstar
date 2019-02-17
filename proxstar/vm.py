@@ -99,11 +99,19 @@ class VM(object):
 
     @lazy_property
     def info(self):
+        return self.get_info()
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def get_info(self):
         proxmox = connect_proxmox()
         return proxmox.nodes(self.node).qemu(self.id).status.current.get()
 
     @lazy_property
     def config(self):
+        return self.get_config()
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def get_config(self):
         proxmox = connect_proxmox()
         return proxmox.nodes(self.node).qemu(self.id).config.get()
 

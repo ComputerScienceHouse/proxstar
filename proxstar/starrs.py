@@ -42,24 +42,35 @@ def renew_ip(starrs, addr):
     return results
 
 
+# Use various STARRS stored procedures to make sure the hostname is valid/available
 def check_hostname(starrs, hostname):
     c = starrs.cursor()
     try:
+        # Check for invalid characters in hostname
         c.execute("BEGIN")
         c.callproc("api.initialize", ('root', ))
         c.callproc("api.validate_name", (hostname, ))
         c.execute("COMMIT")
+        # Validate the entire domain name using Data::Validate::Domain
         c.execute("BEGIN")
         c.callproc("api.initialize", ('root', ))
         c.callproc("api.validate_domain", (hostname, 'csh.rit.edu'))
         valid = c.fetchall()[0][0]
         c.execute("COMMIT")
+        # Check if the hostname is available (checks A/SRV/CNAME records)
         c.execute("BEGIN")
         c.callproc("api.initialize", ('root', ))
         c.callproc("api.check_dns_hostname", (hostname, 'csh.rit.edu'))
         available = False
         if not c.fetchall()[0][0]:
             available = True
+        c.execute("COMMIT")
+        # Check if the system name is taken
+        c.execute("BEGIN")
+        c.callproc("api.initialize", ('root', ))
+        c.callproc("api.get_system", (hostname, ))
+        if c.fetchall():
+            available = False
         c.execute("COMMIT")
     except (psycopg2.InternalError):
         valid = False

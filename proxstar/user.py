@@ -74,7 +74,7 @@ class User(object):
             if 'status' in vm:
                 vm = VM(vm['vmid'])
                 if vm.status == 'running' or vm.status == 'paused':
-                    usage['cpu'] += int(vm.cpu * vm.config.get('sockets', 1))
+                    usage['cpu'] += int(vm.cpu)
                     usage['mem'] += (int(vm.mem) / 1024)
                 for disk in vm.disks:
                     usage['disk'] += int(disk[1])
