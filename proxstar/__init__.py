@@ -306,6 +306,22 @@ def vm_disk(vmid, disk, size):
         return '', 403
 
 
+@app.route("/starrs/<string:vmid>/hostname/<string:old_name>/<string:new_name>", methods=['POST'])
+@auth.oidc_auth
+def vm_disk(vmid, old_name, new_name):
+    user = User(session['userinfo']['preferred_username'])
+    proxmox = connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        valid, available = check_hostname(starrs, new_name)
+        if valid and available:
+            vm = VM(vmid)
+            vm.rename_vm(new_name)
+            change_hostname(starrs, old_name, new_name)
+        return '', 200
+    else:
+        return '', 403
+
+
 @app.route("/vm/<string:vmid>/renew", methods=['POST'])
 @auth.oidc_auth
 def vm_renew(vmid):

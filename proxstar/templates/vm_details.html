@@ -54,7 +54,12 @@
                 <div class="card-body">
                     <dl class="dl-horizontal">
                         <dt>Name</dt>
-                        <dd>{{ vm.name }}</dd>
+                        <dd>
+                            {{ vm.name }}
+                            <button class="btn btn-default proxstar-vmbtn" id="rename-vm" data-vmid="{{ vm.id }}" old_name="{{ vm.name }}">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                        </dd>
                         <dt>DNS Name</dt>
                         <dd>{{ vm.name }}.csh.rit.edu</dd>
                         <dt>ID</dt>

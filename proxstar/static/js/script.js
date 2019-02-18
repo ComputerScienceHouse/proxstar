@@ -891,3 +891,57 @@ $(document).on('focus click', "[id^=boot-order-]", function() {
         }
     });
 });
+
+$(".rename-vm").click(function(){
+    const vmid = $(this).data('vmid');
+    const old_name = $(this).data('old_name');
+    swal({
+        title: 'Enter what you would like this VM to be renamed to:',
+        content: {
+            element: 'input',
+            attributes: {
+                type: 'string',
+            },
+        },
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            confirm: {
+                text: "Select",
+                closeModal: false,
+            }
+        },
+    })
+    .then((new_name) => {
+        if (new_name) {
+            fetch(`/starrs/${vmid}/hostname/${old_name}/${new_name}`, {
+                credentials: 'same-origin',
+                method: 'post'
+            }).then((response) => {
+                return swal(`VM Name has been changes!`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
+                });
+            }).then(() => {
+                window.location = `/vm/${vmid}`;
+            });
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to change VM Name. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});

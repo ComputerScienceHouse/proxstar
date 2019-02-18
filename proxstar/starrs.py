@@ -106,3 +106,16 @@ def delete_starrs(starrs, name):
     finally:
         c.close()
     return results
+
+def change_hostname(starrs, old_name, new_name):
+    c = starrs.cursor()
+    try:
+        c.execute("BEGIN")
+        c.callproc("api.initialize", ('root', ))
+        c.callproc("api.modify_dns_cname",
+                  (old_name, 'csh.rit.edu', 'hostname',new_name))
+        results = c.fetchall()
+        c.execute("COMMIT")
+    finally:
+        c.close()
+    return results
