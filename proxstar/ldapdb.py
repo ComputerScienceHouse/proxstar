@@ -1,12 +1,14 @@
 from csh_ldap import CSHLDAP
 from flask import current_app as app
 
+from proxstar import logging
+
 
 def connect_ldap():
     try:
         ldap = CSHLDAP(app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'])
-    except:
-        print("Unable to connect to LDAP.")
+    except Exception as e:
+        logging.error("unable to connect to LDAP: %s", e)
         raise
     return ldap
 

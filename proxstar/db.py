@@ -1,8 +1,11 @@
 import datetime
-from sqlalchemy import exists
+
 from dateutil.relativedelta import relativedelta
+from sqlalchemy import exists
+
 from proxstar.ldapdb import *
-from proxstar.models import VM_Expiration, Usage_Limit, Pool_Cache, Ignored_Pools, Template, Allowed_Users, Base
+from proxstar.models import (Allowed_Users, Base, Ignored_Pools, Pool_Cache,
+                             Template, Usage_Limit, VM_Expiration)
 
 
 def get_vm_expire(db, vmid, months):

@@ -1,7 +1,9 @@
-from proxmoxer import ProxmoxAPI
-from proxstar.ldapdb import is_user
-from proxstar.db import get_user_usage_limits, get_ignored_pools
 from flask import current_app as app
+from proxmoxer import ProxmoxAPI
+
+from proxstar import logging
+from proxstar.db import get_ignored_pools, get_user_usage_limits
+from proxstar.ldapdb import is_user
 
 
 def connect_proxmox():
@@ -17,7 +19,8 @@ def connect_proxmox():
         except:
             if app.config['PROXMOX_HOSTS'].index(host) == (
                     len(app.config['PROXMOX_HOSTS']) - 1):
-                print('Unable to connect to any of the given Proxmox servers!')
+                logging.error(
+                    'unable to connect to any of the given Proxmox servers')
                 raise
 
 
@@ -35,7 +38,8 @@ def connect_proxmox_ssh():
         except:
             if app.config['PROXMOX_HOSTS'].index(host) == (
                     len(app.config['PROXMOX_HOSTS']) - 1):
-                print('Unable to connect to any of the given Proxmox servers!')
+                logging.error(
+                    'unable to connect to any of the given Proxmox servers')
                 raise
 
 

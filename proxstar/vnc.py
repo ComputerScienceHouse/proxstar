@@ -1,10 +1,13 @@
 import os
-import time
-import requests
 import subprocess
-from sshtunnel import SSHTunnelForwarder
-from proxstar.util import *
+import time
+
+import requests
 from flask import current_app as app
+from sshtunnel import SSHTunnelForwarder
+
+from proxstar import logging
+from proxstar.util import *
 
 
 def stop_websockify():
@@ -18,7 +21,7 @@ def stop_websockify():
             time.sleep(10)
             if subprocess.run(['pgrep', 'websockify'],
                               stdout=subprocess.PIPE).stdout:
-                print('Websockify didn\'t stop, killing forcefully.')
+                logging.info('websockify didn\'t stop, killing forcefully.')
                 subprocess.run(['kill', '-9', pid], stdout=subprocess.PIPE)
 
 
@@ -83,7 +86,7 @@ def stop_ssh_tunnel(vmid, ssh_tunnels):
         (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port),
         None)
     if tunnel:
-        print("Tearing down SSH tunnel for VM {}.".format(vmid))
+        logging.info("Tearing down SSH tunnel for VM {}.".format(vmid))
         try:
             tunnel.stop()
         except:

@@ -1,13 +1,16 @@
-import time
 import json
+import time
 import urllib
-from tenacity import retry, wait_fixed, stop_after_attempt
-from proxstar import db, starrs
-from proxstar.db import get_vm_expire, delete_vm_expire
-from proxstar.util import lazy_property
-from proxstar.starrs import get_ip_for_mac
-from proxstar.proxmox import connect_proxmox, connect_proxmox_ssh, get_node_least_mem, get_free_vmid, get_vm_node
+
 from flask import current_app as app
+from tenacity import retry, stop_after_attempt, wait_fixed
+
+from proxstar import db, starrs
+from proxstar.db import delete_vm_expire, get_vm_expire
+from proxstar.proxmox import (connect_proxmox, connect_proxmox_ssh,
+                              get_free_vmid, get_node_least_mem, get_vm_node)
+from proxstar.starrs import get_ip_for_mac
+from proxstar.util import lazy_property
 
 
 class VM(object):
