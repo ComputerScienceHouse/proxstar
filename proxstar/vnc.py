@@ -86,7 +86,7 @@ def stop_ssh_tunnel(vmid, ssh_tunnels):
         (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port),
         None)
     if tunnel:
-        logging.info("Tearing down SSH tunnel for VM {}.".format(vmid))
+        logging.info("tearing down SSH tunnel for VM %s", vmid)
         try:
             tunnel.stop()
         except:
