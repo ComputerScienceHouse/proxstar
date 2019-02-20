@@ -43,25 +43,45 @@ def connect_starrs():
     return starrs
 
 
+def set_job_status(job, status):
+    job.meta['status'] = status
+    job.save_meta()
+
+
 def create_vm_task(user, name, cores, memory, disk, iso):
     with app.app_context():
         job = get_current_job()
         proxmox = connect_proxmox()
         db = connect_db()
         starrs = connect_starrs()
-        job.meta['status'] = 'creating VM'
-        job.save_meta()
-        vmid, mac = create_vm(proxmox, user, name, cores, memory, disk, iso)
-        job.meta['status'] = 'registering in STARRS'
-        job.save_meta()
-        register_starrs(starrs, name, app.config['STARRS_USER'], mac,
-                        get_next_ip(starrs, app.config['STARRS_IP_RANGE']))
-        job.meta['status'] = 'setting VM expiration'
-        job.save_meta()
-        delete_vm_expire(db, vmid)
+        print("[{}] Creating VM.".format(name))
+        set_job_status(job, 'creating VM')
+        vmid = create_vm(proxmox, user, name, cores, memory, disk, iso)
+        print("[{}] Waiting until Proxmox is done provisioning.".format(name))
+        set_job_status(job, 'waiting for Proxmox')
+        timeout = 20
+        retry = 0
+        while retry < timeout:
+            if not VM(vmid).is_provisioned():
+                retry += 1
+                time.sleep(3)
+                continue
+            break
+        if retry == timeout:
+            print("[{}] Failed to provision, deleting.".format(name))
+            set_job_status(job, 'failed to provision')
+            delete_vm_task(vmid)
+            return
+        print("[{}] Registering in STARRS.".format(name))
+        set_job_status(job, 'registering in STARRS')
+        vm = VM(vmid)
+        ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
+        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(),
+                        ip)
+        set_job_status(job, 'setting VM expiration')
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
-        job.meta['status'] = 'complete'
-        job.save_meta()
+        print("[{}] VM successfully provisioned.".format(name))
+        set_job_status(job, 'complete')
 
 
 def delete_vm_task(vmid):
@@ -78,8 +98,8 @@ def delete_vm_task(vmid):
                     break
                 retry += 1
         vm.delete()
-        delete_starrs(starrs, vm.name)
         delete_vm_expire(db, vmid)
+        delete_starrs(starrs, vm.name)
 
 
 def process_expiring_vms_task():
@@ -132,12 +152,10 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
             name, template_id))
         template = get_template(db, template_id)
         print("[{}] Cloning template {}.".format(name, template_id))
-        job.meta['status'] = 'cloning template'
-        job.save_meta()
-        vmid, mac = clone_vm(proxmox, template_id, name, user)
+        set_job_status(job, 'cloning template')
+        vmid = clone_vm(proxmox, template_id, name, user)
         print("[{}] Waiting until Proxmox is done provisioning.".format(name))
-        job.meta['status'] = 'waiting for Proxmox'
-        job.save_meta()
+        set_job_status(job, 'waiting for Proxmox')
         timeout = 20
         retry = 0
         while retry < timeout:
@@ -148,39 +166,36 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
             break
         if retry == timeout:
             print("[{}] Failed to provision, deleting.".format(name))
-            job.meta['status'] = 'failed to provision'
-            job.save_meta()
+            set_job_status(job, 'failed to provision')
             delete_vm_task(vmid)
             return
         print("[{}] Registering in STARRS.".format(name))
-        job.meta['status'] = 'registering in STARRS'
-        job.save_meta()
+        set_job_status(job, 'registering in STARRS')
+        vm = VM(vmid)
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
-        register_starrs(starrs, name, app.config['STARRS_USER'], mac, ip)
+        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(),
+                        ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         print("[{}] Setting CPU and memory.".format(name))
-        job.meta['status'] = 'setting CPU and memory'
-        job.save_meta()
-        vm = VM(vmid)
+        set_job_status(job, 'setting CPU and memory')
         vm.set_cpu(cores)
         vm.set_mem(memory)
         print("[{}] Applying cloud-init config.".format(name))
-        job.meta['status'] = 'applying cloud-init'
-        job.save_meta()
+        set_job_status(job, 'applying cloud-init')
         vm.set_ci_user(user)
         vm.set_ci_ssh_key(ssh_key)
         vm.set_ci_network()
         print("[{}] Waiting for STARRS to propogate before starting VM.".
               format(name))
-        job.meta['status'] = 'waiting for STARRS'
+        set_job_status(job, 'waiting for STARRS')
         job.save_meta()
         time.sleep(90)
         print("[{}] Starting VM.".format(name))
-        job.meta['status'] = 'starting VM'
+        set_job_status(job, 'starting VM')
         job.save_meta()
         vm.start()
         print("[{}] Template successfully provisioned.".format(name))
-        job.meta['status'] = 'completed'
+        set_job_status(job, 'completed')
         job.save_meta()
 
 

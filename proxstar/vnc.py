@@ -7,16 +7,6 @@ from proxstar.util import *
 from flask import current_app as app
 
 
-def start_websockify(websockify_path, target_file):
-    result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE)
-    if not result.stdout:
-        subprocess.call([
-            websockify_path, '8081', '--token-plugin', 'TokenFile',
-            '--token-source', target_file, '-D'
-        ],
-                        stdout=subprocess.PIPE)
-
-
 def stop_websockify():
     result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE)
     if result.stdout:

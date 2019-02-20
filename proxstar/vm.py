@@ -3,7 +3,7 @@ import json
 import urllib
 from tenacity import retry, wait_fixed, stop_after_attempt
 from proxstar import db, starrs
-from proxstar.db import get_vm_expire
+from proxstar.db import get_vm_expire, delete_vm_expire
 from proxstar.util import lazy_property
 from proxstar.starrs import get_ip_for_mac
 from proxstar.proxmox import connect_proxmox, connect_proxmox_ssh, get_node_least_mem, get_free_vmid, get_vm_node
@@ -248,9 +248,13 @@ class VM(object):
         proxmox.nodes(self.node).qemu(self.id).config.put(ipconfig0='ip=dhcp')
 
 
+# Will create a new VM with the given parameters, does not guarantee
+# the VM is done provisioning when returning
 def create_vm(proxmox, user, name, cores, memory, disk, iso):
     node = proxmox.nodes(get_node_least_mem(proxmox))
     vmid = get_free_vmid(proxmox)
+    # Make sure lingering expirations are deleted
+    delete_vm_expire(db, vmid)
     node.qemu.create(
         vmid=vmid,
         name=name,
@@ -262,34 +266,22 @@ def create_vm(proxmox, user, name, cores, memory, disk, iso):
         net0='virtio,bridge=vmbr0',
         pool=user,
         description='Managed by Proxstar')
-    retry = 0
-    while retry < 20:
-        try:
-            mac = VM(vmid).get_mac()
-            break
-        except:
-            retry += 1
-            time.sleep(3)
-    return vmid, mac
+    return vmid
 
 
+# Will clone a new VM from a template, does not guarantee the
+# VM is done provisioning when returning
 def clone_vm(proxmox, template_id, name, pool):
     node = proxmox.nodes(get_vm_node(proxmox, template_id))
-    newid = get_free_vmid(proxmox)
+    vmid = get_free_vmid(proxmox)
+    # Make sure lingering expirations are deleted
+    delete_vm_expire(db, vmid)
     target = get_node_least_mem(proxmox)
     node.qemu(template_id).clone.post(
-        newid=newid,
+        newid=vmid,
         name=name,
         pool=pool,
         full=1,
         description='Managed by Proxstar',
         target=target)
-    retry = 0
-    while retry < 100:
-        try:
-            mac = VM(newid).get_mac()
-            break
-        except:
-            retry += 1
-            time.sleep(3)
-    return newid, mac
+    return vmid
