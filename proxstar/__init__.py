@@ -251,8 +251,7 @@ def vm_console(vmid):
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
         node = "{}.csh.rit.edu".format(vm.node)
-        logging.info("Creating SSH tunnel to {} for VM {}.".format(
-            node, vm.id))
+        logging.info("creating SSH tunnel to %s for VM %s", node, vm.id)
         tunnel = start_ssh_tunnel(node, port)
         ssh_tunnels.append(tunnel)
         vm.start_vnc(port)
