@@ -1,10 +1,11 @@
+from proxmoxer.core import ResourceException
+from rq.registry import StartedJobRegistry
+
 from proxstar import db, q, redis_conn
 from proxstar.db import *
-from proxstar.vm import VM
-from proxstar.util import *
 from proxstar.proxmox import *
-from rq.registry import StartedJobRegistry
-from proxmoxer.core import ResourceException
+from proxstar.util import *
+from proxstar.vm import VM
 
 
 class User(object):
@@ -23,7 +24,7 @@ class User(object):
             vms = proxmox.pools(self.name).get()['members']
         except ResourceException:
             # they likely don't have a pool yet, try to create it
-            if is_user(self.name) and not is_rtp(self.name):
+            if is_user(self.name):
                 proxmox.pools.post(
                     poolid=self.name, comment='Managed by Proxstar')
                 # if created, their pool is empty so return empty array

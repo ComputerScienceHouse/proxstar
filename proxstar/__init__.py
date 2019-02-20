@@ -3,6 +3,7 @@ import json
 import time
 import psutil
 import atexit
+import logging
 import psycopg2
 import subprocess
 import rq_dashboard
@@ -19,6 +20,9 @@ from proxstar.util import gen_password
 from proxstar.starrs import *
 from proxstar.ldapdb import *
 from proxstar.proxmox import *
+
+logging.basicConfig(
+    format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
 app = Flask(__name__)
 app.config.from_object(rq_dashboard.default_settings)
@@ -38,10 +42,16 @@ with open('proxmox_ssh_key', 'w') as key:
 
 ssh_tunnels = []
 
-auth = OIDCAuthentication(
-    app,
-    issuer=app.config['OIDC_ISSUER'],
-    client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
+# Keep on retrying until we have auth defined since SSO sucks
+while True:
+    try:
+        auth
+        break
+    except:
+        auth = OIDCAuthentication(
+            app,
+            issuer=app.config['OIDC_ISSUER'],
+            client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
 
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
 q = Queue(connection=redis_conn)
@@ -62,6 +72,7 @@ from proxstar.user import User
 from proxstar.tasks import generate_pool_cache_task, process_expiring_vms_task, cleanup_vnc_task, delete_vm_task, create_vm_task, setup_template_task
 
 if 'generate_pool_cache' not in scheduler:
+    logging.info('adding generate pool cache task to scheduler')
     scheduler.schedule(
         id='generate_pool_cache',
         scheduled_time=datetime.datetime.utcnow(),
@@ -69,10 +80,12 @@ if 'generate_pool_cache' not in scheduler:
         interval=90)
 
 if 'process_expiring_vms' not in scheduler:
+    logging.info('adding process expiring VMs task to scheduler')
     scheduler.cron(
         '0 5 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
 
 if 'cleanup_vnc' not in scheduler:
+    logging.info('adding cleanup VNC task to scheduler')
     scheduler.schedule(
         id='cleanup_vnc',
         scheduled_time=datetime.datetime.utcnow(),
@@ -238,7 +251,7 @@ def vm_console(vmid):
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
         node = "{}.csh.rit.edu".format(vm.node)
-        print("Creating SSH tunnel to {} for VM {}.".format(node, vm.id))
+        logging.info("creating SSH tunnel to %s for VM %s", node, vm.id)
         tunnel = start_ssh_tunnel(node, port)
         ssh_tunnels.append(tunnel)
         vm.start_vnc(port)
