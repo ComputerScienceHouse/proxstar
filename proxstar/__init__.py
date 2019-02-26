@@ -12,10 +12,10 @@ from redis import Redis
 from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask_pyoidc.flask_pyoidc import OIDCAuthentication
 from flask import Flask, render_template, request, redirect, session, abort
 from proxstar.db import *
 from proxstar.vnc import *
+from proxstar.auth import get_auth
 from proxstar.util import gen_password
 from proxstar.starrs import *
 from proxstar.ldapdb import *
@@ -42,16 +42,7 @@ with open('proxmox_ssh_key', 'w') as key:
 
 ssh_tunnels = []
 
-# Keep on retrying until we have auth defined since SSO sucks
-while True:
-    try:
-        auth
-        break
-    except:
-        auth = OIDCAuthentication(
-            app,
-            issuer=app.config['OIDC_ISSUER'],
-            client_registration_info=app.config['OIDC_CLIENT_CONFIG'])
+auth = get_auth(app)
 
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
 q = Queue(connection=redis_conn)
