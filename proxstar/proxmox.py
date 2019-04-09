@@ -45,7 +45,8 @@ def connect_proxmox_ssh():
 
 def get_node_least_mem(proxmox):
     nodes = proxmox.nodes.get()
-    sorted_nodes = sorted(nodes, key=lambda x: x['mem'])
+    sorted_nodes = sorted(
+        nodes, key=lambda x: ('mem' not in x, x.get('mem', None)))
     return sorted_nodes[0]['node']
 
 

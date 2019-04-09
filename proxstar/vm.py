@@ -7,8 +7,7 @@ from tenacity import retry, stop_after_attempt, wait_fixed
 
 from proxstar import db, starrs
 from proxstar.db import delete_vm_expire, get_vm_expire
-from proxstar.proxmox import (connect_proxmox, connect_proxmox_ssh,
-                              get_free_vmid, get_node_least_mem, get_vm_node)
+from proxstar.proxmox import connect_proxmox, get_free_vmid, get_node_least_mem, get_vm_node
 from proxstar.starrs import get_ip_for_mac
 from proxstar.util import lazy_property
 
@@ -236,18 +235,18 @@ class VM(object):
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_ci_user(self, user):
-        proxmox = connect_proxmox_ssh()
+        proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).config.put(ciuser=user)
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_ci_ssh_key(self, ssh_key):
-        proxmox = connect_proxmox_ssh()
+        proxmox = connect_proxmox()
         escaped_key = urllib.parse.quote(ssh_key, safe='')
-        proxmox.nodes(self.node).qemu(self.id).config.put(sshkey=escaped_key)
+        proxmox.nodes(self.node).qemu(self.id).config.put(sshkeys=escaped_key)
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_ci_network(self):
-        proxmox = connect_proxmox_ssh()
+        proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).config.put(ipconfig0='ip=dhcp')
 
 
