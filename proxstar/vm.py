@@ -229,6 +229,11 @@ class VM(object):
         proxmox.nodes(self.node).qemu(self.id).resize.put(
             disk=disk, size="+{}G".format(size))
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def rename_vm(self, name):
+        proxmox = connect_proxmox()
+        proxmox.nodes(self.node).qemu(self.id).config.put(name=name)
+
     @lazy_property
     def expire(self):
         return get_vm_expire(db, self.id, app.config['VM_EXPIRE_MONTHS'])
