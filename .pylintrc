@@ -1,0 +1,97 @@
+[MASTER]
+ignore = ,input
+persistent = yes
+
+[MESSAGES CONTROL]
+disable =
+    missing-docstring,
+	fixme,
+	duplicate-code,
+	no-member,
+	parse-error,
+	bad-continuation,
+	too-few-public-methods,
+	global-statement,
+	cyclic-import,
+	locally-disabled,
+	file-ignored,
+	no-else-return,
+	unnecessary-lambda
+
+[REPORTS]
+output-format = text
+files-output = no
+reports = no
+
+[FORMAT]
+max-line-length = 120
+max-statement-lines = 75
+single-line-if-stmt = no
+no-space-check = trailing-comma,dict-separator
+max-module-lines = 1000
+indent-string = '    '
+string-quote=single-avoid-escape
+triple-quote=single
+docstring-quote=double
+
+[MISCELLANEOUS]
+notes = FIXME,XXX,TODO
+
+[SIMILARITIES]
+min-similarity-lines = 4
+ignore-comments = yes
+ignore-docstrings = yes
+ignore-imports = no
+
+[BASIC]
+# Regular expression which should only match correct module names
+module-rgx=(([a-z_][a-z0-9_]*)|([A-Z][a-zA-Z0-9]+))$
+
+# Regular expression which should only match correct module level names
+const-rgx=(([A-Za-z_][A-Za-z1-9_]*)|(__.*__))$
+
+# Regular expression which should only match correct class names
+class-rgx=[A-Z_][a-zA-Z0-9_]+$
+
+# Regular expression which should only match correct function names
+function-rgx=[a-z_][a-z0-9_]{2,35}$
+
+# Regular expression which should only match correct method names
+method-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# Regular expression which should only match correct instance attribute names
+attr-rgx=[a-z_][a-z0-9_]{2,30}$
+
+# Regular expression which should only match correct argument names
+argument-rgx=[a-z_][a-z0-9_]{0,30}$
+
+# Regular expression which should only match correct variable names
+variable-rgx=[a-z_][a-z0-9_]{0,30}$
+
+# Regular expression which should only match correct list comprehension /
+# generator expression variable names
+inlinevar-rgx=[A-Za-z_][A-Za-z0-9_]*$
+
+# Good variable names which should always be accepted, separated by a comma
+good-names=logger,id,ID
+
+# Bad variable names which should always be refused, separated by a comma
+bad-names=foo,bar,baz,toto,tutu,tata
+
+# List of builtins function names that should not be used, separated by a comma
+bad-functions=apply,input
+
+[DESIGN]
+max-args = 10
+ignored-argument-names = _.*
+max-locals = 20
+max-returns = 6
+max-branches = 15
+max-statements = 55
+max-parents = 7
+max-attributes = 10
+min-public-methods = 2
+max-public-methods = 20
+
+[EXCEPTIONS]
+overgeneral-exceptions = Exception
