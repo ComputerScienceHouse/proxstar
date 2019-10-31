@@ -16,7 +16,11 @@ disable =
 	locally-disabled,
 	file-ignored,
 	no-else-return,
-	unnecessary-lambda
+	unnecessary-lambda,
+	wrong-import-position,
+	logging-format-interpolation,
+	bare-except,
+	too-many-public-methods
 
 [REPORTS]
 output-format = text

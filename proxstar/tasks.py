@@ -2,7 +2,6 @@ import logging
 import os
 import time
 
-import paramiko
 import psycopg2
 import requests
 from flask import Flask
@@ -10,12 +9,11 @@ from rq import get_current_job
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from proxstar.db import *
-from proxstar.mail import *
+from proxstar.db import Base, get_vm_expire, delete_vm_expire, datetime, store_pool_cache, get_template
+from proxstar.mail import send_vm_expire_email, send_rtp_vm_delete_email
 from proxstar.proxmox import connect_proxmox, get_pools
-from proxstar.starrs import *
+from proxstar.starrs import get_next_ip, register_starrs, delete_starrs
 from proxstar.user import User, get_vms_for_rtp
-from proxstar.util import *
 from proxstar.vm import VM, clone_vm, create_vm
 from proxstar.vnc import send_stop_ssh_tunnel
 
@@ -36,8 +34,8 @@ app.config.from_pyfile(config)
 def connect_db():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
     Base.metadata.bind = engine
-    DBSession = sessionmaker(bind=engine)
-    db = DBSession()
+    dbsession = sessionmaker(bind=engine)
+    db = dbsession()
     return db
 
 
@@ -114,7 +112,7 @@ def process_expiring_vms_task():
     with app.app_context():
         proxmox = connect_proxmox()
         db = connect_db()
-        starrs = connect_starrs()
+        connect_starrs()
         pools = get_pools(proxmox, db)
         expired_vms = []
         for pool in pools:
@@ -125,7 +123,6 @@ def process_expiring_vms_task():
                 vm = VM(vm['vmid'])
                 days = (vm.expire - datetime.date.today()).days
                 if days in [10, 7, 3, 1, 0, -1, -2, -3, -4, -5, -6]:
-                    name = vm.name
                     expiring_vms.append([vm.id, vm.name, days])
                     if days <= 0:
                         expired_vms.append([vm.id, vm.name, days])
@@ -158,7 +155,7 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         db = connect_db()
         logging.info("[{}] Retrieving template info for template {}.".format(
             name, template_id))
-        template = get_template(db, template_id)
+        get_template(db, template_id)
         logging.info("[{}] Cloning template {}.".format(name, template_id))
         set_job_status(job, 'cloning template')
         vmid = clone_vm(proxmox, template_id, name, user)

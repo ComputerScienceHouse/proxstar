@@ -72,7 +72,7 @@ def check_hostname(starrs, hostname):
         if c.fetchall():
             available = False
         c.execute("COMMIT")
-    except (psycopg2.InternalError):
+    except psycopg2.InternalError:
         valid = False
         available = False
     finally:

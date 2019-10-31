@@ -1,11 +1,11 @@
 import os
 import json
 import time
-import psutil
 import atexit
 import logging
-import psycopg2
 import subprocess
+import psutil
+import psycopg2
 import rq_dashboard
 from rq import Queue
 from redis import Redis
@@ -13,13 +13,15 @@ from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask import Flask, render_template, request, redirect, session, abort
-from proxstar.db import *
-from proxstar.vnc import *
+from proxstar.db import (Base, datetime, get_pool_cache, renew_vm_expire, set_user_usage_limits, get_template,
+get_templates, get_allowed_users, add_ignored_pool, delete_ignored_pool, add_allowed_user, delete_allowed_user,
+get_template_disk, set_template_info, url_for)
+from proxstar.vnc import (send_stop_ssh_tunnel, stop_ssh_tunnel, add_vnc_target, start_ssh_tunnel, get_vnc_targets,
+delete_vnc_target, stop_websockify)
 from proxstar.auth import get_auth
 from proxstar.util import gen_password
-from proxstar.starrs import *
-from proxstar.ldapdb import *
-from proxstar.proxmox import *
+from proxstar.starrs import check_hostname, renew_ip
+from proxstar.proxmox import connect_proxmox, get_isos, get_pools, get_ignored_pools
 
 logging.basicConfig(
     format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
@@ -37,8 +39,8 @@ app.config.from_pyfile(config)
 app.config["GIT_REVISION"] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
 
-with open('proxmox_ssh_key', 'w') as key:
-    key.write(app.config['PROXMOX_SSH_KEY'])
+with open('proxmox_ssh_key', 'w') as ssh_key_file:
+    ssh_key_file.write(app.config['PROXMOX_SSH_KEY'])
 
 ssh_tunnels = []
 
@@ -60,7 +62,8 @@ starrs = psycopg2.connect(
 
 from proxstar.vm import VM
 from proxstar.user import User
-from proxstar.tasks import generate_pool_cache_task, process_expiring_vms_task, cleanup_vnc_task, delete_vm_task, create_vm_task, setup_template_task
+from proxstar.tasks import (generate_pool_cache_task, process_expiring_vms_task, cleanup_vnc_task,
+delete_vm_task, create_vm_task, setup_template_task)
 
 if 'generate_pool_cache' not in scheduler:
     logging.info('adding generate pool cache task to scheduler')
@@ -87,7 +90,7 @@ if 'cleanup_vnc' not in scheduler:
 def add_rq_dashboard_auth(blueprint):
     @blueprint.before_request
     @auth.oidc_auth
-    def rq_dashboard_auth(*args, **kwargs):
+    def rq_dashboard_auth(*args, **kwargs): #pylint: disable=unused-argument,unused-variable
         if 'rtp' not in session['userinfo']['groups']:
             abort(403)
 
@@ -100,13 +103,13 @@ app.register_blueprint(rq_dashboard_blueprint, url_prefix="/rq")
 @app.errorhandler(404)
 def not_found(e):
     user = User(session['userinfo']['preferred_username'])
-    return render_template('404.html', user=user), 404
+    return render_template('404.html', user=user, e=e), 404
 
 
 @app.errorhandler(403)
 def forbidden(e):
     user = User(session['userinfo']['preferred_username'])
-    return render_template('403.html', user=user), 403
+    return render_template('403.html', user=user, e=e), 403
 
 
 @app.route("/")
@@ -115,7 +118,7 @@ def forbidden(e):
 def list_vms(user_view=None):
     user = User(session['userinfo']['preferred_username'])
     rtp_view = False
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user_view and not user.rtp:
         abort(403)
     elif user_view and user.rtp:
@@ -155,8 +158,8 @@ def list_vms(user_view=None):
 @auth.oidc_auth
 def isos():
     proxmox = connect_proxmox()
-    isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
-    return json.dumps({"isos": isos})
+    stored_isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
+    return json.dumps({"isos": stored_isos})
 
 
 @app.route("/hostname/<string:name>")
@@ -175,7 +178,7 @@ def hostname(name):
 @auth.oidc_auth
 def vm_details(vmid):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         usage_check = user.check_usage(vm.cpu, vm.mem, 0)
@@ -188,18 +191,19 @@ def vm_details(vmid):
             usage_check=usage_check)
     else:
         abort(403)
+        return None
 
 
 @app.route("/vm/<string:vmid>/power/<string:action>", methods=['POST'])
 @auth.oidc_auth
 def vm_power(vmid, action):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         if action == 'start':
-            config = vm.config
-            usage_check = user.check_usage(config['cores'], config['memory'],
+            vmconfig = vm.config
+            usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'],
                                            0)
             if usage_check:
                 return usage_check
@@ -235,7 +239,7 @@ def vm_console_stop(vmid):
 @auth.oidc_auth
 def vm_console(vmid):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         stop_ssh_tunnel(vm.id, ssh_tunnels)
@@ -255,7 +259,7 @@ def vm_console(vmid):
 @auth.oidc_auth
 def vm_cpu(vmid, cores):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         cur_cores = vm.cpu
@@ -276,7 +280,7 @@ def vm_cpu(vmid, cores):
 @auth.oidc_auth
 def vm_mem(vmid, mem):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         cur_mem = vm.mem // 1024
@@ -297,10 +301,9 @@ def vm_mem(vmid, mem):
 @auth.oidc_auth
 def vm_disk(vmid, disk, size):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
-        cur_cores = vm.cpu
         usage_check = user.check_usage(0, 0, size)
         if usage_check:
             return usage_check
@@ -314,7 +317,7 @@ def vm_disk(vmid, disk, size):
 @auth.oidc_auth
 def vm_renew(vmid):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         renew_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
@@ -330,7 +333,7 @@ def vm_renew(vmid):
 @auth.oidc_auth
 def iso_eject(vmid):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         vm.eject_iso()
@@ -343,7 +346,7 @@ def iso_eject(vmid):
 @auth.oidc_auth
 def iso_mount(vmid, iso):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
         vm = VM(vmid)
@@ -357,7 +360,7 @@ def iso_mount(vmid, iso):
 @auth.oidc_auth
 def delete(vmid):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         send_stop_ssh_tunnel(vmid)
         # Submit the delete VM task to RQ
@@ -369,9 +372,9 @@ def delete(vmid):
 
 @app.route("/vm/<string:vmid>/boot_order", methods=['POST'])
 @auth.oidc_auth
-def boot_order(vmid):
+def get_boot_order(vmid):
     user = User(session['userinfo']['preferred_username'])
-    proxmox = connect_proxmox()
+    connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         boot_order = []
         for key in sorted(request.form):
@@ -390,7 +393,7 @@ def create():
     proxmox = connect_proxmox()
     if user.active or user.rtp:
         if request.method == 'GET':
-            isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
+            stored_isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
             pools = get_pools(proxmox, db)
             templates = get_templates(db)
             return render_template(
@@ -399,7 +402,7 @@ def create():
                 usage=user.usage,
                 limits=user.limits,
                 percents=user.usage_percent,
-                isos=isos,
+                isos=stored_isos,
                 pools=pools,
                 templates=templates)
         elif request.method == 'POST':
@@ -449,6 +452,7 @@ def create():
                             timeout=600)
                         return '', 200
             return '', 200
+        return None
     else:
         return '', 403
 
@@ -470,7 +474,7 @@ def set_limits(user):
 @auth.oidc_auth
 def delete_user(user):
     if 'rtp' in session['userinfo']['groups']:
-        proxmox = connect_proxmox()
+        connect_proxmox()
         User(user).delete()
         return '', 200
     else:
@@ -483,16 +487,17 @@ def settings():
     user = User(session['userinfo']['preferred_username'])
     if user.rtp:
         templates = get_templates(db)
-        ignored_pools = get_ignored_pools(db)
-        allowed_users = get_allowed_users(db)
+        db_ignored_pools = get_ignored_pools(db)
+        db_allowed_users = get_allowed_users(db)
         return render_template(
             'settings.html',
             user=user,
             templates=templates,
-            ignored_pools=ignored_pools,
-            allowed_users=allowed_users)
+            ignored_pools=db_ignored_pools,
+            allowed_users=db_allowed_users)
     else:
         abort(403)
+        return None
 
 
 @app.route("/pool/<string:pool>/ignore", methods=['POST', 'DELETE'])
