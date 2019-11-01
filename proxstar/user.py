@@ -1,8 +1,9 @@
 from proxmoxer.core import ResourceException
 from rq.registry import StartedJobRegistry
 
+from proxstar.ldapdb import is_active, is_user, is_current_student
 from proxstar import db, q, redis_conn
-from proxstar.db import get_allowed_users, is_active, is_current_student, is_rtp, is_user, get_user_usage_limits
+from proxstar.db import get_allowed_users, get_user_usage_limits, is_rtp
 from proxstar.proxmox import connect_proxmox, get_pools
 from proxstar.util import lazy_property
 from proxstar.vm import VM

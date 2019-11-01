@@ -14,10 +14,11 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask import Flask, render_template, request, redirect, session, abort, url_for
 from proxstar.db import (Base, datetime, get_pool_cache, renew_vm_expire, set_user_usage_limits, get_template,
-get_templates, get_allowed_users, add_ignored_pool, delete_ignored_pool, add_allowed_user, delete_allowed_user,
-get_template_disk, set_template_info)
+                         get_templates, get_allowed_users, add_ignored_pool, delete_ignored_pool, add_allowed_user,
+                         delete_allowed_user,
+                         get_template_disk, set_template_info)
 from proxstar.vnc import (send_stop_ssh_tunnel, stop_ssh_tunnel, add_vnc_target, start_ssh_tunnel, get_vnc_targets,
-delete_vnc_target, stop_websockify)
+                          delete_vnc_target, stop_websockify)
 from proxstar.auth import get_auth
 from proxstar.util import gen_password
 from proxstar.starrs import check_hostname, renew_ip
@@ -63,7 +64,7 @@ starrs = psycopg2.connect(
 from proxstar.vm import VM
 from proxstar.user import User
 from proxstar.tasks import (generate_pool_cache_task, process_expiring_vms_task, cleanup_vnc_task,
-delete_vm_task, create_vm_task, setup_template_task)
+                            delete_vm_task, create_vm_task, setup_template_task)
 
 if 'generate_pool_cache' not in scheduler:
     logging.info('adding generate pool cache task to scheduler')
@@ -90,7 +91,7 @@ if 'cleanup_vnc' not in scheduler:
 def add_rq_dashboard_auth(blueprint):
     @blueprint.before_request
     @auth.oidc_auth
-    def rq_dashboard_auth(*args, **kwargs): #pylint: disable=unused-argument,unused-variable
+    def rq_dashboard_auth(*args, **kwargs):  # pylint: disable=unused-argument,unused-variable
         if 'rtp' not in session['userinfo']['groups']:
             abort(403)
 
@@ -534,7 +535,7 @@ def cleanup_vnc():
             if tunnel:
                 if not next((conn for conn in psutil.net_connections()
                              if conn.laddr[1] == int(target['port'])
-                             and conn.status == 'ESTABLISHED'), None):
+                                and conn.status == 'ESTABLISHED'), None):
                     try:
                         tunnel.stop()
                     except:
