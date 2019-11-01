@@ -7,7 +7,7 @@ from flask import current_app as app
 from sshtunnel import SSHTunnelForwarder
 
 from proxstar import logging
-from proxstar.util import *
+from proxstar.util import gen_password
 
 
 def stop_websockify():

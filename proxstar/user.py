@@ -2,13 +2,13 @@ from proxmoxer.core import ResourceException
 from rq.registry import StartedJobRegistry
 
 from proxstar import db, q, redis_conn
-from proxstar.db import *
-from proxstar.proxmox import *
-from proxstar.util import *
+from proxstar.db import get_allowed_users, is_active, is_current_student, is_rtp, is_user, get_user_usage_limits
+from proxstar.proxmox import connect_proxmox, get_pools
+from proxstar.util import lazy_property
 from proxstar.vm import VM
 
 
-class User(object):
+class User():
     def __init__(self, username):
         self.name = username
         self.active = is_active(self.name) or is_current_student(
@@ -96,11 +96,12 @@ class User(object):
     def check_usage(self, cpu, mem, disk):
         if int(self.usage['cpu']) + int(cpu) > int(self.limits['cpu']):
             return 'exceeds_cpu_limit'
-        elif int(self.usage['mem']) + (int(mem) / 1024) > int(
-                self.limits['mem']):
+        elif int(self.usage['mem']) + (int(mem) / 1024) > int(self.limits['mem']):
             return 'exceeds_memory_limit'
         elif int(self.usage['disk']) + int(disk) > int(self.limits['disk']):
             return 'exceeds_disk_limit'
+        else:
+            return None
 
     def delete(self):
         proxmox = connect_proxmox()
@@ -114,9 +115,9 @@ class User(object):
                     self.name)).delete()
 
 
-def get_vms_for_rtp(proxmox, db):
+def get_vms_for_rtp(proxmox, database):
     pools = []
-    for pool in get_pools(proxmox, db):
+    for pool in get_pools(proxmox, database):
         user = User(pool)
         pool_dict = dict()
         pool_dict['user'] = user.name

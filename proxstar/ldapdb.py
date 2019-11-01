@@ -34,7 +34,7 @@ def is_current_student(user):
 def is_user(user):
     ldap = connect_ldap()
     try:
-        rtp_group = ldap.get_member(user, uid=True)
+        ldap.get_member(user, uid=True)
         return True
     except:
         return False

@@ -3,8 +3,8 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from sqlalchemy import exists
 
-from proxstar.ldapdb import *
-from proxstar.models import (Allowed_Users, Base, Ignored_Pools, Pool_Cache,
+from proxstar.ldapdb import is_rtp
+from proxstar.models import (Allowed_Users, Ignored_Pools, Pool_Cache,
                              Template, Usage_Limit, VM_Expiration)
 
 

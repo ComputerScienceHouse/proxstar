@@ -2,7 +2,7 @@ from flask import current_app as app
 from proxmoxer import ProxmoxAPI
 
 from proxstar import logging
-from proxstar.db import get_ignored_pools, get_user_usage_limits
+from proxstar.db import get_ignored_pools
 from proxstar.ldapdb import is_user
 
 
@@ -14,7 +14,7 @@ def connect_proxmox():
                 user=app.config['PROXMOX_USER'],
                 password=app.config['PROXMOX_PASS'],
                 verify_ssl=False)
-            version = proxmox.version.get()
+            proxmox.version.get()
             return proxmox
         except:
             if app.config['PROXMOX_HOSTS'].index(host) == (
@@ -33,7 +33,7 @@ def connect_proxmox_ssh():
                 private_key_file='proxmox_ssh_key',
                 password=app.config['PROXMOX_SSH_KEY_PASS'],
                 backend='ssh_paramiko')
-            version = proxmox.version.get()
+            proxmox.version.get()
             return proxmox
         except:
             if app.config['PROXMOX_HOSTS'].index(host) == (
@@ -58,6 +58,7 @@ def get_vm_node(proxmox, vmid):
     for vm in proxmox.cluster.resources.get(type='vm'):
         if vm['vmid'] == int(vmid):
             return vm['node']
+    return None
 
 
 def get_isos(proxmox, storage):

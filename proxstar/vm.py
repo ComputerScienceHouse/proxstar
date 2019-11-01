@@ -1,5 +1,4 @@
 import json
-import time
 import urllib
 
 from flask import current_app as app
@@ -12,7 +11,7 @@ from proxstar.starrs import get_ip_for_mac
 from proxstar.util import lazy_property
 
 
-class VM(object):
+class VM():
     def __init__(self, vmid):
         self.id = vmid
 
@@ -52,6 +51,7 @@ class VM(object):
         for vm in proxmox.cluster.resources.get(type='vm'):
             if vm['vmid'] == int(self.id):
                 return vm['node']
+        return None
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def delete(self):
@@ -127,8 +127,8 @@ class VM(object):
         }
         raw_boot_order = self.config.get('boot', 'cdn')
         boot_order = []
-        for i in range(0, len(raw_boot_order)):
-            boot_order.append(boot_order_lookup[raw_boot_order[i]])
+        for order in raw_boot_order:
+            boot_order.append(boot_order_lookup[order])
         return boot_order
 
     @lazy_property
@@ -145,14 +145,14 @@ class VM(object):
             'Network': 'n'
         }
         raw_boot_order = ''
-        for i in range(0, len(boot_order)):
-            raw_boot_order += boot_order_lookup[boot_order[i]]
+        for order in boot_order:
+            raw_boot_order += boot_order_lookup[order]
         proxmox.nodes(self.node).qemu(self.id).config.put(boot=raw_boot_order)
 
     @lazy_property
     def interfaces(self):
         interfaces = []
-        for key, val in self.config.items():
+        for key, _ in self.config.items():
             if 'net' in key:
                 mac = self.config[key].split(',')
                 valid_int_types = ['virtio', 'e1000', 'rtl8139', 'vmxnet3']
