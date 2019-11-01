@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import exists
 
 from proxstar.ldapdb import is_rtp
-from proxstar.models import (Allowed_Users, Ignored_Pools, Pool_Cache,
+from proxstar.models import (Base, Allowed_Users, Ignored_Pools, Pool_Cache, #pylint: disable=unused-import
                              Template, Usage_Limit, VM_Expiration)
 
 
