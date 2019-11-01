@@ -23,11 +23,11 @@ logging.basicConfig(
 app = Flask(__name__)
 if os.path.exists(
         os.path.join(
-            app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")):
+            app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')):
     config = os.path.join(
-        app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")
+        app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')
 else:
-    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
+    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
 
 
@@ -58,11 +58,11 @@ def create_vm_task(user, name, cores, memory, disk, iso):
         proxmox = connect_proxmox()
         db = connect_db()
         starrs = connect_starrs()
-        logging.info("[{}] Creating VM.".format(name))
+        logging.info('[{}] Creating VM.'.format(name))
         set_job_status(job, 'creating VM')
         vmid = create_vm(proxmox, user, name, cores, memory, disk, iso)
         logging.info(
-            "[{}] Waiting until Proxmox is done provisioning.".format(name))
+            '[{}] Waiting until Proxmox is done provisioning.'.format(name))
         set_job_status(job, 'waiting for Proxmox')
         timeout = 20
         retry = 0
@@ -73,11 +73,11 @@ def create_vm_task(user, name, cores, memory, disk, iso):
                 continue
             break
         if retry == timeout:
-            logging.info("[{}] Failed to provision, deleting.".format(name))
+            logging.info('[{}] Failed to provision, deleting.'.format(name))
             set_job_status(job, 'failed to provision')
             delete_vm_task(vmid)
             return
-        logging.info("[{}] Registering in STARRS.".format(name))
+        logging.info('[{}] Registering in STARRS.'.format(name))
         set_job_status(job, 'registering in STARRS')
         vm = VM(vmid)
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
@@ -85,7 +85,7 @@ def create_vm_task(user, name, cores, memory, disk, iso):
                         ip)
         set_job_status(job, 'setting VM expiration')
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
-        logging.info("[{}] VM successfully provisioned.".format(name))
+        logging.info('[{}] VM successfully provisioned.'.format(name))
         set_job_status(job, 'complete')
 
 
@@ -129,7 +129,7 @@ def process_expiring_vms_task():
                         vm.stop()
                 elif days <= -7:
                     logging.info(
-                        "Deleting {} ({}) as it has been at least a week since expiration."
+                        'Deleting {} ({}) as it has been at least a week since expiration.'
                         .format(vm.name, vm.id))
                     send_stop_ssh_tunnel(vm.id)
                     delete_vm_task(vm.id)
@@ -153,14 +153,14 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         proxmox = connect_proxmox()
         starrs = connect_starrs()
         db = connect_db()
-        logging.info("[{}] Retrieving template info for template {}.".format(
+        logging.info('[{}] Retrieving template info for template {}.'.format(
             name, template_id))
         get_template(db, template_id)
-        logging.info("[{}] Cloning template {}.".format(name, template_id))
+        logging.info('[{}] Cloning template {}.'.format(name, template_id))
         set_job_status(job, 'cloning template')
         vmid = clone_vm(proxmox, template_id, name, user)
         logging.info(
-            "[{}] Waiting until Proxmox is done provisioning.".format(name))
+            '[{}] Waiting until Proxmox is done provisioning.'.format(name))
         set_job_status(job, 'waiting for Proxmox')
         timeout = 20
         retry = 0
@@ -171,43 +171,43 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
                 continue
             break
         if retry == timeout:
-            logging.info("[{}] Failed to provision, deleting.".format(name))
+            logging.info('[{}] Failed to provision, deleting.'.format(name))
             set_job_status(job, 'failed to provision')
             delete_vm_task(vmid)
             return
-        logging.info("[{}] Registering in STARRS.".format(name))
+        logging.info('[{}] Registering in STARRS.'.format(name))
         set_job_status(job, 'registering in STARRS')
         vm = VM(vmid)
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
         register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(),
                         ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
-        logging.info("[{}] Setting CPU and memory.".format(name))
+        logging.info('[{}] Setting CPU and memory.'.format(name))
         set_job_status(job, 'setting CPU and memory')
         vm.set_cpu(cores)
         vm.set_mem(memory)
-        logging.info("[{}] Applying cloud-init config.".format(name))
+        logging.info('[{}] Applying cloud-init config.'.format(name))
         set_job_status(job, 'applying cloud-init')
         vm.set_ci_user(user)
         vm.set_ci_ssh_key(ssh_key)
         vm.set_ci_network()
         logging.info(
-            "[{}] Waiting for STARRS to propogate before starting VM.".format(
+            '[{}] Waiting for STARRS to propogate before starting VM.'.format(
                 name))
         set_job_status(job, 'waiting for STARRS')
         job.save_meta()
         time.sleep(90)
-        logging.info("[{}] Starting VM.".format(name))
+        logging.info('[{}] Starting VM.'.format(name))
         set_job_status(job, 'starting VM')
         job.save_meta()
         vm.start()
-        logging.info("[{}] Template successfully provisioned.".format(name))
+        logging.info('[{}] Template successfully provisioned.'.format(name))
         set_job_status(job, 'completed')
         job.save_meta()
 
 
 def cleanup_vnc_task():
     requests.post(
-        "https://{}/console/cleanup".format(app.config['SERVER_NAME']),
+        'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),
         data={'token': app.config['VNC_CLEANUP_TOKEN']},
         verify=False)

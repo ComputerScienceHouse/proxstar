@@ -31,13 +31,13 @@ app = Flask(__name__)
 app.config.from_object(rq_dashboard.default_settings)
 if os.path.exists(
         os.path.join(
-            app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")):
+            app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')):
     config = os.path.join(
-        app.config.get('ROOT_DIR', os.getcwd()), "config.local.py")
+        app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')
 else:
-    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
+    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
-app.config["GIT_REVISION"] = subprocess.check_output(
+app.config['GIT_REVISION'] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
 
 with open('proxmox_ssh_key', 'w') as ssh_key_file:
@@ -98,7 +98,7 @@ def add_rq_dashboard_auth(blueprint):
 
 rq_dashboard_blueprint = rq_dashboard.blueprint
 add_rq_dashboard_auth(rq_dashboard_blueprint)
-app.register_blueprint(rq_dashboard_blueprint, url_prefix="/rq")
+app.register_blueprint(rq_dashboard_blueprint, url_prefix='/rq')
 
 
 @app.errorhandler(404)
@@ -113,8 +113,8 @@ def forbidden(e):
     return render_template('403.html', user=user, e=e), 403
 
 
-@app.route("/")
-@app.route("/user/<string:user_view>")
+@app.route('/')
+@app.route('/user/<string:user_view>')
 @auth.oidc_auth
 def list_vms(user_view=None):
     user = User(session['userinfo']['preferred_username'])
@@ -155,15 +155,15 @@ def list_vms(user_view=None):
         'list_vms.html', user=user, rtp_view=rtp_view, vms=vms)
 
 
-@app.route("/isos")
+@app.route('/isos')
 @auth.oidc_auth
 def isos():
     proxmox = connect_proxmox()
     stored_isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
-    return json.dumps({"isos": stored_isos})
+    return json.dumps({'isos': stored_isos})
 
 
-@app.route("/hostname/<string:name>")
+@app.route('/hostname/<string:name>')
 @auth.oidc_auth
 def hostname(name):
     valid, available = check_hostname(starrs, name)
@@ -175,7 +175,7 @@ def hostname(name):
         return 'ok'
 
 
-@app.route("/vm/<string:vmid>")
+@app.route('/vm/<string:vmid>')
 @auth.oidc_auth
 def vm_details(vmid):
     user = User(session['userinfo']['preferred_username'])
@@ -194,7 +194,7 @@ def vm_details(vmid):
         return abort(403)
 
 
-@app.route("/vm/<string:vmid>/power/<string:action>", methods=['POST'])
+@app.route('/vm/<string:vmid>/power/<string:action>', methods=['POST'])
 @auth.oidc_auth
 def vm_power(vmid, action):
     user = User(session['userinfo']['preferred_username'])
@@ -226,7 +226,7 @@ def vm_power(vmid, action):
         return '', 403
 
 
-@app.route("/console/vm/<string:vmid>/stop", methods=['POST'])
+@app.route('/console/vm/<string:vmid>/stop', methods=['POST'])
 def vm_console_stop(vmid):
     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
         stop_ssh_tunnel(vmid, ssh_tunnels)
@@ -235,7 +235,7 @@ def vm_console_stop(vmid):
         return '', 403
 
 
-@app.route("/console/vm/<string:vmid>", methods=['POST'])
+@app.route('/console/vm/<string:vmid>', methods=['POST'])
 @auth.oidc_auth
 def vm_console(vmid):
     user = User(session['userinfo']['preferred_username'])
@@ -245,8 +245,8 @@ def vm_console(vmid):
         stop_ssh_tunnel(vm.id, ssh_tunnels)
         port = str(5900 + int(vmid))
         token = add_vnc_target(port)
-        node = "{}.csh.rit.edu".format(vm.node)
-        logging.info("creating SSH tunnel to %s for VM %s", node, vm.id)
+        node = '{}.csh.rit.edu'.format(vm.node)
+        logging.info('creating SSH tunnel to %s for VM %s', node, vm.id)
         tunnel = start_ssh_tunnel(node, port)
         ssh_tunnels.append(tunnel)
         vm.start_vnc(port)
@@ -255,7 +255,7 @@ def vm_console(vmid):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/cpu/<int:cores>", methods=['POST'])
+@app.route('/vm/<string:vmid>/cpu/<int:cores>', methods=['POST'])
 @auth.oidc_auth
 def vm_cpu(vmid, cores):
     user = User(session['userinfo']['preferred_username'])
@@ -276,7 +276,7 @@ def vm_cpu(vmid, cores):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/mem/<int:mem>", methods=['POST'])
+@app.route('/vm/<string:vmid>/mem/<int:mem>', methods=['POST'])
 @auth.oidc_auth
 def vm_mem(vmid, mem):
     user = User(session['userinfo']['preferred_username'])
@@ -297,7 +297,7 @@ def vm_mem(vmid, mem):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/disk/<string:disk>/<int:size>", methods=['POST'])
+@app.route('/vm/<string:vmid>/disk/<string:disk>/<int:size>', methods=['POST'])
 @auth.oidc_auth
 def vm_disk(vmid, disk, size):
     user = User(session['userinfo']['preferred_username'])
@@ -313,7 +313,7 @@ def vm_disk(vmid, disk, size):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/renew", methods=['POST'])
+@app.route('/vm/<string:vmid>/renew', methods=['POST'])
 @auth.oidc_auth
 def vm_renew(vmid):
     user = User(session['userinfo']['preferred_username'])
@@ -329,7 +329,7 @@ def vm_renew(vmid):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/eject", methods=['POST'])
+@app.route('/vm/<string:vmid>/eject', methods=['POST'])
 @auth.oidc_auth
 def iso_eject(vmid):
     user = User(session['userinfo']['preferred_username'])
@@ -342,13 +342,13 @@ def iso_eject(vmid):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/mount/<string:iso>", methods=['POST'])
+@app.route('/vm/<string:vmid>/mount/<string:iso>', methods=['POST'])
 @auth.oidc_auth
 def iso_mount(vmid, iso):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
-        iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'], iso)
+        iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'], iso)
         vm = VM(vmid)
         vm.mount_iso(iso)
         return '', 200
@@ -356,7 +356,7 @@ def iso_mount(vmid, iso):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/delete", methods=['POST'])
+@app.route('/vm/<string:vmid>/delete', methods=['POST'])
 @auth.oidc_auth
 def delete(vmid):
     user = User(session['userinfo']['preferred_username'])
@@ -370,7 +370,7 @@ def delete(vmid):
         return '', 403
 
 
-@app.route("/vm/<string:vmid>/boot_order", methods=['POST'])
+@app.route('/vm/<string:vmid>/boot_order', methods=['POST'])
 @auth.oidc_auth
 def get_boot_order(vmid):
     user = User(session['userinfo']['preferred_username'])
@@ -386,7 +386,7 @@ def get_boot_order(vmid):
         return '', 403
 
 
-@app.route("/vm/create", methods=['GET', 'POST'])
+@app.route('/vm/create', methods=['GET', 'POST'])
 @auth.oidc_auth
 def create():
     user = User(session['userinfo']['preferred_username'])
@@ -414,7 +414,7 @@ def create():
             iso = request.form['iso']
             ssh_key = request.form['ssh_key']
             if iso != 'none':
-                iso = "{}:iso/{}".format(app.config['PROXMOX_ISO_STORAGE'],
+                iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'],
                                          iso)
             if not user.rtp:
                 if template == 'none':
@@ -481,7 +481,7 @@ def delete_user(user):
         return '', 403
 
 
-@app.route("/settings")
+@app.route('/settings')
 @auth.oidc_auth
 def settings():
     user = User(session['userinfo']['preferred_username'])
@@ -499,33 +499,33 @@ def settings():
         return abort(403)
 
 
-@app.route("/pool/<string:pool>/ignore", methods=['POST', 'DELETE'])
+@app.route('/pool/<string:pool>/ignore', methods=['POST', 'DELETE'])
 @auth.oidc_auth
 def ignored_pools(pool):
     if 'rtp' in session['userinfo']['groups']:
         if request.method == 'POST':
             add_ignored_pool(db, pool)
-        elif request.method == "DELETE":
+        elif request.method == 'DELETE':
             delete_ignored_pool(db, pool)
         return '', 200
     else:
         return '', 403
 
 
-@app.route("/user/<string:user>/allow", methods=['POST', 'DELETE'])
+@app.route('/user/<string:user>/allow', methods=['POST', 'DELETE'])
 @auth.oidc_auth
 def allowed_users(user):
     if 'rtp' in session['userinfo']['groups']:
         if request.method == 'POST':
             add_allowed_user(db, user)
-        elif request.method == "DELETE":
+        elif request.method == 'DELETE':
             delete_allowed_user(db, user)
         return '', 200
     else:
         return '', 403
 
 
-@app.route("/console/cleanup", methods=['POST'])
+@app.route('/console/cleanup', methods=['POST'])
 def cleanup_vnc():
     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
         for target in get_vnc_targets():
@@ -567,7 +567,7 @@ def template_edit(template_id):
         return '', 403
 
 
-@app.route("/logout")
+@app.route('/logout')
 @auth.oidc_logout
 def logout():
     return redirect(url_for('list_vms'), 302)
@@ -584,5 +584,5 @@ def exit_handler():
 
 atexit.register(exit_handler)
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(threaded=False)

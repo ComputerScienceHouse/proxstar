@@ -8,7 +8,7 @@ def connect_ldap():
     try:
         ldap = CSHLDAP(app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'])
     except Exception as e:
-        logging.error("unable to connect to LDAP: %s", e)
+        logging.error('unable to connect to LDAP: %s', e)
         raise
     return ldap
 

@@ -210,7 +210,7 @@ class VM():
         proxmox = connect_proxmox()
         port = str(int(port) - 5900)
         proxmox.nodes(self.node).qemu(self.id).monitor.post(
-            command="change vnc 127.0.0.1:{}".format(port))
+            command='change vnc 127.0.0.1:{}'.format(port))
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def eject_iso(self):
@@ -222,12 +222,12 @@ class VM():
     def mount_iso(self, iso):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(
-            self.id).config.post(ide2="{},media=cdrom".format(iso))
+            self.id).config.post(ide2='{},media=cdrom'.format(iso))
 
     def resize_disk(self, disk, size):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).resize.put(
-            disk=disk, size="+{}G".format(size))
+            disk=disk, size='+{}G'.format(size))
 
     @lazy_property
     def expire(self):
@@ -263,8 +263,8 @@ def create_vm(proxmox, user, name, cores, memory, disk, iso):
         cores=cores,
         memory=memory,
         storage='ceph',
-        virtio0="ceph:{}".format(disk),
-        ide2="{},media=cdrom".format(iso),
+        virtio0='ceph:{}'.format(disk),
+        ide2='{},media=cdrom'.format(iso),
         net0='virtio,bridge=vmbr0',
         pool=user,
         description='Managed by Proxstar')
