@@ -21,7 +21,7 @@ def stop_websockify():
             time.sleep(10)
             if subprocess.run(['pgrep', 'websockify'],
                               stdout=subprocess.PIPE).stdout:
-                logging.info('websockify didn\'t stop, killing forcefully')
+                logging.info("websockify didn't stop, killing forcefully")
                 subprocess.run(['kill', '-9', pid], stdout=subprocess.PIPE)
 
 
@@ -48,7 +48,7 @@ def add_vnc_target(port):
     else:
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'a')
         token = gen_password(32, 'abcdefghijklmnopqrstuvwxyz0123456789')
-        target_file.write("{}: 127.0.0.1:{}\n".format(token, str(port)))
+        target_file.write('{}: 127.0.0.1:{}\n'.format(token, str(port)))
         target_file.close()
         return token
 
@@ -61,7 +61,7 @@ def delete_vnc_target(port):
         targets.remove(target)
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w')
         for target in targets:
-            target_file.write("{}: 127.0.0.1:{}\n".format(
+            target_file.write('{}: 127.0.0.1:{}\n'.format(
                 target['token'], target['port']))
         target_file.close()
 
@@ -97,7 +97,7 @@ def stop_ssh_tunnel(vmid, ssh_tunnels):
 
 def send_stop_ssh_tunnel(vmid):
     requests.post(
-        "https://{}/console/vm/{}/stop".format(app.config['SERVER_NAME'],
+        'https://{}/console/vm/{}/stop'.format(app.config['SERVER_NAME'],
                                                vmid),
         data={'token': app.config['VNC_CLEANUP_TOKEN']},
         verify=False)

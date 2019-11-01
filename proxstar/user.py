@@ -108,11 +108,11 @@ class User():
         proxmox = connect_proxmox()
         proxmox.pools(self.name).delete()
         users = proxmox.access.users.get()
-        if any(user['userid'] == "{}@csh.rit.edu".format(self.name)
+        if any(user['userid'] == '{}@csh.rit.edu'.format(self.name)
                for user in users):
-            if 'rtp' not in proxmox.access.users("{}@csh.rit.edu".format(
+            if 'rtp' not in proxmox.access.users('{}@csh.rit.edu'.format(
                     self.name)).get()['groups']:
-                proxmox.access.users("{}@csh.rit.edu".format(
+                proxmox.access.users('{}@csh.rit.edu'.format(
                     self.name)).delete()
 
 
