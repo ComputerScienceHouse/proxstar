@@ -7,7 +7,7 @@ proxmoxer==1.0.3
 psutil==5.4.7
 psycopg2-binary==2.7.5
 python-dateutil==2.7.3
-raven==6.9.0
+raven~=6.10.0
 redis==2.10.6
 requests==2.20.1
 rq==0.12.0
