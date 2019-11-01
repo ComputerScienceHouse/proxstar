@@ -190,8 +190,7 @@ def vm_details(vmid):
             limits=user.limits,
             usage_check=usage_check)
     else:
-        abort(403)
-        return None
+        return abort(403)
 
 
 @app.route("/vm/<string:vmid>/power/<string:action>", methods=['POST'])
@@ -496,8 +495,7 @@ def settings():
             ignored_pools=db_ignored_pools,
             allowed_users=db_allowed_users)
     else:
-        abort(403)
-        return None
+        return abort(403)
 
 
 @app.route("/pool/<string:pool>/ignore", methods=['POST', 'DELETE'])
