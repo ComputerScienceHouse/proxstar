@@ -12,10 +12,10 @@ from redis import Redis
 from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask import Flask, render_template, request, redirect, session, abort
+from flask import Flask, render_template, request, redirect, session, abort, url_for
 from proxstar.db import (Base, datetime, get_pool_cache, renew_vm_expire, set_user_usage_limits, get_template,
 get_templates, get_allowed_users, add_ignored_pool, delete_ignored_pool, add_allowed_user, delete_allowed_user,
-get_template_disk, set_template_info, url_for)
+get_template_disk, set_template_info)
 from proxstar.vnc import (send_stop_ssh_tunnel, stop_ssh_tunnel, add_vnc_target, start_ssh_tunnel, get_vnc_targets,
 delete_vnc_target, stop_websockify)
 from proxstar.auth import get_auth
