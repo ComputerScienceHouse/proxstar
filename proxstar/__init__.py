@@ -13,7 +13,6 @@ from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask import Flask, render_template, request, redirect, session, abort, url_for
-from raven.contrib.flask import Sentry
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
@@ -44,7 +43,6 @@ app.config.from_pyfile(config)
 app.config['GIT_REVISION'] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
 # Sentry setup
-sentry = Sentry(app)
 sentry_sdk.init(
     dsn=app.config['SENTRY_DSN'],
     integrations=[FlaskIntegration(), SqlalchemyIntegration()]
