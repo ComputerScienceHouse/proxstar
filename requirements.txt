@@ -19,4 +19,3 @@ tenacity==5.0.2
 websockify==0.8.0
 pylint==2.3.1
 pylint-quotes==0.2.1
-sentry-sdk~=0.13.1
