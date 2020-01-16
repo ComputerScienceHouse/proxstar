@@ -95,7 +95,12 @@ def delete_vm_task(vmid):
         starrs = connect_starrs()
         vm = VM(vmid)
         # do this before deleting the VM since it is hard to reconcile later
-        delete_starrs(starrs, vm.name)
+        retry = 0
+        while retry < 3:
+            try:
+                delete_starrs(starrs, vm.name)
+            except:
+                continue
         if vm.status != 'stopped':
             vm.stop()
             retry = 0
@@ -167,7 +172,7 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         while retry < timeout:
             if not VM(vmid).is_provisioned():
                 retry += 1
-                time.sleep(3)
+                time.sleep(6)
                 continue
             break
         if retry == timeout:
