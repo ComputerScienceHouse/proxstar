@@ -99,7 +99,10 @@ def delete_vm_task(vmid):
         while retry < 3:
             try:
                 delete_starrs(starrs, vm.name)
+                break
             except:
+                retry += 1
+                time.sleep(3)
                 continue
         if vm.status != 'stopped':
             vm.stop()
@@ -167,12 +170,12 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         logging.info(
             '[{}] Waiting until Proxmox is done provisioning.'.format(name))
         set_job_status(job, 'waiting for Proxmox')
-        timeout = 20
+        timeout = 25
         retry = 0
         while retry < timeout:
             if not VM(vmid).is_provisioned():
                 retry += 1
-                time.sleep(6)
+                time.sleep(12)
                 continue
             break
         if retry == timeout:
