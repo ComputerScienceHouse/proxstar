@@ -72,7 +72,7 @@
                         <label for="user" class="pull-left">User</label>
                         <select name="user" id="user" class="form-control">
                             {% for pool in pools %}
-                            <option value="{{ pool }}">{{ pool }}</option>
+                            <option value="{{ pool }}" {{ "selected" if user.name == pool else "" }}>{{ pool }}</option>
                             {% endfor %}
                         </select>
                     </div>
