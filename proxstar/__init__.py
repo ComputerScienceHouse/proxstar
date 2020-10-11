@@ -35,9 +35,9 @@ app = Flask(__name__)
 app.config.from_object(rq_dashboard.default_settings)
 if os.path.exists(
         os.path.join(
-            app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')):
+            app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')):
     config = os.path.join(
-        app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')
+        app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
