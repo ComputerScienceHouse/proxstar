@@ -47,7 +47,8 @@ app.config['GIT_REVISION'] = subprocess.check_output(
 # Sentry setup
 sentry_sdk.init(
     dsn=app.config['SENTRY_DSN'],
-    integrations=[FlaskIntegration(), RqIntegration(), SqlalchemyIntegration()]
+    integrations=[FlaskIntegration(), RqIntegration(), SqlalchemyIntegration()],
+    environment=app.config['SENTRY_ENV']
 )
 
 with open('proxmox_ssh_key', 'w') as ssh_key_file:

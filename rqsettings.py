@@ -10,5 +10,6 @@ else:
 
 sentry_sdk.init(
     config.SENTRY_DSN,
-    integrations=[RqIntegration()]
+    integrations=[RqIntegration()],
+    environment=config.SENTRY_ENV
 )
