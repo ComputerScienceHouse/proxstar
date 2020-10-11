@@ -1,6 +1,7 @@
 [MASTER]
 ignore = ,input
 persistent = yes
+load-plugins = pylint_quotes
 
 [MESSAGES CONTROL]
 disable =
