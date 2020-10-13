@@ -13,6 +13,10 @@ from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask import Flask, render_template, request, redirect, session, abort, url_for
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+from sentry_sdk.integrations.rq import RqIntegration
+from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
 from proxstar.db import (Base, datetime, get_pool_cache, renew_vm_expire, set_user_usage_limits, get_template,
                          get_templates, get_allowed_users, add_ignored_pool, delete_ignored_pool, add_allowed_user,
                          delete_allowed_user,
@@ -31,14 +35,21 @@ app = Flask(__name__)
 app.config.from_object(rq_dashboard.default_settings)
 if os.path.exists(
         os.path.join(
-            app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')):
+            app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')):
     config = os.path.join(
-        app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')
+        app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
 app.config['GIT_REVISION'] = subprocess.check_output(
     ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
+
+# Sentry setup
+sentry_sdk.init(
+    dsn=app.config['SENTRY_DSN'],
+    integrations=[FlaskIntegration(), RqIntegration(), SqlalchemyIntegration()],
+    environment=app.config['SENTRY_ENV']
+)
 
 with open('proxmox_ssh_key', 'w') as ssh_key_file:
     ssh_key_file.write(app.config['PROXMOX_SSH_KEY'])
