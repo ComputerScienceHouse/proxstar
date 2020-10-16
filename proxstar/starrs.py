@@ -90,6 +90,10 @@ def register_starrs(starrs, name, owner, mac, addr):
             (name, owner, 'members', mac, addr, 'csh.rit.edu', 'dhcp', True))
         results = c.fetchall()
         c.execute('COMMIT')
+        c.execute('BEGIN')
+        c.callproc('api.initialize', ('root', ))
+        c.callproc('api.modify_system', (name, 'comment', f'Owned by {owner}'))
+        c.execute('COMMIT')
     finally:
         c.close()
     return results
