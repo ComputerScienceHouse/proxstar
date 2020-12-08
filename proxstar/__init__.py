@@ -584,6 +584,14 @@ def logout():
     return redirect(url_for('list_vms'), 302)
 
 
+@app.route("/health")
+def health():
+    """
+    Shows an ok status if the application is up and running
+    """
+    return {"status": "ok"}
+
+
 def exit_handler():
     stop_websockify()
     for tunnel in ssh_tunnels:
