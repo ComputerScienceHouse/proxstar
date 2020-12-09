@@ -12,7 +12,7 @@ from redis import Redis
 from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask import Flask, render_template, request, redirect, session, abort, url_for
+from flask import Flask, render_template, request, redirect, session, abort, url_for, jsonify
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.rq import RqIntegration
@@ -589,7 +589,7 @@ def health():
     """
     Shows an ok status if the application is up and running
     """
-    return {'status': 'ok'}
+    return jsonify({'status': 'ok'})
 
 
 def exit_handler():
