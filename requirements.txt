@@ -9,7 +9,7 @@ psutil==5.6.6
 psycopg2-binary==2.8.6
 python-dateutil==2.7.3
 redis==3.5.3
-requests==2.24.0
+requests==2.25.1
 rq==1.1.0
 rq-dashboard==0.6.1
 rq-scheduler==0.10.0
