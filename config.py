@@ -64,5 +64,6 @@ WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE',
 # SENTRY
 # If you set the sentry dsn locally, make sure you use the local-dev or some
 # other local environment, so we can separate local errors from production
-SENTRY_DSN = environ.get("PROXSTAR_SENTRY_DSN", "")
-SENTRY_ENV = environ.get("PROXSTAR_SENTRY_ENV", "local-dev")
+SENTRY_DSN = environ.get('PROXSTAR_SENTRY_DSN', '')
+RQ_SENTRY_DSN = environ.get('PROXSTAR_SENTRY_DSN', '')
+SENTRY_ENV = environ.get('PROXSTAR_SENTRY_ENV', 'local-dev')

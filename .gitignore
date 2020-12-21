@@ -5,3 +5,9 @@ rrd/*
 *.pyc
 *_key
 Pipfile*
+
+# venv parts
+bin
+pyvenv.cfg
+site-packages
+venv
