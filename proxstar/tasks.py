@@ -9,7 +9,14 @@ from rq import get_current_job
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from proxstar.db import Base, get_vm_expire, delete_vm_expire, datetime, store_pool_cache, get_template
+from proxstar.db import (
+    Base,
+    get_vm_expire,
+    delete_vm_expire,
+    datetime,
+    store_pool_cache,
+    get_template,
+)
 from proxstar.mail import send_vm_expire_email, send_rtp_vm_delete_email
 from proxstar.proxmox import connect_proxmox, get_pools
 from proxstar.starrs import get_next_ip, register_starrs, delete_starrs
@@ -17,15 +24,11 @@ from proxstar.user import User, get_vms_for_rtp
 from proxstar.vm import VM, clone_vm, create_vm
 from proxstar.vnc import send_stop_ssh_tunnel
 
-logging.basicConfig(
-    format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
 app = Flask(__name__)
-if os.path.exists(
-        os.path.join(
-            app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')):
-    config = os.path.join(
-        app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')
+if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')):
+    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
@@ -42,8 +45,12 @@ def connect_db():
 def connect_starrs():
     starrs = psycopg2.connect(
         "dbname='{}' user='{}' host='{}' password='{}'".format(
-            app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-            app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
+            app.config['STARRS_DB_NAME'],
+            app.config['STARRS_DB_USER'],
+            app.config['STARRS_DB_HOST'],
+            app.config['STARRS_DB_PASS'],
+        )
+    )
     return starrs
 
 
@@ -61,8 +68,7 @@ def create_vm_task(user, name, cores, memory, disk, iso):
         logging.info('[{}] Creating VM.'.format(name))
         set_job_status(job, 'creating VM')
         vmid = create_vm(proxmox, user, name, cores, memory, disk, iso)
-        logging.info(
-            '[{}] Waiting until Proxmox is done provisioning.'.format(name))
+        logging.info('[{}] Waiting until Proxmox is done provisioning.'.format(name))
         set_job_status(job, 'waiting for Proxmox')
         timeout = 20
         retry = 0
@@ -81,8 +87,7 @@ def create_vm_task(user, name, cores, memory, disk, iso):
         set_job_status(job, 'registering in STARRS')
         vm = VM(vmid)
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
-        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(),
-                        ip)
+        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
         set_job_status(job, 'setting VM expiration')
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         logging.info('[{}] VM successfully provisioned.'.format(name))
@@ -137,8 +142,10 @@ def process_expiring_vms_task():
                         vm.stop()
                 elif days <= -7:
                     logging.info(
-                        'Deleting {} ({}) as it has been at least a week since expiration.'
-                        .format(vm.name, vm.id))
+                        'Deleting {} ({}) as it has been at least a week since expiration.'.format(
+                            vm.name, vm.id
+                        )
+                    )
                     send_stop_ssh_tunnel(vm.id)
                     delete_vm_task(vm.id)
             if expiring_vms:
@@ -161,14 +168,12 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         proxmox = connect_proxmox()
         starrs = connect_starrs()
         db = connect_db()
-        logging.info('[{}] Retrieving template info for template {}.'.format(
-            name, template_id))
+        logging.info('[{}] Retrieving template info for template {}.'.format(name, template_id))
         get_template(db, template_id)
         logging.info('[{}] Cloning template {}.'.format(name, template_id))
         set_job_status(job, 'cloning template')
         vmid = clone_vm(proxmox, template_id, name, user)
-        logging.info(
-            '[{}] Waiting until Proxmox is done provisioning.'.format(name))
+        logging.info('[{}] Waiting until Proxmox is done provisioning.'.format(name))
         set_job_status(job, 'waiting for Proxmox')
         timeout = 25
         retry = 0
@@ -187,8 +192,7 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         set_job_status(job, 'registering in STARRS')
         vm = VM(vmid)
         ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
-        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(),
-                        ip)
+        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         logging.info('[{}] Setting CPU and memory.'.format(name))
         set_job_status(job, 'setting CPU and memory')
@@ -199,9 +203,7 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         vm.set_ci_user(user)
         vm.set_ci_ssh_key(ssh_key)
         vm.set_ci_network()
-        logging.info(
-            '[{}] Waiting for STARRS to propogate before starting VM.'.format(
-                name))
+        logging.info('[{}] Waiting for STARRS to propogate before starting VM.'.format(name))
         set_job_status(job, 'waiting for STARRS')
         job.save_meta()
         time.sleep(90)
@@ -218,4 +220,5 @@ def cleanup_vnc_task():
     requests.post(
         'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),
         data={'token': app.config['VNC_CLEANUP_TOKEN']},
-        verify=False)
+        verify=False,
+    )
