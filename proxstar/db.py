@@ -4,14 +4,22 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import exists
 
 from proxstar.ldapdb import is_rtp
-from proxstar.models import (Base, Allowed_Users, Ignored_Pools, Pool_Cache, #pylint: disable=unused-import
-                             Template, Usage_Limit, VM_Expiration)
+
+# pylint: disable=unused-import
+from proxstar.models import (
+    Base,
+    Allowed_Users,
+    Ignored_Pools,
+    Pool_Cache,
+    Template,
+    Usage_Limit,
+    VM_Expiration,
+)
 
 
 def get_vm_expire(db, vmid, months):
     if db.query(exists().where(VM_Expiration.id == vmid)).scalar():
-        expire = db.query(VM_Expiration).filter(
-            VM_Expiration.id == vmid).one().expire_date
+        expire = db.query(VM_Expiration).filter(VM_Expiration.id == vmid).one().expire_date
     else:
         expire = datetime.date.today() + relativedelta(months=months)
         new_expire = VM_Expiration(id=vmid, expire_date=expire)
@@ -43,8 +51,7 @@ def delete_vm_expire(db, vmid):
 def get_expiring_vms(db):
     expiring = []
     today = datetime.date.today()
-    expire = db.query(VM_Expiration).filter(
-        (VM_Expiration.expire_date - today) <= 10).all()
+    expire = db.query(VM_Expiration).filter((VM_Expiration.expire_date - today) <= 10).all()
     for vm in expire:
         expiring.append(vm.id)
     return expiring
@@ -57,12 +64,9 @@ def get_user_usage_limits(db, user):
         limits['mem'] = 1000
         limits['disk'] = 100000
     elif db.query(exists().where(Usage_Limit.id == user)).scalar():
-        limits['cpu'] = db.query(Usage_Limit).filter(
-            Usage_Limit.id == user).one().cpu
-        limits['mem'] = db.query(Usage_Limit).filter(
-            Usage_Limit.id == user).one().mem
-        limits['disk'] = db.query(Usage_Limit).filter(
-            Usage_Limit.id == user).one().disk
+        limits['cpu'] = db.query(Usage_Limit).filter(Usage_Limit.id == user).one().cpu
+        limits['mem'] = db.query(Usage_Limit).filter(Usage_Limit.id == user).one().mem
+        limits['disk'] = db.query(Usage_Limit).filter(Usage_Limit.id == user).one().disk
     else:
         limits['cpu'] = 4
         limits['mem'] = 4
@@ -99,7 +103,8 @@ def store_pool_cache(db, pools):
             num_vms=pool['num_vms'],
             usage=pool['usage'],
             limits=pool['limits'],
-            percents=pool['percents'])
+            percents=pool['percents'],
+        )
         db.add(pool_entry)
     db.commit()
 
@@ -129,8 +134,7 @@ def get_ignored_pools(db):
 
 def delete_ignored_pool(db, pool):
     if db.query(exists().where(Ignored_Pools.id == pool)).scalar():
-        ignored_pool = db.query(Ignored_Pools).filter(
-            Ignored_Pools.id == pool).one()
+        ignored_pool = db.query(Ignored_Pools).filter(Ignored_Pools.id == pool).one()
         db.delete(ignored_pool)
         db.commit()
 
@@ -187,16 +191,24 @@ def add_allowed_user(db, user):
 
 def delete_allowed_user(db, user):
     if db.query(exists().where(Allowed_Users.id == user)).scalar():
-        allowed_user = db.query(Allowed_Users).filter(
-            Allowed_Users.id == user).one()
+        allowed_user = db.query(Allowed_Users).filter(Allowed_Users.id == user).one()
         db.delete(allowed_user)
         db.commit()
 
 
 def set_template_info(db, template_id, name, disk):
-    if db.query(exists().where(Template.id == template_id, )).scalar():
-        template = db.query(Template).filter(
-            Template.id == template_id, ).one()
+    if db.query(
+        exists().where(
+            Template.id == template_id,
+        )
+    ).scalar():
+        template = (
+            db.query(Template)
+            .filter(
+                Template.id == template_id,
+            )
+            .one()
+        )
         template.name = name
         template.disk = disk
         db.commit()

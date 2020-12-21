@@ -11,7 +11,7 @@ from proxstar.starrs import get_ip_for_mac
 from proxstar.util import lazy_property
 
 
-class VM():
+class VM:
     def __init__(self, vmid):
         self.id = vmid
 
@@ -61,8 +61,7 @@ class VM():
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_cpu(self, cores):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(self.id).config.put(
-            cores=cores, sockets=1)
+        proxmox.nodes(self.node).qemu(self.id).config.put(cores=cores, sockets=1)
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_mem(self, mem):
@@ -119,12 +118,7 @@ class VM():
 
     @lazy_property
     def boot_order(self):
-        boot_order_lookup = {
-            'a': 'Floppy',
-            'c': 'Hard Disk',
-            'd': 'CD-ROM',
-            'n': 'Network'
-        }
+        boot_order_lookup = {'a': 'Floppy', 'c': 'Hard Disk', 'd': 'CD-ROM', 'n': 'Network'}
         raw_boot_order = self.config.get('boot', 'cdn')
         boot_order = []
         for order in raw_boot_order:
@@ -138,12 +132,7 @@ class VM():
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_boot_order(self, boot_order):
         proxmox = connect_proxmox()
-        boot_order_lookup = {
-            'Floppy': 'a',
-            'Hard Disk': 'c',
-            'CD-ROM': 'd',
-            'Network': 'n'
-        }
+        boot_order_lookup = {'Floppy': 'a', 'Hard Disk': 'c', 'CD-ROM': 'd', 'Network': 'n'}
         raw_boot_order = ''
         for order in boot_order:
             raw_boot_order += boot_order_lookup[order]
@@ -210,24 +199,22 @@ class VM():
         proxmox = connect_proxmox()
         port = str(int(port) - 5900)
         proxmox.nodes(self.node).qemu(self.id).monitor.post(
-            command='change vnc 127.0.0.1:{}'.format(port))
+            command='change vnc 127.0.0.1:{}'.format(port)
+        )
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def eject_iso(self):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(
-            self.id).config.post(ide2='none,media=cdrom')
+        proxmox.nodes(self.node).qemu(self.id).config.post(ide2='none,media=cdrom')
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def mount_iso(self, iso):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(
-            self.id).config.post(ide2='{},media=cdrom'.format(iso))
+        proxmox.nodes(self.node).qemu(self.id).config.post(ide2='{},media=cdrom'.format(iso))
 
     def resize_disk(self, disk, size):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(self.id).resize.put(
-            disk=disk, size='+{}G'.format(size))
+        proxmox.nodes(self.node).qemu(self.id).resize.put(disk=disk, size='+{}G'.format(size))
 
     @lazy_property
     def expire(self):
@@ -267,7 +254,8 @@ def create_vm(proxmox, user, name, cores, memory, disk, iso):
         ide2='{},media=cdrom'.format(iso),
         net0='virtio,bridge=vmbr0',
         pool=user,
-        description='Managed by Proxstar')
+        description='Managed by Proxstar',
+    )
     return vmid
 
 
@@ -280,10 +268,6 @@ def clone_vm(proxmox, template_id, name, pool):
     delete_vm_expire(db, vmid)
     target = get_node_least_mem(proxmox)
     node.qemu(template_id).clone.post(
-        newid=vmid,
-        name=name,
-        pool=pool,
-        full=1,
-        description='Managed by Proxstar',
-        target=target)
+        newid=vmid, name=name, pool=pool, full=1, description='Managed by Proxstar', target=target
+    )
     return vmid

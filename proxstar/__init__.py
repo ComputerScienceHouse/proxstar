@@ -17,38 +17,54 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.rq import RqIntegration
 from sentry_sdk.integrations.sqlalchemy import SqlalchemyIntegration
-from proxstar.db import (Base, datetime, get_pool_cache, renew_vm_expire, set_user_usage_limits, get_template,
-                         get_templates, get_allowed_users, add_ignored_pool, delete_ignored_pool, add_allowed_user,
-                         delete_allowed_user,
-                         get_template_disk, set_template_info)
-from proxstar.vnc import (send_stop_ssh_tunnel, stop_ssh_tunnel, add_vnc_target, start_ssh_tunnel, get_vnc_targets,
-                          delete_vnc_target, stop_websockify)
+from proxstar.db import (
+    Base,
+    datetime,
+    get_pool_cache,
+    renew_vm_expire,
+    set_user_usage_limits,
+    get_template,
+    get_templates,
+    get_allowed_users,
+    add_ignored_pool,
+    delete_ignored_pool,
+    add_allowed_user,
+    delete_allowed_user,
+    get_template_disk,
+    set_template_info,
+)
+from proxstar.vnc import (
+    send_stop_ssh_tunnel,
+    stop_ssh_tunnel,
+    add_vnc_target,
+    start_ssh_tunnel,
+    get_vnc_targets,
+    delete_vnc_target,
+    stop_websockify,
+)
 from proxstar.auth import get_auth
 from proxstar.util import gen_password
 from proxstar.starrs import check_hostname, renew_ip
 from proxstar.proxmox import connect_proxmox, get_isos, get_pools, get_ignored_pools
 
-logging.basicConfig(
-    format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
 app = Flask(__name__)
 app.config.from_object(rq_dashboard.default_settings)
-if os.path.exists(
-        os.path.join(
-            app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')):
-    config = os.path.join(
-        app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')
+if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')):
+    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
-app.config['GIT_REVISION'] = subprocess.check_output(
-    ['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
+app.config['GIT_REVISION'] = (
+    subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
+)
 
 # Sentry setup
 sentry_sdk.init(
     dsn=app.config['SENTRY_DSN'],
     integrations=[FlaskIntegration(), RqIntegration(), SqlalchemyIntegration()],
-    environment=app.config['SENTRY_ENV']
+    environment=app.config['SENTRY_ENV'],
 )
 
 with open('proxmox_ssh_key', 'w') as ssh_key_file:
@@ -69,13 +85,23 @@ db = DBSession()
 
 starrs = psycopg2.connect(
     "dbname='{}' user='{}' host='{}' password='{}'".format(
-        app.config['STARRS_DB_NAME'], app.config['STARRS_DB_USER'],
-        app.config['STARRS_DB_HOST'], app.config['STARRS_DB_PASS']))
+        app.config['STARRS_DB_NAME'],
+        app.config['STARRS_DB_USER'],
+        app.config['STARRS_DB_HOST'],
+        app.config['STARRS_DB_PASS'],
+    )
+)
 
 from proxstar.vm import VM
 from proxstar.user import User
-from proxstar.tasks import (generate_pool_cache_task, process_expiring_vms_task, cleanup_vnc_task,
-                            delete_vm_task, create_vm_task, setup_template_task)
+from proxstar.tasks import (
+    generate_pool_cache_task,
+    process_expiring_vms_task,
+    cleanup_vnc_task,
+    delete_vm_task,
+    create_vm_task,
+    setup_template_task,
+)
 
 if 'generate_pool_cache' not in scheduler:
     logging.info('adding generate pool cache task to scheduler')
@@ -83,12 +109,12 @@ if 'generate_pool_cache' not in scheduler:
         id='generate_pool_cache',
         scheduled_time=datetime.datetime.utcnow(),
         func=generate_pool_cache_task,
-        interval=90)
+        interval=90,
+    )
 
 if 'process_expiring_vms' not in scheduler:
     logging.info('adding process expiring VMs task to scheduler')
-    scheduler.cron(
-        '0 5 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
+    scheduler.cron('0 5 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
 
 if 'cleanup_vnc' not in scheduler:
     logging.info('adding cleanup VNC task to scheduler')
@@ -96,7 +122,8 @@ if 'cleanup_vnc' not in scheduler:
         id='cleanup_vnc',
         scheduled_time=datetime.datetime.utcnow(),
         func=cleanup_vnc_task,
-        interval=3600)
+        interval=3600,
+    )
 
 
 def add_rq_dashboard_auth(blueprint):
@@ -137,8 +164,7 @@ def list_vms(user_view=None):
         user_view = User(user_view)
         vms = user_view.vms
         for pending_vm in user_view.pending_vms:
-            vm = next((vm for vm in vms if vm['name'] == pending_vm['name']),
-                      None)
+            vm = next((vm for vm in vms if vm['name'] == pending_vm['name']), None)
             if vm:
                 vms[vms.index(vm)]['status'] = pending_vm['status']
                 vms[vms.index(vm)]['pending'] = True
@@ -152,9 +178,7 @@ def list_vms(user_view=None):
         if user.active:
             vms = user.vms
             for pending_vm in user.pending_vms:
-                vm = next(
-                    (vm for vm in vms if vm['name'] == pending_vm['name']),
-                    None)
+                vm = next((vm for vm in vms if vm['name'] == pending_vm['name']), None)
                 if vm:
                     vms[vms.index(vm)]['status'] = pending_vm['status']
                     vms[vms.index(vm)]['pending'] = True
@@ -162,8 +186,7 @@ def list_vms(user_view=None):
                     vms.append(pending_vm)
         else:
             vms = 'INACTIVE'
-    return render_template(
-        'list_vms.html', user=user, rtp_view=rtp_view, vms=vms)
+    return render_template('list_vms.html', user=user, rtp_view=rtp_view, vms=vms)
 
 
 @app.route('/isos')
@@ -200,7 +223,8 @@ def vm_details(vmid):
             vm=vm,
             usage=user.usage,
             limits=user.limits,
-            usage_check=usage_check)
+            usage_check=usage_check,
+        )
     else:
         return abort(403)
 
@@ -214,8 +238,7 @@ def vm_power(vmid, action):
         vm = VM(vmid)
         if action == 'start':
             vmconfig = vm.config
-            usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'],
-                                           0)
+            usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'], 0)
             if usage_check:
                 return usage_check
             vm.start()
@@ -415,7 +438,8 @@ def create():
                 percents=user.usage_percent,
                 isos=stored_isos,
                 pools=pools,
-                templates=templates)
+                templates=templates,
+            )
         elif request.method == 'POST':
             name = request.form['name'].lower()
             cores = request.form['cores']
@@ -425,8 +449,7 @@ def create():
             iso = request.form['iso']
             ssh_key = request.form['ssh_key']
             if iso != 'none':
-                iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'],
-                                         iso)
+                iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'], iso)
             if not user.rtp:
                 if template == 'none':
                     usage_check = user.check_usage(0, 0, disk)
@@ -450,7 +473,8 @@ def create():
                             memory,
                             disk,
                             iso,
-                            job_timeout=300)
+                            job_timeout=300,
+                        )
                     else:
                         q.enqueue(
                             setup_template_task,
@@ -460,7 +484,8 @@ def create():
                             ssh_key,
                             cores,
                             memory,
-                            job_timeout=600)
+                            job_timeout=600,
+                        )
                         return '', 200
             return '', 200
         return None
@@ -505,7 +530,8 @@ def settings():
             user=user,
             templates=templates,
             ignored_pools=db_ignored_pools,
-            allowed_users=db_allowed_users)
+            allowed_users=db_allowed_users,
+        )
     else:
         return abort(403)
 
@@ -540,13 +566,19 @@ def allowed_users(user):
 def cleanup_vnc():
     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
         for target in get_vnc_targets():
-            tunnel = next((tunnel for tunnel in ssh_tunnels
-                           if tunnel.local_bind_port == int(target['port'])),
-                          None)
+            tunnel = next(
+                (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == int(target['port'])),
+                None,
+            )
             if tunnel:
-                if not next((conn for conn in psutil.net_connections()
-                             if conn.laddr[1] == int(target['port'])
-                                and conn.status == 'ESTABLISHED'), None):
+                if not next(
+                    (
+                        conn
+                        for conn in psutil.net_connections()
+                        if conn.laddr[1] == int(target['port']) and conn.status == 'ESTABLISHED'
+                    ),
+                    None,
+                ):
                     try:
                         tunnel.stop()
                     except:
