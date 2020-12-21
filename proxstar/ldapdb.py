@@ -21,7 +21,7 @@ def is_rtp(user):
     return rtp_group.check_member(ldap.get_member(user, uid=True))
 
 
-@lru_cache(maxsize=256)
+@lru_cache(maxsize=128)
 def is_active(user):
     ldap = connect_ldap()
     active_group = ldap.get_group('active')
