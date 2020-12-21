@@ -4,11 +4,13 @@ from dateutil.relativedelta import relativedelta
 from sqlalchemy import exists
 
 from proxstar.ldapdb import is_rtp
+
+# pylint: disable=unused-import
 from proxstar.models import (
     Base,
     Allowed_Users,
     Ignored_Pools,
-    Pool_Cache,  # pylint: disable=unused-import
+    Pool_Cache,
     Template,
     Usage_Limit,
     VM_Expiration,
