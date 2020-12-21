@@ -450,7 +450,7 @@ def create():
                             memory,
                             disk,
                             iso,
-                            timeout=300)
+                            job_timeout=300)
                     else:
                         q.enqueue(
                             setup_template_task,
@@ -460,7 +460,7 @@ def create():
                             ssh_key,
                             cores,
                             memory,
-                            timeout=600)
+                            job_timeout=600)
                         return '', 200
             return '', 200
         return None
