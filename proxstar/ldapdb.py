@@ -1,5 +1,6 @@
 from csh_ldap import CSHLDAP
 from flask import current_app as app
+from functools import lru_cache
 
 from proxstar import logging
 
@@ -13,24 +14,28 @@ def connect_ldap():
     return ldap
 
 
+@lru_cache(maxsize=64)
 def is_rtp(user):
     ldap = connect_ldap()
     rtp_group = ldap.get_group('rtp')
     return rtp_group.check_member(ldap.get_member(user, uid=True))
 
 
+@lru_cache(maxsize=256)
 def is_active(user):
     ldap = connect_ldap()
     active_group = ldap.get_group('active')
     return active_group.check_member(ldap.get_member(user, uid=True))
 
 
+@lru_cache(maxsize=256)
 def is_current_student(user):
     ldap = connect_ldap()
     current_student_group = ldap.get_group('current_student')
     return current_student_group.check_member(ldap.get_member(user, uid=True))
 
 
+@lru_cache(maxsize=256)
 def is_user(user):
     ldap = connect_ldap()
     try:
