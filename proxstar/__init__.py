@@ -59,7 +59,7 @@ ssh_tunnels = []
 auth = get_auth(app)
 
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
-q = Queue(connection=redis_conn)
+q = Queue(connection=redis_conn, default_timeout=360)
 scheduler = Scheduler(connection=redis_conn)
 
 engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
