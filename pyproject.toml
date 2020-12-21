@@ -1,0 +1,7 @@
+[tool.black]
+# default is 88
+line-length = 100
+skip-string-normalization = true
+# default is per-file auto-detection
+target-version = ['py38']
+include = '\.py$'
