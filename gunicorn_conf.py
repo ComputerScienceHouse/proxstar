@@ -10,7 +10,7 @@ else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config.py")
 app.config.from_pyfile(config)
 
-timeout = config.TIMEOUT
+timeout = app.config['TIMEOUT']
 
 
 def start_websockify(websockify_path, target_file):
