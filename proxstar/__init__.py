@@ -128,7 +128,7 @@ if 'cleanup_vnc' not in scheduler:
 
 def add_rq_dashboard_auth(blueprint):
     @blueprint.before_request
-    @auth.oidc_auth
+    @auth.oidc_auth('sso')
     def rq_dashboard_auth(*args, **kwargs):  # pylint: disable=unused-argument,unused-variable
         if 'rtp' not in session['userinfo']['groups']:
             abort(403)
@@ -153,7 +153,7 @@ def forbidden(e):
 
 @app.route('/')
 @app.route('/user/<string:user_view>')
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def list_vms(user_view=None):
     user = User(session['userinfo']['preferred_username'])
     rtp_view = False
@@ -190,7 +190,7 @@ def list_vms(user_view=None):
 
 
 @app.route('/isos')
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def isos():
     proxmox = connect_proxmox()
     stored_isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
@@ -198,7 +198,7 @@ def isos():
 
 
 @app.route('/hostname/<string:name>')
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def hostname(name):
     valid, available = check_hostname(starrs, name)
     if not valid:
@@ -210,7 +210,7 @@ def hostname(name):
 
 
 @app.route('/vm/<string:vmid>')
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def vm_details(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -230,7 +230,7 @@ def vm_details(vmid):
 
 
 @app.route('/vm/<string:vmid>/power/<string:action>', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def vm_power(vmid, action):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -270,7 +270,7 @@ def vm_console_stop(vmid):
 
 
 @app.route('/console/vm/<string:vmid>', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def vm_console(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -290,7 +290,7 @@ def vm_console(vmid):
 
 
 @app.route('/vm/<string:vmid>/cpu/<int:cores>', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def vm_cpu(vmid, cores):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -311,7 +311,7 @@ def vm_cpu(vmid, cores):
 
 
 @app.route('/vm/<string:vmid>/mem/<int:mem>', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def vm_mem(vmid, mem):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -332,7 +332,7 @@ def vm_mem(vmid, mem):
 
 
 @app.route('/vm/<string:vmid>/disk/<string:disk>/<int:size>', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def vm_disk(vmid, disk, size):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -348,7 +348,7 @@ def vm_disk(vmid, disk, size):
 
 
 @app.route('/vm/<string:vmid>/renew', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def vm_renew(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -364,7 +364,7 @@ def vm_renew(vmid):
 
 
 @app.route('/vm/<string:vmid>/eject', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def iso_eject(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -377,7 +377,7 @@ def iso_eject(vmid):
 
 
 @app.route('/vm/<string:vmid>/mount/<string:iso>', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def iso_mount(vmid, iso):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -391,7 +391,7 @@ def iso_mount(vmid, iso):
 
 
 @app.route('/vm/<string:vmid>/delete', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def delete(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -405,7 +405,7 @@ def delete(vmid):
 
 
 @app.route('/vm/<string:vmid>/boot_order', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def get_boot_order(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -421,7 +421,7 @@ def get_boot_order(vmid):
 
 
 @app.route('/vm/create', methods=['GET', 'POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def create():
     user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
@@ -494,7 +494,7 @@ def create():
 
 
 @app.route('/limits/<string:user>', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def set_limits(user):
     if 'rtp' in session['userinfo']['groups']:
         cpu = request.form['cpu']
@@ -507,7 +507,7 @@ def set_limits(user):
 
 
 @app.route('/user/<string:user>/delete', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def delete_user(user):
     if 'rtp' in session['userinfo']['groups']:
         connect_proxmox()
@@ -518,7 +518,7 @@ def delete_user(user):
 
 
 @app.route('/settings')
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def settings():
     user = User(session['userinfo']['preferred_username'])
     if user.rtp:
@@ -537,7 +537,7 @@ def settings():
 
 
 @app.route('/pool/<string:pool>/ignore', methods=['POST', 'DELETE'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def ignored_pools(pool):
     if 'rtp' in session['userinfo']['groups']:
         if request.method == 'POST':
@@ -550,7 +550,7 @@ def ignored_pools(pool):
 
 
 @app.route('/user/<string:user>/allow', methods=['POST', 'DELETE'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def allowed_users(user):
     if 'rtp' in session['userinfo']['groups']:
         if request.method == 'POST':
@@ -591,7 +591,7 @@ def cleanup_vnc():
 
 
 @app.route('/template/<string:template_id>/disk')
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def template_disk(template_id):
     if template_id == 'none':
         return '0'
@@ -599,7 +599,7 @@ def template_disk(template_id):
 
 
 @app.route('/template/<string:template_id>/edit', methods=['POST'])
-@auth.oidc_auth
+@auth.oidc_auth('sso')
 def template_edit(template_id):
     if 'rtp' in session['userinfo']['groups']:
         name = request.form['name']
@@ -611,7 +611,7 @@ def template_edit(template_id):
 
 
 @app.route('/logout')
-@auth.oidc_logout
+@auth.oidc_logout('sso')
 def logout():
     return redirect(url_for('list_vms'), 302)
 
