@@ -11,24 +11,17 @@ SERVER_NAME = environ.get('PROXSTAR_SERVER_NAME', 'proxstar.csh.rit.edu')
 SECRET_KEY = environ.get('PROXSTAR_SECRET_KEY', '')
 
 # OIDC
-OIDC_ISSUER = environ.get('PROXSTAR_OIDC_ISSUER',
-                          'https://sso.csh.rit.edu/auth/realms/csh')
+OIDC_ISSUER = environ.get('PROXSTAR_OIDC_ISSUER', 'https://sso.csh.rit.edu/auth/realms/csh')
 OIDC_CLIENT_CONFIG = {
-    'client_id':
-    environ.get('PROXSTAR_CLIENT_ID', 'proxstar'),
-    'client_secret':
-    environ.get('PROXSTAR_CLIENT_SECRET', ''),
+    'client_id': environ.get('PROXSTAR_CLIENT_ID', 'proxstar'),
+    'client_secret': environ.get('PROXSTAR_CLIENT_SECRET', ''),
     'post_logout_redirect_uris': [
-        environ.get('PROXSTAR_REDIRECT_URI',
-                    'https://proxstar.csh.rit.edu/logout')
-    ]
+        environ.get('PROXSTAR_REDIRECT_URI', 'https://proxstar.csh.rit.edu/logout')
+    ],
 }
 
 # Proxmox
-PROXMOX_HOSTS = [
-    host.strip()
-    for host in environ.get('PROXSTAR_PROXMOX_HOSTS', '').split(',')
-]
+PROXMOX_HOSTS = [host.strip() for host in environ.get('PROXSTAR_PROXMOX_HOSTS', '').split(',')]
 PROXMOX_USER = environ.get('PROXSTAR_PROXMOX_USER', '')
 PROXMOX_PASS = environ.get('PROXSTAR_PROXMOX_PASS', '')
 PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'nfs-iso')
@@ -57,10 +50,8 @@ RQ_DASHBOARD_REDIS_HOST = environ.get('PROXSTAR_REDIS_HOST', 'localhost')
 REDIS_PORT = int(environ.get('PROXSTAR_REDIS_PORT', '6379'))
 
 # VNC
-WEBSOCKIFY_PATH = environ.get('PROXSTAR_WEBSOCKIFY_PATH',
-                              '/opt/app-root/bin/websockify')
-WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE',
-                                     '/opt/app-root/src/targets')
+WEBSOCKIFY_PATH = environ.get('PROXSTAR_WEBSOCKIFY_PATH', '/opt/app-root/bin/websockify')
+WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE', '/opt/app-root/src/targets')
 
 # SENTRY
 # If you set the sentry dsn locally, make sure you use the local-dev or some
@@ -68,3 +59,6 @@ WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE',
 SENTRY_DSN = environ.get('PROXSTAR_SENTRY_DSN', '')
 RQ_SENTRY_DSN = environ.get('PROXSTAR_SENTRY_DSN', '')
 SENTRY_ENV = environ.get('PROXSTAR_SENTRY_ENV', 'local-dev')
+
+# GUNICORN
+TIMEOUT = environ.get('PROXSTAR_TIMEOUT', 120)
