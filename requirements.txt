@@ -7,7 +7,7 @@ paramiko==2.4.2
 proxmoxer==1.1.1
 psutil==5.8.0
 psycopg2-binary==2.8.6
-python-dateutil==2.7.3
+python-dateutil==2.8.1
 redis==3.5.3
 requests==2.25.1
 rq==1.1.0
