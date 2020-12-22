@@ -44,6 +44,7 @@ from proxstar.vnc import (
 )
 from proxstar.auth import get_auth
 from proxstar.util import gen_password
+from proxstar.ldapdb import connect_ldap
 from proxstar.starrs import check_hostname, renew_ip
 from proxstar.proxmox import connect_proxmox, get_isos, get_pools, get_ignored_pools
 
@@ -82,6 +83,7 @@ engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 db = DBSession()
+ldap_conn = connect_ldap()
 
 starrs = psycopg2.connect(
     "dbname='{}' user='{}' host='{}' password='{}'".format(

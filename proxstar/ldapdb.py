@@ -1,7 +1,8 @@
+from functools import lru_cache
 from csh_ldap import CSHLDAP
 from flask import current_app as app
 
-from proxstar import logging
+from proxstar import logging, ldap_conn
 
 
 def connect_ldap():
@@ -13,28 +14,28 @@ def connect_ldap():
     return ldap
 
 
+@lru_cache(maxsize=32)
 def is_rtp(user):
-    ldap = connect_ldap()
-    rtp_group = ldap.get_group('rtp')
-    return rtp_group.check_member(ldap.get_member(user, uid=True))
+    rtp_group = ldap_conn.get_group('rtp')
+    return rtp_group.check_member(ldap_conn.get_member(user, uid=True))
 
 
+@lru_cache(maxsize=32)
 def is_active(user):
-    ldap = connect_ldap()
-    active_group = ldap.get_group('active')
-    return active_group.check_member(ldap.get_member(user, uid=True))
+    active_group = ldap_conn.get_group('active')
+    return active_group.check_member(ldap_conn.get_member(user, uid=True))
 
 
+@lru_cache(maxsize=32)
 def is_current_student(user):
-    ldap = connect_ldap()
-    current_student_group = ldap.get_group('current_student')
-    return current_student_group.check_member(ldap.get_member(user, uid=True))
+    current_student_group = ldap_conn.get_group('current_student')
+    return current_student_group.check_member(ldap_conn.get_member(user, uid=True))
 
 
+@lru_cache(maxsize=32)
 def is_user(user):
-    ldap = connect_ldap()
     try:
-        ldap.get_member(user, uid=True)
+        ldap_conn.get_member(user, uid=True)
         return True
     except:
         return False
