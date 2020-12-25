@@ -60,5 +60,9 @@ SENTRY_DSN = environ.get('PROXSTAR_SENTRY_DSN', '')
 RQ_SENTRY_DSN = environ.get('PROXSTAR_SENTRY_DSN', '')
 SENTRY_ENV = environ.get('PROXSTAR_SENTRY_ENV', 'local-dev')
 
+# DATADOG RUM
+DD_CLIENT_TOKEN = environ.get('PROXSTAR_DD_CLIENT_TOKEN', '')
+DD_APP_ID = environ.get('PROXSTAR_DD_APP_ID', '')
+
 # GUNICORN
 TIMEOUT = environ.get('PROXSTAR_TIMEOUT', 120)

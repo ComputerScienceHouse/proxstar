@@ -1,21 +1,42 @@
 <!doctype html>
 <html lang="en">
+
 <head>
     <title>Proxstar</title>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#B0197E">
     <link rel="shortcut icon" href="https://assets.csh.rit.edu/uploads/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://themeswitcher.csh.rit.edu/api/get" media="screen">
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/circle.css">
+    <script>
+        (function (h, o, u, n, d) {
+            h = h[d] = h[d] || { q: [], onReady: function (c) { h.q.push(c) } }
+            d = o.createElement(u); d.async = 1; d.src = n
+            n = o.getElementsByTagName(u)[0]; n.parentNode.insertBefore(d, n)
+        })(window, document, 'script', 'https://www.datadoghq-browser-agent.com/datadog-rum.js', 'DD_RUM')
+        DD_RUM.onReady(function () {
+            DD_RUM.init({
+                clientToken: '{{config["DD_CLIENT_TOKEN"]}}',
+                applicationId: '{{config["DD_APP_ID"]}}',
+                site: 'datadoghq.com',
+                service: 'Proxstar',
+                version: '{{config["GIT_REVISION"]}}',
+                sampleRate: 100,
+                trackInteractions: true,
+            })
+        })
+    </script>
 </head>
+
 <body>
-{% block nav %}
+    {% block nav %}
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary justify-content-center">
         <div class="container">
             <a class="navbar-brand abs" href="/">Proxstar</a>
-            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarResponsive">
+            <button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse"
+                data-target="#navbarResponsive">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarResponsive">
@@ -64,23 +85,34 @@
             </div>
         </div>
     </nav>
-{% endblock %}
-<div class="content">
-{% block body %}
-{% endblock %}
-</div>
-<footer>
-    <br>
-    <div class="version">
-	<a class="footer-version" href="https://github.com/com6056/proxstar/tree/{{config["GIT_REVISION"]}}">Proxstar ({{config["GIT_REVISION"]}})</a>
+    {% endblock %}
+    <div class="content">
+        {% block body %}
+        {% endblock %}
     </div>
-</footer>
-<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js" integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l" crossorigin="anonymous"></script>
-<script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js" integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c" crossorigin="anonymous"></script>
-<script src="/static/js/script.js"></script>
+    <footer>
+        <br>
+        <div class="version">
+            <a class="footer-version" href="https://github.com/ComputerScienceHouse/proxstar/tree/{{config["GIT_REVISION"]}}">Proxstar ({{config["GIT_REVISION"]}})</a>
+        </div>
+    </footer>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+        integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"
+        integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+        crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+        crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/solid.js"
+        integrity="sha384-+Ga2s7YBbhOD6nie0DzrZpJes+b2K1xkpKxTFFcx59QmVPaSA8c7pycsNaFwUK6l"
+        crossorigin="anonymous"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.0.8/js/fontawesome.js"
+        integrity="sha384-7ox8Q2yzO/uWircfojVuCQOZl+ZZBg2D2J5nkpLqzH1HY0C1dHlTKIbpRz/LG23c"
+        crossorigin="anonymous"></script>
+    <script src="/static/js/script.js"></script>
 </body>
+
 </html>
