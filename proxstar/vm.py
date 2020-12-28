@@ -8,9 +8,10 @@ from proxstar import db, starrs
 from proxstar.db import delete_vm_expire, get_vm_expire
 from proxstar.proxmox import connect_proxmox, get_free_vmid, get_node_least_mem, get_vm_node
 from proxstar.starrs import get_ip_for_mac
-from proxstar.util import lazy_property
+from proxstar.util import lazy_property, default_repr
 
 
+@default_repr
 class VM:
     def __init__(self, vmid):
         self.id = vmid
