@@ -19,3 +19,20 @@ def lazy_property(fn):
         return getattr(self, attr_name)
 
     return _lazy_property
+
+
+def default_repr(cls):
+    """
+    Add a default repr to a class in the form of
+    ```
+    Class(field1=val1, field2=val2...)
+    ```
+    """
+
+    def __repr__(self):
+        fields = [f'{key}={val}' for key, val in self.__dict__.items()]
+        return f'{type(self).__name__}({", ".join(fields)})'
+
+    setattr(cls, '__repr__', __repr__)
+
+    return cls

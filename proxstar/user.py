@@ -5,10 +5,11 @@ from proxstar.ldapdb import is_active, is_user, is_current_student
 from proxstar import db, q, redis_conn
 from proxstar.db import get_allowed_users, get_user_usage_limits, is_rtp
 from proxstar.proxmox import connect_proxmox, get_pools
-from proxstar.util import lazy_property
+from proxstar.util import lazy_property, default_repr
 from proxstar.vm import VM
 
 
+@default_repr
 class User:
     def __init__(self, username):
         self.name = username
