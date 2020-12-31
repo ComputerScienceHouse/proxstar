@@ -27,8 +27,8 @@ from proxstar.vnc import send_stop_ssh_tunnel
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
 app = Flask(__name__)
-if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')):
-    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.local.py')
+if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')):
+    config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config_local.py')
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
