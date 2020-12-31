@@ -406,7 +406,7 @@ def delete(vmid):
 
 @app.route('/vm/<string:vmid>/boot_order', methods=['POST'])
 @auth.oidc_auth
-def get_boot_order(vmid):
+def set_boot_order(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
