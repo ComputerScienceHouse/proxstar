@@ -122,8 +122,21 @@ class VM:
         boot_order_lookup = {'a': 'Floppy', 'c': 'Hard Disk', 'd': 'CD-ROM', 'n': 'Network'}
         raw_boot_order = self.config.get('boot', 'cdn')
         boot_order = []
-        for order in raw_boot_order:
-            boot_order.append(boot_order_lookup[order])
+        try:
+            # Check if new syntax
+            if raw_boot_order.startswith('order='):
+                for order in raw_boot_order[6:].split(';'):
+                    boot_order.append(order)
+            # Check if legacy syntax
+            elif raw_boot_order.startswith('legacy='):
+                for order in raw_boot_order[7:]:
+                    boot_order.append(boot_order_lookup[order])
+            # Assume legacy syntax
+            else:
+                for order in raw_boot_order:
+                    boot_order.append(boot_order_lookup[order])
+        except:
+            return []
         return boot_order
 
     @lazy_property
@@ -134,9 +147,13 @@ class VM:
     def set_boot_order(self, boot_order):
         proxmox = connect_proxmox()
         boot_order_lookup = {'Floppy': 'a', 'Hard Disk': 'c', 'CD-ROM': 'd', 'Network': 'n'}
-        raw_boot_order = ''
-        for order in boot_order:
-            raw_boot_order += boot_order_lookup[order]
+        # Check if legacy format
+        if boot_order[0] in boot_order_lookup.keys():
+            raw_boot_order = ''
+            for order in boot_order:
+                raw_boot_order += boot_order_lookup[order]
+        else:
+            raw_boot_order = f"order={';'.join(boot_order)}"
         proxmox.nodes(self.node).qemu(self.id).config.put(boot=raw_boot_order)
 
     @lazy_property
