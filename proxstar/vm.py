@@ -203,6 +203,17 @@ class VM:
         return disks
 
     @lazy_property
+    def cdroms(self):
+        cdroms = []
+        valid_cdrom_types = ['ide', 'sata', 'scsi']
+        for key, val in self.config.items():
+            if any(type in key for type in valid_cdrom_types):
+                if 'scsihw' not in key and 'cdrom' in val:
+                    cdroms.append(key)
+        cdroms = sorted(cdroms)
+        return cdroms
+
+    @lazy_property
     def iso(self):
         if self.config.get('ide2'):
             if self.config['ide2'].split(',')[0] == 'none':
