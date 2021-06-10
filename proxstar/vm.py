@@ -129,9 +129,8 @@ class VM:
                 boot_order['legacy'] = True
                 for order in raw_boot_order:
                     boot_order['order'].append({'device': boot_order_lookup[order]})
-                return boot_order
             # Currently using 'order=' format
-            if raw_boot_order.startswith('order='):
+            elif raw_boot_order.startswith('order='):
                 # Add enabled boot devices
                 for order in raw_boot_order[6:].split(';'):
                     boot_order['order'].append(
@@ -174,9 +173,9 @@ class VM:
                     {'device': device, 'description': self.config.get(device), 'enabled': True}
                     for device in devices
                 )
-            return boot_order
         except:
             return {'legacy': False, 'order': []}
+        return boot_order
 
     @lazy_property
     def boot_order_json(self):
@@ -187,7 +186,7 @@ class VM:
         proxmox = connect_proxmox()
         boot_order_lookup = {'Floppy': 'a', 'Hard Disk': 'c', 'CD-ROM': 'd', 'Network': 'n'}
         # Check if legacy format
-        if boot_order[0] in boot_order_lookup.keys():
+        if all(order in boot_order_lookup.keys() for order in boot_order):
             raw_boot_order = ''
             for order in boot_order:
                 raw_boot_order += boot_order_lookup[order]
