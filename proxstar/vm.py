@@ -122,43 +122,61 @@ class VM:
         proxmox = connect_proxmox()
         boot_order_lookup = {'a': 'Floppy', 'c': 'Hard Disk', 'd': 'CD-ROM', 'n': 'Network'}
         raw_boot_order = self.config.get('boot', 'cdn')
-        boot_order = []
+        boot_order = {'legacy': False, 'order': []}
         try:
-            # If proxmox version supports 'order=' format
-            if float(proxmox.nodes(self.node).version.get()['release']) >= 6.3:
-                # Currently using 'order=' format
-                if raw_boot_order.startswith('order='):
-                    # Add enabled boot devices
-                    for order in raw_boot_order[6:].split(';'):
-                        boot_order.append(order)
-                    # Add disabled boot devices
-                    for device in self.cdroms + [disk[0] for disk in self.disks] + [net[0] for net in self.interfaces]:
-                        if device not in boot_order:
-                            boot_order.append(device)
-                # Currently using legacy format
-                # Propose updating to the new format
-                else:
-                    if raw_boot_order.startswith('legacy='):
-                        raw_boot_order = raw_boot_order[7:]
-                    # Arrange boot devices according to current format
-                    for order in raw_boot_order:
-                        if order == 'c':
-                            disks = [disk[0] for disk in self.disks]
-                            if self.config.get('bootdisk'):
-                                boot_order.append(self.config['bootdisk'])
-                                disks.remove(self.config['bootdisk'])
-                            boot_order.extend(disks)
-                        elif order == 'd':
-                            boot_order.extend(self.cdroms)
-                        elif order == 'n':
-                            boot_order.extend([net[0] for net in self.interfaces])
             # Proxmox version does not support 'order=' format
-            else:
+            if float(proxmox.nodes(self.node).version.get()['release']) < 6.3:
+                boot_order['legacy'] = True
                 for order in raw_boot_order:
-                    boot_order.append(boot_order_lookup[order])
+                    boot_order['order'].append({'device': boot_order_lookup[order]})
+                return boot_order
+            # Currently using 'order=' format
+            if raw_boot_order.startswith('order='):
+                # Add enabled boot devices
+                for order in raw_boot_order[6:].split(';'):
+                    boot_order['order'].append(
+                        {'device': order, 'description': self.config.get(order), 'enabled': True}
+                    )
+                # Add disabled boot devices
+                enabled_devices = [order['device'] for order in boot_order['order']]
+                for device in (
+                    self.cdroms
+                    + [disk[0] for disk in self.disks]
+                    + [net[0] for net in self.interfaces]
+                ):
+                    if device not in enabled_devices:
+                        boot_order['order'].append(
+                            {
+                                'device': device,
+                                'description': self.config.get(device),
+                                'enabled': False,
+                            }
+                        )
+            # Currently using legacy format
+            # Propose updating to the new format
+            else:
+                if raw_boot_order.startswith('legacy='):
+                    raw_boot_order = raw_boot_order[7:]
+                # Arrange boot devices according to current format
+                devices = []
+                for order in raw_boot_order:
+                    if order == 'c':
+                        disks = [disk[0] for disk in self.disks]
+                        if self.config.get('bootdisk'):
+                            boot_order.append(self.config['bootdisk'])
+                            disks.remove(self.config['bootdisk'])
+                        devices.extend(disks)
+                    elif order == 'd':
+                        devices.extend(self.cdroms)
+                    elif order == 'n':
+                        devices.extend([net[0] for net in self.interfaces])
+                boot_order['order'].extend(
+                    {'device': device, 'description': self.config.get(device), 'enabled': True}
+                    for device in devices
+                )
+            return boot_order
         except:
-            return []
-        return boot_order
+            return {'legacy': False, 'order': []}
 
     @lazy_property
     def boot_order_json(self):

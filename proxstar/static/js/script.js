@@ -816,14 +816,14 @@ $("#edit-boot-order").click(function(){
     const vmname = $(this).data('vmname');
     const boot_order = $(this).data('boot_order');
     var options = document.createElement('div');
-    for (i = 0; i < boot_order.length; i++) {
+    for (i = 0; i < boot_order.order.length; i++) {
         text = document.createElement('span');
         text.innerHTML = `${i + 1}. `;
         options.append(text);
         var entry = document.createElement('select');
         entry.setAttribute("id", `boot-order-${i + 1}`);
-        for (j = 0; j < boot_order.length; j++) {
-            entry.appendChild(new Option(boot_order[j], boot_order[j]));
+        for (j = 0; j < boot_order.order.length; j++) {
+            entry.appendChild(new Option(boot_order.order[j].device, boot_order.order[j].device));
         }
         entry.selectedIndex = i;
         entry.setAttribute('style', 'width: 85px');

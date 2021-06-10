@@ -12,7 +12,7 @@
                     <ul class="nav nav-list">
                         <li class="nav-header">Boot Order</li>
                         <li>
-                            {{ vm.boot_order|join(', ') }}
+                            {{ vm.boot_order['order']|map(attribute='device')|join(', ') }}
                             <button class="btn btn-default proxstar-vmbtn" id="edit-boot-order" data-vmid="{{ vm.id }}" data-vmname="{{ vm.name }}" data-boot_order="{{ vm.boot_order_json }}">
                                 <i class="fas fa-cog"></i>
                             </button>
