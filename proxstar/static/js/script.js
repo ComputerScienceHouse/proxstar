@@ -815,24 +815,10 @@ $("#edit-boot-order").click(function(){
     const vmid = $(this).data('vmid');
     const vmname = $(this).data('vmname');
     const boot_order = $(this).data('boot_order');
-    var options = document.createElement('div');
-    for (i = 0; i < boot_order.order.length; i++) {
-        text = document.createElement('span');
-        text.innerHTML = `${i + 1}. `;
-        options.append(text);
-        var entry = document.createElement('select');
-        entry.setAttribute("id", `boot-order-${i + 1}`);
-        for (j = 0; j < boot_order.order.length; j++) {
-            entry.appendChild(new Option(boot_order.order[j].device, boot_order.order[j].device));
-        }
-        entry.selectedIndex = i;
-        entry.setAttribute('style', 'width: 85px');
-        options.append(entry);
-        options.append(document.createElement('br'));
-    }
+    var options = renderBootOrder(boot_order);
     swal({
         title: `Select the new boot order for ${vmname} (full shutdown required for settings to take effect):`,
-        content: options,
+        content: renderBootOrder(boot_order),
         buttons: {
             cancel: {
                 text: "Cancel",
@@ -848,9 +834,18 @@ $("#edit-boot-order").click(function(){
     .then((willChange) => {
         if (willChange) {
             var data  = new FormData();
-            for (k = 0; k < boot_order.order.length; k++) {
-                e = document.getElementById(`boot-order-${k + 1}`);
-                data.append(`${k + 1}`, e.options[e.selectedIndex].value);
+            if (boot_order.legacy) {
+                for (k = 0; k < boot_order.order.length; k++) {
+                    e = document.getElementById(`boot-order-${k + 1}`);
+                    data.append(`${k + 1}`, e.options[e.selectedIndex].value);
+                }
+            }
+            else {
+                document.getElementById('boot-order-sortable').childNodes.forEach((order, index) => {
+                    if (order.children[1].firstChild.checked) {
+                        data.append(`${index + 1}`, order.children[2].innerHTML);
+                    }
+                });
             }
             fetch(`/vm/${vmid}/boot_order`, {
                 credentials: 'same-origin',
@@ -879,6 +874,81 @@ $("#edit-boot-order").click(function(){
         }
     });
 });
+
+function renderBootOrder(boot_order) {
+    let options = document.createElement('div');
+    if (boot_order.legacy) {
+        for (i = 0; i < boot_order.order.length; i++) {
+            text = document.createElement('span');
+            text.innerHTML = `${i + 1}. `;
+            options.append(text);
+            var entry = document.createElement('select');
+            entry.setAttribute("id", `boot-order-${i + 1}`);
+            for (j = 0; j < boot_order.order.length; j++) {
+                entry.appendChild(new Option(boot_order.order[j].device, boot_order.order[j].device));
+            }
+            entry.selectedIndex = i;
+            entry.setAttribute('style', 'width: 85px');
+            options.append(entry);
+            options.append(document.createElement('br'));
+        }
+    }
+    else {
+        let table = document.createElement('table');
+        table.classList.add('table', 'table-sm', 'borderless', 'text-left');
+        let thead = table.createTHead();
+        thead.classList.add('font-weight-bold');
+        let tbody = table.createTBody();
+        tbody.classList.add('text-break', 'boot-order-sortable');
+        tbody.id = 'boot-order-sortable';
+        let hrow = thead.insertRow();
+        hrow.insertCell().innerHTML = 'Order';
+        hrow.insertCell().innerHTML = 'Enabled';
+        hrow.insertCell().innerHTML = 'Device';
+        hrow.insertCell().innerHTML = 'Description';
+        for (i = 0; i < boot_order.order.length; i++) {
+            let row = tbody.insertRow();
+            row.id = `boot-order-${i + 1}`;
+            $(row.insertCell()).append(
+                $('<i>', {
+                    class: 'fas fa-bars'
+                }),
+                $('<span>', {
+                    class: 'boot-order-number',
+                    id: `boot-order-number-${i + 1}`,
+                    style: 'margin-left: .25rem',
+                    text: `${i + 1}`
+                })
+            );
+            let checkCell = $(row.insertCell()).addClass('text-center');
+            $(checkCell).append(
+                $('<input>', {
+                    type: 'checkbox',
+                    class: 'form-check-input boot-order-check',
+                    checked: boot_order.order[i].enabled
+                })
+            );
+            row.insertCell().innerHTML = boot_order.order[i].device;
+            row.insertCell().innerHTML = boot_order.order[i].description;
+        }
+        new Sortable(tbody, {
+            animation: 150,
+            filter: '.boot-order-check',
+            onEnd: function(event) {
+                numberBootOrderTable();
+            },
+        });
+        options.append(table);
+    }
+    return options;
+}
+
+function numberBootOrderTable() {
+    let i = 0;
+    $('[id^=boot-order-number]').each(function() {
+        this.innerHTML = ++i;
+    })
+}
 
 $(document).on('focus click', "[id^=boot-order-]", function() {
     previous = $(this).val();
