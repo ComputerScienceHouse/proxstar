@@ -1,0 +1,13 @@
+version: "3.9"
+services:
+  proxstar-redis:
+    image: "redis:alpine"
+    ports:
+      - 6379:6379
+  proxstar-postgres:
+    image: postgres
+    # restart: always
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: tits12348
