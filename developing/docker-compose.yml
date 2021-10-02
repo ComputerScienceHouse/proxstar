@@ -5,7 +5,8 @@ services:
     ports:
       - 6379:6379
   proxstar-postgres:
-    image: postgres
+    build: ./proxstar-postgres
+    # image: postgres
     # restart: always
     ports:
       - 5432:5432

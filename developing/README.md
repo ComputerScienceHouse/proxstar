@@ -2,9 +2,9 @@
 
 If you want to work on Proxstar using a 1:1 development setup, there are a couple things you're going to need
 
-- A machine you can SSH into, portforward from, and run Flask, Redis, and Podman on
+- A machine you can SSH into, portforward from, and run Flask, Redis, and Docker on
 - At least one (1) Proxmox host running Proxmox >6.3
-- Podman
+- Docker
 - SSH portforwarding
 - A CSH account
 - An RTP (to tell you secrets)
@@ -21,11 +21,14 @@ Clone down the repository, and create a Virtualenv to do your work in.
 ```
 mkdir venv
 python3.8 -m venv venv
+source venv/bin/activate
 ```
 
 Install required Python modules
 ```
 pip install -r requirements.txt
+pip install click==7.1.2 
+pip install python-dotenv
 ```
 Fill out the required fields in your config.local.py file. Some of this you might have to come back to after you run the docker compose.
 ```
@@ -163,6 +166,10 @@ vim config.local.py
 
 I'd recommend putting the secrets (such as your login credentials and ssh key) in a `.env` file so you don't have to have it on your screen as you tear your hair out about why this isn't working. Before running the server, insert it into your environment with `source .env`
 
+```
+source .env
+```
+
 Now, go ahead and run the Docker Compose file to set up your Postgres and Redis instances.
 
 ```
@@ -171,8 +178,14 @@ docker-compose up -d
 
 Restore the databse in your new podman container. This might throw a TON of errors, but don't worry about it.
 ```
-psql postgresql://postgres:tits12348@10.10.51.185/starrs < harmon_starrs.db  
-psql postgresql://postgres:tits12348@10.10.51.185/proxstar < restore_proxstar.sql
+psql postgresql://postgres:********@10.69.69.69
+    CREATE DATABASE proxstar;
+    CREATE DATABASE starrs;
+    quit;
+
+pg_restore -U postgres -d proxstar -1 proxstar_schema_willard -h localhost
+psql postgresql://postgres:tits12348@10.10.51.185/starrs < harmon_starrs.db
+# psql postgresql://postgres:tits12348@10.10.51.185/proxstar < restore_proxstar.sql # Probably unnecessary
 ```
 
 Now, you should be ready to run your dev instance. I like to use `tmux` for this to run proxstar and the `rq worker` in separate panes.
