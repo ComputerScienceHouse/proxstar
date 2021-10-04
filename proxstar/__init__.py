@@ -158,6 +158,8 @@ def list_vms(user_view=None):
     user = User(session['userinfo']['preferred_username'])
     rtp_view = False
     connect_proxmox()
+    if eval(app.config['FORCE_STANDARD_USER']):
+        user.rtp = False
     if user_view and not user.rtp:
         abort(403)
     elif user_view and user.rtp:

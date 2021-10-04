@@ -1,4 +1,6 @@
+config_local.py
 config.local.py
+.env
 __pycache__/*
 */__pycache__/*
 rrd/*

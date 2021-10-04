@@ -83,11 +83,12 @@ def create_vm_task(user, name, cores, memory, disk, iso):
             set_job_status(job, 'failed to provision')
             delete_vm_task(vmid)
             return
-        logging.info('[{}] Registering in STARRS.'.format(name))
-        set_job_status(job, 'registering in STARRS')
         vm = VM(vmid)
-        ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
-        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
+        if (eval(app.config['USE_STARRS'])):
+            logging.info('[{}] Registering in STARRS.'.format(name))
+            set_job_status(job, 'registering in STARRS')
+            ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
+            register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
         set_job_status(job, 'setting VM expiration')
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         vm.set_boot_order(['Hard Disk', 'CD-ROM', 'Network'])

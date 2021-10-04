@@ -11,7 +11,7 @@ If you want to work on Proxstar using a 1:1 development setup, there are a coupl
 
 1. Configure your Proxmox node
 
-I would recommend setting up a development account on your Proxmox node. Name it anything. (Maybe `proxstartest`?). This is necessary to grab authentication tokens and the like. It should have the same permissions as `root@pam`. If you do this, then it's easy to enable/disable it for development. You should also generate an SSH key for the user.
+I would recommend setting up a development account on your Proxmox node. Name it anything. (Maybe `proxstartest`?). This is necessary to grab authentication tokens and the like. It should have the same permissions as `root@pam`. You can accomplish this by creating a group in `Datacenter > Permissions > Groups` and adding `Administrator` permissions to the group, then adding your user to the group. If you do this, then it's easy to enable/disable it for development. You should also generate an SSH key for the user.
 
 You will also have to set up a pool on your Proxmox node with your csh username. To do this, go into `Datacenter > Permissions > Pools > Create`.
 
@@ -30,10 +30,10 @@ pip install -r requirements.txt
 pip install click==7.1.2 
 pip install python-dotenv
 ```
-Fill out the required fields in your config.local.py file. Some of this you might have to come back to after you run the docker compose.
+Fill out the required fields in your config_local.py file. Some of this you might have to come back to after you run the docker compose.
 ```
-cp config.py config.local.py
-vim config.local.py
+cp config.py config_local.py
+vim config_local.py
 ```
 
 (Here's some advice on how to fill out your config file.)
@@ -178,14 +178,18 @@ docker-compose up -d
 
 Restore the databse in your new podman container. This might throw a TON of errors, but don't worry about it.
 ```
-psql postgresql://postgres:********@10.69.69.69
-    CREATE DATABASE proxstar;
-    CREATE DATABASE starrs;
-    quit;
+echo 'CREATE DATABASE proxstar; CREATE DATABASE starrs; CREATE ROLE proxstar; CREATE ROLE starrs;' | psql postgresql://postgres:********@10.69.69.69
 
-pg_restore -U postgres -d proxstar -1 proxstar_schema_willard -h localhost
-psql postgresql://postgres:tits12348@10.10.51.185/starrs < harmon_starrs.db
-# psql postgresql://postgres:tits12348@10.10.51.185/proxstar < restore_proxstar.sql # Probably unnecessary
+cat developing/schema/starrs/restore.sql | psql postgresql://postgres:********@10.69.69.69
+cat developing/schema/proxstar/restore.sql | psql postgresql://postgres:********@10.69.69.69
+```
+
+Get a shell in your postgres real quick and install a perl thing.
+
+```
+docker exec -it developing_proxstar-postgres_1 bash
+cpan
+install Data::Validate::Domain
 ```
 
 Now, you should be ready to run your dev instance. I like to use `tmux` for this to run proxstar and the `rq worker` in separate panes.

@@ -4,6 +4,10 @@ from os import environ
 VM_EXPIRE_MONTHS = int(environ.get('PROXSTAR_VM_EXPIRE_MONTHS', '3'))
 VNC_CLEANUP_TOKEN = environ.get('PROXSTAR_VNC_CLEANUP_TOKEN', '')
 
+# Development options
+USE_STARRS = environ.get('PROXSTAR_USE_STARRS', 'True')
+FORCE_STANDARD_USER = environ.get('PROXSTAR_FORCE_STANDARD_USER', 'False')
+
 # Flask
 IP = environ.get('PROXSTAR_IP', '0.0.0.0')
 PORT = environ.get('PROXSTAR_PORT', '5000')
@@ -25,6 +29,7 @@ PROXMOX_HOSTS = [host.strip() for host in environ.get('PROXSTAR_PROXMOX_HOSTS', 
 PROXMOX_USER = environ.get('PROXSTAR_PROXMOX_USER', '')
 PROXMOX_PASS = environ.get('PROXSTAR_PROXMOX_PASS', '')
 PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'nfs-iso')
+PROXMOX_VM_STORAGE = environ.get('PROXSTAR_PROXMOX_VM_STORAGE', 'ceph')
 PROXMOX_SSH_USER = environ.get('PROXSTAR_PROXMOX_SSH_USER', '')
 PROXMOX_SSH_KEY = environ.get('PROXSTAR_PROXMOX_SSH_KEY', '')
 PROXMOX_SSH_KEY_PASS = environ.get('PROXSTAR_PROXMOX_SSH_KEY_PASS', '')
