@@ -30,7 +30,7 @@ pip install -r requirements.txt
 pip install click==7.1.2 
 pip install python-dotenv
 ```
-Fill out the required fields in your config_local.py file. Some of this you might have to come back to after you run the docker compose.
+Fill out the required fields in your config_local.py file. You might have to come back to this after you run the docker compose.
 ```
 cp config.py config_local.py
 vim config_local.py
@@ -164,8 +164,6 @@ vim config_local.py
   TIMEOUT = environ.get('PROXSTAR_TIMEOUT', 120)
 ```
 
-I'd recommend putting the secrets (such as your login credentials and ssh key) in a `.env` file so you don't have to have it on your screen as you tear your hair out about why this isn't working. Before running the server, insert it into your environment with `source .env`
-
 ```
 source .env
 ```
@@ -174,22 +172,6 @@ Now, go ahead and run the Docker Compose file to set up your Postgres and Redis 
 
 ```
 docker-compose up -d
-```
-
-Restore the databse in your new podman container. This might throw a TON of errors, but don't worry about it.
-```
-echo 'CREATE DATABASE proxstar; CREATE DATABASE starrs; CREATE ROLE proxstar; CREATE ROLE starrs;' | psql postgresql://postgres:********@10.69.69.69
-
-cat developing/schema/starrs/restore.sql | psql postgresql://postgres:********@10.69.69.69
-cat developing/schema/proxstar/restore.sql | psql postgresql://postgres:********@10.69.69.69
-```
-
-Get a shell in your postgres real quick and install a perl thing.
-
-```
-docker exec -it developing_proxstar-postgres_1 bash
-cpan
-install Data::Validate::Domain
 ```
 
 Now, you should be ready to run your dev instance. I like to use `tmux` for this to run proxstar and the `rq worker` in separate panes.

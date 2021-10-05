@@ -84,7 +84,7 @@ def create_vm_task(user, name, cores, memory, disk, iso):
             delete_vm_task(vmid)
             return
         vm = VM(vmid)
-        if (eval(app.config['USE_STARRS'])):
+        if app.config['USE_STARRS']:
             logging.info('[{}] Registering in STARRS.'.format(name))
             set_job_status(job, 'registering in STARRS')
             ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])

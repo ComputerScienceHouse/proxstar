@@ -60,7 +60,7 @@ def get_vm_node(proxmox, vmid):
 
 def get_isos(proxmox, storage):
     isos = []
-    first_node = app.config['PROXMOX_HOSTS'][0].split('.')[0] # Get the name of the first node.
+    first_node = app.config['PROXMOX_HOSTS'][0].split('.')[0]  # Get the name of the first node.
     for iso in proxmox.nodes(first_node).storage(storage).content.get():
         isos.append(iso['volid'].split('/')[1])
     return isos
