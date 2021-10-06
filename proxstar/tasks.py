@@ -64,7 +64,8 @@ def create_vm_task(user, name, cores, memory, disk, iso):
         job = get_current_job()
         proxmox = connect_proxmox()
         db = connect_db()
-        starrs = connect_starrs()
+        if app.config['USE_STARRS']:
+            starrs = connect_starrs()
         logging.info('[{}] Creating VM.'.format(name))
         set_job_status(job, 'creating VM')
         vmid = create_vm(proxmox, user, name, cores, memory, disk, iso)
@@ -99,13 +100,15 @@ def create_vm_task(user, name, cores, memory, disk, iso):
 def delete_vm_task(vmid):
     with app.app_context():
         db = connect_db()
-        starrs = connect_starrs()
+        if app.config['USE_STARRS']:
+            starrs = connect_starrs()
         vm = VM(vmid)
         # do this before deleting the VM since it is hard to reconcile later
         retry = 0
         while retry < 3:
             try:
-                delete_starrs(starrs, vm.name)
+                if app.config['USE_STARRS']:
+                    delete_starrs(starrs, vm.name)
                 break
             except:
                 retry += 1
@@ -127,7 +130,8 @@ def process_expiring_vms_task():
     with app.app_context():
         proxmox = connect_proxmox()
         db = connect_db()
-        connect_starrs()
+        if app.config['USE_STARRS']:
+            connect_starrs()
         pools = get_pools(proxmox, db)
         expired_vms = []
         for pool in pools:
@@ -168,7 +172,8 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
     with app.app_context():
         job = get_current_job()
         proxmox = connect_proxmox()
-        starrs = connect_starrs()
+        if app.config['USE_STARRS']:
+            starrs = connect_starrs()
         db = connect_db()
         logging.info('[{}] Retrieving template info for template {}.'.format(name, template_id))
         get_template(db, template_id)
@@ -190,11 +195,13 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
             set_job_status(job, 'failed to provision')
             delete_vm_task(vmid)
             return
-        logging.info('[{}] Registering in STARRS.'.format(name))
-        set_job_status(job, 'registering in STARRS')
+
+        if app.config['USE_STARRS']:
+            logging.info('[{}] Registering in STARRS.'.format(name))
+            set_job_status(job, 'registering in STARRS')
+            ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
+            register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
         vm = VM(vmid)
-        ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
-        register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         logging.info('[{}] Setting CPU and memory.'.format(name))
         set_job_status(job, 'setting CPU and memory')
@@ -205,8 +212,10 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
         vm.set_ci_user(user)
         vm.set_ci_ssh_key(ssh_key)
         vm.set_ci_network()
-        logging.info('[{}] Waiting for STARRS to propogate before starting VM.'.format(name))
-        set_job_status(job, 'waiting for STARRS')
+
+        if app.config['USE_STARRS']:
+            logging.info('[{}] Waiting for STARRS to propogate before starting VM.'.format(name))
+            set_job_status(job, 'waiting for STARRS')
         job.save_meta()
         time.sleep(90)
         logging.info('[{}] Starting VM.'.format(name))

@@ -5,6 +5,7 @@ VM_EXPIRE_MONTHS = int(environ.get('PROXSTAR_VM_EXPIRE_MONTHS', '3'))
 VNC_CLEANUP_TOKEN = environ.get('PROXSTAR_VNC_CLEANUP_TOKEN', '')
 
 # Development options
+# Determines weather or not to run STARRS queries (for doing stuff like checking for available IPs)
 USE_STARRS = environ.get('PROXSTAR_USE_STARRS', 'True')
 FORCE_STANDARD_USER = environ.get('PROXSTAR_FORCE_STANDARD_USER', 'False')
 

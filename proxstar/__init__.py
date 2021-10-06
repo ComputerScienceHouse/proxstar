@@ -83,14 +83,15 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 db = DBSession()
 
-starrs = psycopg2.connect(
-    "dbname='{}' user='{}' host='{}' password='{}'".format(
-        app.config['STARRS_DB_NAME'],
-        app.config['STARRS_DB_USER'],
-        app.config['STARRS_DB_HOST'],
-        app.config['STARRS_DB_PASS'],
+if app.config['USE_STARRS']:
+    starrs = psycopg2.connect(
+        "dbname='{}' user='{}' host='{}' password='{}'".format(
+            app.config['STARRS_DB_NAME'],
+            app.config['STARRS_DB_USER'],
+            app.config['STARRS_DB_HOST'],
+            app.config['STARRS_DB_PASS'],
+        )
     )
-)
 
 from proxstar.vm import VM
 from proxstar.user import User
@@ -202,7 +203,10 @@ def isos():
 @app.route('/hostname/<string:name>')
 @auth.oidc_auth
 def hostname(name):
-    valid, available = check_hostname(starrs, name)
+    if app.config['USE_STARRS']:
+        valid, available = check_hostname(starrs, name)
+    else:
+        valid, available = (True, True)
     if not valid:
         return 'invalid'
     if not available:
@@ -358,7 +362,7 @@ def vm_renew(vmid):
         vm = VM(vmid)
         renew_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         for interface in vm.interfaces:
-            if interface[2] != 'No IP':
+            if interface[2] != 'No IP' and app.config['USE_STARRS']:
                 renew_ip(starrs, interface[2])
         return '', 200
     else:
@@ -464,7 +468,11 @@ def create():
             if usage_check:
                 return usage_check
             else:
-                valid, available = check_hostname(starrs, name)
+                if app.config['USE_STARRS']:
+                    valid, available = check_hostname(starrs, name)
+                else:
+                    valid, available = (True, True)
+
                 if valid and available:
                     if template == 'none':
                         q.enqueue(
