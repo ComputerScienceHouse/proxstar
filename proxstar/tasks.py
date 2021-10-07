@@ -196,12 +196,12 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
             delete_vm_task(vmid)
             return
 
+        vm = VM(vmid)
         if app.config['USE_STARRS']:
             logging.info('[{}] Registering in STARRS.'.format(name))
             set_job_status(job, 'registering in STARRS')
             ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
             register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
-        vm = VM(vmid)
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         logging.info('[{}] Setting CPU and memory.'.format(name))
         set_job_status(job, 'setting CPU and memory')

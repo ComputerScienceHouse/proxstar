@@ -2,11 +2,10 @@ FROM postgres:12
 
 RUN apt-get update \
     && apt-get install -y postgresql-plperl-12 postgresql-plpython3-12 libnet-ip-perl libnet-ldap-perl libnet-dns-perl libnet-snmp-perl libnet-server-mail-perl libcrypt-des-perl build-essential cpanminus \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && cpanm Data::Validate::Domain \
+    && apt-get remove -y build-essential
 
-RUN cpanm Data::Validate::Domain
-
-RUN apt-get remove -y build-essential
-
-COPY ./schema/large.sql /docker-entrypoint-initdb.d/
-
+#COPY ./schema/large.sql /docker-entrypoint-initdb.d/ # Woa there, pal; That's a lot of   S C H E M A.
+# I volunteer as tribute. DM me if this breaks.
+ADD https://csh.rit.edu/~wilnil/proxstar-postgres/large.sql /docker-entrypoint-initdb.d/

@@ -203,10 +203,7 @@ def isos():
 @app.route('/hostname/<string:name>')
 @auth.oidc_auth
 def hostname(name):
-    if app.config['USE_STARRS']:
-        valid, available = check_hostname(starrs, name)
-    else:
-        valid, available = (True, True)
+    valid, available = check_hostname(starrs, name) if app.config['USE_STARRS'] else (True, True)
     if not valid:
         return 'invalid'
     if not available:
@@ -468,10 +465,9 @@ def create():
             if usage_check:
                 return usage_check
             else:
-                if app.config['USE_STARRS']:
-                    valid, available = check_hostname(starrs, name)
-                else:
-                    valid, available = (True, True)
+                valid, available = (
+                    check_hostname(starrs, name) if app.config['USE_STARRS'] else (True, True)
+                )
 
                 if valid and available:
                     if template == 'none':

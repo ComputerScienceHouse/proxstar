@@ -6,8 +6,10 @@ VNC_CLEANUP_TOKEN = environ.get('PROXSTAR_VNC_CLEANUP_TOKEN', '')
 
 # Development options
 # Determines weather or not to run STARRS queries (for doing stuff like checking for available IPs)
-USE_STARRS = environ.get('PROXSTAR_USE_STARRS', 'True')
-FORCE_STANDARD_USER = environ.get('PROXSTAR_FORCE_STANDARD_USER', 'False')
+USE_STARRS = environ.get('PROXSTAR_USE_STARRS', 'True').lower() in ('true', '1', 't')
+# If you're an RTP and want to see a normal user's homepage view, set this to True.
+FORCE_STANDARD_USER = environ.get('PROXSTAR_FORCE_STANDARD_USER', 'False').lower() in ('true', '1', 't')
+
 
 # Flask
 IP = environ.get('PROXSTAR_IP', '0.0.0.0')

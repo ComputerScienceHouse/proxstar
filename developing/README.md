@@ -17,6 +17,11 @@ You will also have to set up a pool on your Proxmox node with your csh username.
 
 2. Set up your environment
 
+If you're trying to run this all on a VM without a graphical web browser, you can forward traffic to your computer using SSH.
+```
+ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000
+```
+
 Clone down the repository, and create a Virtualenv to do your work in.
 ```
 mkdir venv
@@ -47,8 +52,11 @@ vim config_local.py
   # Flask
 
   # The IP address to which Proxstar is served.
-  # 0.0.0.0 will serve to wherever you want, and is probably what you want.
-  IP = environ.get('PROXSTAR_IP', '0.0.0.0') 
+  # You should probably set this to 127.0.0.1 if you're developing on your
+  # local machine, or portforwarding through SSH.
+  # 0.0.0.0 will serve to wherever you want. Don't do that unless you know
+  # what you're doing.
+  IP = environ.get('PROXSTAR_IP', '127.0.0.1') 
 
   # The port Proxstar runs on.
   # Because sso is configured to accept from `http://localhost:8000', you should
@@ -83,8 +91,13 @@ vim config_local.py
   PROXMOX_USER = environ.get('PROXSTAR_PROXMOX_USER', '')
   # Said user's password
   PROXMOX_PASS = environ.get('PROXSTAR_PROXMOX_PASS', '')
-  # Location of ISO storage on your server.
-  PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'nfs-iso')
+  # Location of ISO storage on your server. CSH has an NFS share for this,
+  # but usually this is 'local'
+  PROXMOX_ISO_STORAGE = environ.get('PROXSTAR_PROXMOX_ISO_STORAGE', 'local')
+  # Location of storage for VMs. CSH has a ceph cluster, but change this to
+  # whatever the name of your cluster's storage is. By default Proxmox uses
+  # local-lvm
+  PROXMOX_VM_STORAGE = environ.get('PROXSTAR_PROXMOX_VM_STORAGE', 'ceph')
   # Username of SSH user (probably the same)
   PROXMOX_SSH_USER = environ.get('PROXSTAR_PROXMOX_SSH_USER', '')
   # Paste that SSH key I told you to generate.
@@ -121,7 +134,7 @@ vim config_local.py
 
   # LDAP
 
-  # Ask an RTP about this. You need them to authenticate. They're somewhere on OKD, probably.
+  # You can just use your CSH credentials here (remember to keep them hidden!)
   LDAP_BIND_DN = environ.get('PROXSTAR_LDAP_BIND_DN', '')
   LDAP_BIND_PW = environ.get('PROXSTAR_LDAP_BIND_PW', '')
 
@@ -164,10 +177,6 @@ vim config_local.py
   TIMEOUT = environ.get('PROXSTAR_TIMEOUT', 120)
 ```
 
-```
-source .env
-```
-
 Now, go ahead and run the Docker Compose file to set up your Postgres and Redis instances.
 
 ```
@@ -177,13 +186,8 @@ docker-compose up -d
 Now, you should be ready to run your dev instance. I like to use `tmux` for this to run proxstar and the `rq worker` in separate panes.
 
 ```
-  flask run -p 8000 -h 0.0.0.0
+  flask run -p 8000 --cert=adhoc
   rq worker
-```
-
-If you're trying to run this all on a VM without a graphical web browser, you can forward traffic to your computer using SSH.
-```
-ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000
 ```
 
 Open a web browser and navigate to http://localhost:8000. You should see Proxstar running.
