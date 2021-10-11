@@ -134,7 +134,8 @@ vim config_local.py
 
   # LDAP
 
-  # You can just use your CSH credentials here (remember to keep them hidden!)
+  # You can just use your LDAP Bind DN and Password here
+  # (remember to keep them hidden!)
   LDAP_BIND_DN = environ.get('PROXSTAR_LDAP_BIND_DN', '')
   LDAP_BIND_PW = environ.get('PROXSTAR_LDAP_BIND_PW', '')
 
@@ -189,5 +190,7 @@ Now, you should be ready to run your dev instance. I like to use `tmux` for this
   flask run -p 8000 --cert=adhoc
   rq worker
 ```
+
+(You might have to specify your host as `-h 127.0.0.1` if Flask is misbehaving)
 
 Open a web browser and navigate to http://localhost:8000. You should see Proxstar running.
