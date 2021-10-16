@@ -2,10 +2,14 @@
 
 If you want to work on Proxstar using a 1:1 development setup, there are a couple things you're going to need
 
-- A machine you can SSH into, portforward from, and run Flask, Redis, and Docker on
+- A machine you can
+    - SSH into
+        - With portforwarding (see `man ssh` for info on the `-L` option)
+    - and run
+        - Flask
+        - Redis
+        - Docker
 - At least one (1) Proxmox host running Proxmox >6.3
-- Docker
-- SSH portforwarding
 - A CSH account
 - An RTP (to tell you secrets)
 
@@ -13,7 +17,7 @@ If you want to work on Proxstar using a 1:1 development setup, there are a coupl
 
 I would recommend setting up a development account on your Proxmox node. Name it anything. (Maybe `proxstartest`?). This is necessary to grab authentication tokens and the like. It should have the same permissions as `root@pam`. You can accomplish this by creating a group in `Datacenter > Permissions > Groups` and adding `Administrator` permissions to the group, then adding your user to the group. If you do this, then it's easy to enable/disable it for development. You should also generate an SSH key for the user.
 
-You will also have to set up a pool on your Proxmox node with your csh username. To do this, go into `Datacenter > Permissions > Pools > Create`.
+You might also have to set up a pool on your Proxmox node with your CSH username. To do this, go into `Datacenter > Permissions > Pools > Create`.
 
 2. Set up your environment
 
@@ -32,8 +36,7 @@ source venv/bin/activate
 Install required Python modules
 ```
 pip install -r requirements.txt
-pip install click==7.1.2 
-pip install python-dotenv
+pip install click==7.1.2 python-dotenv
 ```
 Fill out the required fields in your config_local.py file. You might have to come back to this after you run the docker compose.
 ```

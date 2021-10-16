@@ -8,4 +8,4 @@ RUN apt-get update \
 
 #COPY ./schema/large.sql /docker-entrypoint-initdb.d/ # Woa there, pal; That's a lot of   S C H E M A.
 # I volunteer as tribute. DM me if this breaks.
-ADD https://csh.rit.edu/~wilnil/proxstar-postgres/large.sql /docker-entrypoint-initdb.d/
+RUN curl https://csh.rit.edu/~wilnil/proxstar-postgres/large.sql -o /docker-entrypoint-initdb.d/large.sql
