@@ -12,3 +12,9 @@ services:
       - 127.0.0.1:5432:5432
     environment:
       POSTGRES_PASSWORD: tits12348
+    volumes:
+      - type: volume
+        source: proxstar-postgres
+        target: /var/lib/postgresql/data
+volumes:
+  proxstar-postgres:

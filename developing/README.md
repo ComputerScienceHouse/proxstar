@@ -17,7 +17,7 @@ If you want to work on Proxstar using a 1:1 development setup, there are a coupl
 
 I would recommend setting up a development account on your Proxmox node. Name it anything. (Maybe `proxstartest`?). This is necessary to grab authentication tokens and the like. It should have the same permissions as `root@pam`. You can accomplish this by creating a group in `Datacenter > Permissions > Groups` and adding `Administrator` permissions to the group, then adding your user to the group. If you do this, then it's easy to enable/disable it for development. You should also generate an SSH key for the user.
 
-You might also have to set up a pool on your Proxmox node with your CSH username. To do this, go into `Datacenter > Permissions > Pools > Create`.
+When you log into your Proxstar instance, it should auto-create the pool. If for some reason it doesn't, you can set up a pool on your Proxmox node with your CSH username. To do this, go into `Datacenter > Permissions > Pools > Create`.
 
 2. Set up your environment
 
