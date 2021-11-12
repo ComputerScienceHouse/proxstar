@@ -133,3 +133,15 @@ table, th, td {
 #show-for-template {
   display: none
 }
+
+.boot-order-check {
+    margin: 0 auto;
+}
+
+.borderless td, .borderless th, table.borderless {
+    border: none;
+}
+
+.fa-bars {
+    cursor: move;
+}

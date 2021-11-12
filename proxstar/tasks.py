@@ -92,7 +92,6 @@ def create_vm_task(user, name, cores, memory, disk, iso):
             register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
         set_job_status(job, 'setting VM expiration')
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
-        vm.set_boot_order(['Hard Disk', 'CD-ROM', 'Network'])
         logging.info('[{}] VM successfully provisioned.'.format(name))
         set_job_status(job, 'complete')
 

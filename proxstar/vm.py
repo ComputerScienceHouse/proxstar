@@ -119,11 +119,62 @@ class VM:
 
     @lazy_property
     def boot_order(self):
+        proxmox = connect_proxmox()
         boot_order_lookup = {'a': 'Floppy', 'c': 'Hard Disk', 'd': 'CD-ROM', 'n': 'Network'}
         raw_boot_order = self.config.get('boot', 'cdn')
-        boot_order = []
-        for order in raw_boot_order:
-            boot_order.append(boot_order_lookup[order])
+        boot_order = {'legacy': False, 'order': []}
+        try:
+            # Proxmox version does not support 'order=' format
+            if float(proxmox.nodes(self.node).version.get()['release']) < 6.3:
+                boot_order['legacy'] = True
+                for order in raw_boot_order:
+                    boot_order['order'].append({'device': boot_order_lookup[order]})
+            # Currently using 'order=' format
+            elif raw_boot_order.startswith('order='):
+                # Add enabled boot devices
+                for order in raw_boot_order[6:].split(';'):
+                    boot_order['order'].append(
+                        {'device': order, 'description': self.config.get(order), 'enabled': True}
+                    )
+                # Add disabled boot devices
+                enabled_devices = [order['device'] for order in boot_order['order']]
+                for device in (
+                    self.cdroms
+                    + [disk[0] for disk in self.disks]
+                    + [net[0] for net in self.interfaces]
+                ):
+                    if device not in enabled_devices:
+                        boot_order['order'].append(
+                            {
+                                'device': device,
+                                'description': self.config.get(device),
+                                'enabled': False,
+                            }
+                        )
+            # Currently using legacy format
+            # Propose updating to the new format
+            else:
+                if raw_boot_order.startswith('legacy='):
+                    raw_boot_order = raw_boot_order[7:]
+                # Arrange boot devices according to current format
+                devices = []
+                for order in raw_boot_order:
+                    if order == 'c':
+                        disks = [disk[0] for disk in self.disks]
+                        if self.config.get('bootdisk'):
+                            boot_order.append(self.config['bootdisk'])
+                            disks.remove(self.config['bootdisk'])
+                        devices.extend(disks)
+                    elif order == 'd':
+                        devices.extend(self.cdroms)
+                    elif order == 'n':
+                        devices.extend([net[0] for net in self.interfaces])
+                boot_order['order'].extend(
+                    {'device': device, 'description': self.config.get(device), 'enabled': True}
+                    for device in devices
+                )
+        except:
+            return {'legacy': False, 'order': []}
         return boot_order
 
     @lazy_property
@@ -134,9 +185,13 @@ class VM:
     def set_boot_order(self, boot_order):
         proxmox = connect_proxmox()
         boot_order_lookup = {'Floppy': 'a', 'Hard Disk': 'c', 'CD-ROM': 'd', 'Network': 'n'}
-        raw_boot_order = ''
-        for order in boot_order:
-            raw_boot_order += boot_order_lookup[order]
+        # Check if legacy format
+        if all(order in boot_order_lookup.keys() for order in boot_order):
+            raw_boot_order = ''
+            for order in boot_order:
+                raw_boot_order += boot_order_lookup[order]
+        else:
+            raw_boot_order = f"order={';'.join(boot_order)}"
         proxmox.nodes(self.node).qemu(self.id).config.put(boot=raw_boot_order)
 
     @lazy_property
@@ -184,6 +239,17 @@ class VM:
                     disks.append([key, disk_size])
         disks = sorted(disks, key=lambda x: x[0])
         return disks
+
+    @lazy_property
+    def cdroms(self):
+        cdroms = []
+        valid_cdrom_types = ['ide', 'sata', 'scsi']
+        for key, val in self.config.items():
+            if any(type in key for type in valid_cdrom_types):
+                if 'scsihw' not in key and 'cdrom' in val:
+                    cdroms.append(key)
+        cdroms = sorted(cdroms)
+        return cdroms
 
     @lazy_property
     def iso(self):
