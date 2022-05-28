@@ -90,7 +90,7 @@ class User:
         percents['cpu'] = round(self.usage['cpu'] / self.limits['cpu'] * 100)
         percents['mem'] = round(self.usage['mem'] / self.limits['mem'] * 100)
         percents['disk'] = round(self.usage['disk'] / self.limits['disk'] * 100)
-        for resource in percents.items():
+        for resource in percents:
             if percents[resource] > 100:
                 percents[resource] = 100
         return percents
