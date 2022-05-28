@@ -21,7 +21,12 @@ disable =
 	wrong-import-position,
 	logging-format-interpolation,
 	bare-except,
-	too-many-public-methods
+	too-many-public-methods,
+	consider-using-with,
+	consider-using-f-string,
+	unspecified-encoding,
+	consider-iterating-dictionary,
+	inconsistent-return-statements
 
 [REPORTS]
 output-format = text
