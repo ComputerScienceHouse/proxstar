@@ -50,8 +50,8 @@ class User:
         for job in jobs:
             job = q.fetch_job(job)
             if job and len(job.args) > 2:
-                if job.args[0] == self.name or job.args[2] == self.name:
-                    vm_dict = dict()
+                if self.name in (job.args[0], job.args[2]):
+                    vm_dict = {}
                     vm_dict['name'] = job.args[1]
                     vm_dict['status'] = job.meta.get('status', 'no status yet')
                     vm_dict['pending'] = True
@@ -67,7 +67,7 @@ class User:
 
     @lazy_property
     def usage(self):
-        usage = dict()
+        usage = {}
         usage['cpu'] = 0
         usage['mem'] = 0
         usage['disk'] = 0
@@ -77,7 +77,7 @@ class User:
         for vm in vms:
             if 'status' in vm:
                 vm = VM(vm['vmid'])
-                if vm.status == 'running' or vm.status == 'paused':
+                if vm.status in ('running', 'paused'):
                     usage['cpu'] += int(vm.cpu)
                     usage['mem'] += int(vm.mem) / 1024
                 for disk in vm.disks:
@@ -86,7 +86,7 @@ class User:
 
     @lazy_property
     def usage_percent(self):
-        percents = dict()
+        percents = {}
         percents['cpu'] = round(self.usage['cpu'] / self.limits['cpu'] * 100)
         percents['mem'] = round(self.usage['mem'] / self.limits['mem'] * 100)
         percents['disk'] = round(self.usage['disk'] / self.limits['disk'] * 100)
@@ -121,7 +121,7 @@ def get_vms_for_rtp(proxmox, database):
     pools = []
     for pool in get_pools(proxmox, database):
         user = User(pool)
-        pool_dict = dict()
+        pool_dict = {}
         pool_dict['user'] = user.name
         pool_dict['vms'] = user.vms
         pool_dict['num_vms'] = len(pool_dict['vms'])
