@@ -301,7 +301,7 @@ def vm_cpu(vmid, cores):
         vm = VM(vmid)
         cur_cores = vm.cpu
         if cores >= cur_cores:
-            if vm.qmpstatus == 'running' or vm.qmpstatus == 'paused':
+            if vm.qmpstatus in ('running', 'paused'):
                 usage_check = user.check_usage(cores - cur_cores, 0, 0)
             else:
                 usage_check = user.check_usage(cores, 0, 0)
@@ -322,7 +322,7 @@ def vm_mem(vmid, mem):
         vm = VM(vmid)
         cur_mem = vm.mem // 1024
         if mem >= cur_mem:
-            if vm.qmpstatus == 'running' or vm.qmpstatus == 'paused':
+            if vm.qmpstatus in ('running', 'paused'):
                 usage_check = user.check_usage(0, mem - cur_mem, 0)
             else:
                 usage_check = user.check_usage(0, mem, 0)

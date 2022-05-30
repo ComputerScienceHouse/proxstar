@@ -28,7 +28,7 @@ def get_vnc_targets():
     if os.path.exists(app.config['WEBSOCKIFY_TARGET_FILE']):
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'])
         for line in target_file:
-            target_dict = dict()
+            target_dict = {}
             values = line.strip().split(':')
             target_dict['token'] = values[0]
             target_dict['port'] = values[2]

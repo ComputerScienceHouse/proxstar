@@ -58,7 +58,7 @@ def get_expiring_vms(db):
 
 
 def get_user_usage_limits(db, user):
-    limits = dict()
+    limits = {}
     if is_rtp(user):
         limits['cpu'] = 1000
         limits['mem'] = 1000
@@ -113,7 +113,7 @@ def get_pool_cache(db):
     db_pools = db.query(Pool_Cache).all()
     pools = []
     for pool in db_pools:
-        pool_dict = dict()
+        pool_dict = {}
         pool_dict['user'] = pool.pool
         pool_dict['vms'] = pool.vms
         pool_dict['num_vms'] = pool.num_vms
@@ -149,7 +149,7 @@ def add_ignored_pool(db, pool):
 def get_templates(db):
     templates = []
     for template in db.query(Template).all():
-        template_dict = dict()
+        template_dict = {}
         template_dict['id'] = template.id
         template_dict['name'] = template.name
         template_dict['disk'] = template.disk
@@ -158,7 +158,7 @@ def get_templates(db):
 
 
 def get_template(db, template_id):
-    template_dict = dict()
+    template_dict = {}
     if db.query(exists().where(Template.id == template_id)).scalar():
         template = db.query(Template).filter(Template.id == template_id).one()
         template_dict['id'] = template.id
