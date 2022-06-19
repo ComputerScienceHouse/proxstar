@@ -33,6 +33,11 @@ python3.8 -m venv venv
 source venv/bin/activate
 ```
 
+Install required packages
+```
+dnf install python3-devel
+```
+
 Install required Python modules
 ```
 pip install -r requirements.txt
