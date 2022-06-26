@@ -37,11 +37,11 @@ ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000
 
 2. Configure your environment variables. I'd recommend setting up a .env file and passing that into your container. Check `.env.template` for more info.
 
-3. Run it with this clusterfuck. This sets up redis, postgres, rq, and proxstar.
+3. Run it. This sets up redis, postgres, rq, and proxstar.
 
 ```
 podman run --rm -d --network=proxstar --name=proxstar-redis redis:alpine
-podman run --rm -d --network=proxstar --name=proxstar-postgres -e POSTGRES_PASSWORD=changeme -v ./HACKING/proxstar-postgres//volume:/var/lib/postgresql/data:Z proxstar-postgres
+podman run --rm -d --network=proxstar --name=proxstar-postgres -e POSTGRES_PASSWORD=changeme -v ./HACKING/proxstar-postgres/volume:/var/lib/postgresql/data:Z proxstar-postgres
 podman run --rm -d --network=proxstar --name=proxstar-rq-scheduler  --env-file=HACKING/.env --entrypoint ./start_scheduler.sh proxstar
 podman run --rm -d --network=proxstar --name=proxstar-rq  --env-file=HACKING/.env --entrypoint ./start_worker.sh proxstar
 podman run --rm -d --network=proxstar --name=proxstar -p 8000:8000 --env-file=HACKING/.env proxstar
