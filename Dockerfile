@@ -8,4 +8,4 @@ COPY .git ./.git
 COPY *.py .
 COPY proxstar ./proxstar
 RUN touch proxmox_ssh_key && chmod a+w proxmox_ssh_key # This is some OKD shit.
-ENTRYPOINT python3 wsgi.py
+ENTRYPOINT ddtrace-run python3 wsgi.py
