@@ -1,3 +1,9 @@
+FROM debian AS builder
+
+RUN apt update; apt install unzip
+COPY ./schema.zip .
+RUN unzip schema.zip
+
 FROM postgres:12
 
 RUN apt-get update \
@@ -6,4 +12,4 @@ RUN apt-get update \
     && cpanm Data::Validate::Domain \
     && apt-get remove -y build-essential
 
-COPY ./schema/large.sql /docker-entrypoint-initdb.d/
+COPY --from=builder large.sql /docker-entrypoint-initdb.d/
