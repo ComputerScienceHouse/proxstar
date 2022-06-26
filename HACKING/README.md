@@ -29,6 +29,8 @@ ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000
 
 1.  Build your containers. The `proxstar` container serves as proxstar, rq, rq-scheduler, and VNC. The `proxstar-postgres` container sets up the database schema.
 
+`mkdir HACKING/proxstar-postgres/volume`
+
 `podman build . --tag=proxstar`
 
 `podman build HACKING/proxstar-postgres --tag=proxstar-postgres`
