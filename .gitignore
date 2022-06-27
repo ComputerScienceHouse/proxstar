@@ -1,6 +1,9 @@
+# Config files
 config_local.py
 config.local.py
 .env
+
+# Python trash
 __pycache__/*
 */__pycache__/*
 rrd/*
@@ -13,3 +16,4 @@ bin
 pyvenv.cfg
 site-packages
 venv
+

@@ -1,3 +1,7 @@
 volume/
 volume/*
+proxstar-postgres/volume
+proxstar-postgres/volume/*
+proxstar-postgres/large.sql
 .env
+
