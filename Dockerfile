@@ -7,5 +7,5 @@ COPY start_worker.sh start_scheduler.sh .
 COPY .git ./.git
 COPY *.py .
 COPY proxstar ./proxstar
-RUN touch proxmox_ssh_key && chmod a+w proxmox_ssh_key # This is some OKD shit.
+RUN touch proxmox_ssh_key targets && chmod a+w proxmox_ssh_key targets # This is some OKD shit.
 ENTRYPOINT ddtrace-run python3 wsgi.py
