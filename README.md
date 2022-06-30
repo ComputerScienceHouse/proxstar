@@ -20,7 +20,7 @@ It is available to house members at [proxstar.csh.rit.edu](https://proxstar.csh.
 3. Make your changes locally, commit, and push to your fork
   - If you want to test locally, you should copy `config.py` to `config_local.py`, and talk to an RTP about filling in secrets.
   - Lint and format your local changes with `pylint proxstar` and `black proxstar`
-    - You'll need dependencies installed locally to do this. You should do that in a [venv](https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments) of some sort to keep your system clean. All the dependencies are listed in [requirements.txt](./requirements.txt), so you can install everything with `pip install -r requirements.txt`. You'll need python 3.6 at minimum, though things should work up to python 3.8.
+    - You'll need dependencies installed locally to do this. You should do that in a [venv](https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments) of some sort to keep your system clean. All the dependencies are listed in [requirements.txt](./requirements.txt), so you can install everything with `pip install -r requirements.txt`. You'll need python 3.8 at minimum. To add new dependencies, edit `requirements.in` and then run `pip-compile requirements.in` to update `requirements.txt`.
 4. Create a [Pull Request](https://help.github.com/en/articles/about-pull-requests) on this repo for our Webmasters to review
 
 ## Questions/Concerns
