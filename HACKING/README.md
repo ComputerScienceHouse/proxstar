@@ -39,10 +39,8 @@ ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000
 
 3. Run it. This sets up redis, postgres, rq, and proxstar.
 
-```
-podman run --rm -d --network=proxstar --name=proxstar-redis redis:alpine
-podman run --rm -d --network=proxstar --name=proxstar-postgres -e POSTGRES_PASSWORD=changeme -v ./HACKING/proxstar-postgres/volume:/var/lib/postgresql/data:Z proxstar-postgres
-podman run --rm -d --network=proxstar --name=proxstar-rq-scheduler  --env-file=HACKING/.env --entrypoint ./start_scheduler.sh proxstar
-podman run --rm -d --network=proxstar --name=proxstar-rq  --env-file=HACKING/.env --entrypoint ./start_worker.sh proxstar
-podman run --rm -d --network=proxstar --name=proxstar -p 8000:8000 --env-file=HACKING/.env proxstar
-```
+`./HACKING/launch_env.sh`
+
+4. To stop all containers, use the provided script
+
+`./HACKING/stop_env.sh`
