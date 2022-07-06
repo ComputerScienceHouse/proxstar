@@ -62,6 +62,9 @@ def delete_vnc_target(port):
 
 
 def start_ssh_tunnel(node, port):
+    """Forwards a port on a node
+    to the proxstar container
+    """
     port = int(port)
     server = SSHTunnelForwarder(
         node,
@@ -73,7 +76,6 @@ def start_ssh_tunnel(node, port):
     )
     server.start()
     return server
-
 
 def stop_ssh_tunnel(vmid, ssh_tunnels):
     # Tear down the SSH tunnel and VNC target entry for a given VM

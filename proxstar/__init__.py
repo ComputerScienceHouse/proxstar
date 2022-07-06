@@ -12,7 +12,7 @@ from redis import Redis
 from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask import Flask, render_template, request, redirect, session, abort, url_for, jsonify
+from flask import Flask, render_template, request, redirect, session, abort, url_for, jsonify, Response
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.rq import RqIntegration
@@ -151,7 +151,6 @@ def forbidden(e):
     user = User(session['userinfo']['preferred_username'])
     return render_template('403.html', user=user, e=e), 403
 
-
 @app.route('/')
 @app.route('/user/<string:user_view>')
 @auth.oidc_auth
@@ -285,12 +284,25 @@ def vm_console(vmid):
         node = '{}.csh.rit.edu'.format(vm.node)
         logging.info('creating SSH tunnel to %s for VM %s', node, vm.id)
         tunnel = start_ssh_tunnel(node, port)
+        vm.configure_vnc_in_vm_config(app.config['PROXMOX_SSH_USER'], app.config['PROXMOX_SSH_KEY_PASS'])
         ssh_tunnels.append(tunnel)
-        vm.start_vnc(port)
+        # vm.start_vnc(port) # Broken :(
         return token, 200
     else:
         return '', 403
 
+@app.route('/novnc')
+def get_resource():  # pragma: no cover
+    mimetypes = {
+        ".css": "text/css",
+        ".html": "text/html",
+        ".js": "application/javascript",
+    }
+    complete_path = os.path.join('/opt/proxstar/proxstar/', 'static/noVNC/vnc.html')
+    # ext = os.path.splitext(path)[1]
+    # mimetype = mimetypes.get(ext, "text/html")
+    content = open(complete_path).read()
+    return Response(content)
 
 @app.route('/vm/<string:vmid>/cpu/<int:cores>', methods=['POST'])
 @auth.oidc_auth
