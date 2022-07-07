@@ -62,8 +62,8 @@ RQ_DASHBOARD_REDIS_HOST = environ.get('PROXSTAR_REDIS_HOST', 'localhost')
 REDIS_PORT = int(environ.get('PROXSTAR_REDIS_PORT', '6379'))
 
 # VNC
-WEBSOCKIFY_PATH = environ.get('PROXSTAR_WEBSOCKIFY_PATH', '/opt/app-root/bin/websockify')
-WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE', '/opt/app-root/src/targets')
+WEBSOCKIFY_PATH = environ.get('PROXSTAR_WEBSOCKIFY_PATH', '/usr/local/bin/websockify')
+WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE', '/opt/proxstar/targets')
 
 # SENTRY
 # If you set the sentry dsn locally, make sure you use the local-dev or some

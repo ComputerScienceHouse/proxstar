@@ -67,8 +67,9 @@ sentry_sdk.init(
     environment=app.config['SENTRY_ENV'],
 )
 
-with open('proxmox_ssh_key', 'w') as ssh_key_file:
-    ssh_key_file.write(app.config['PROXMOX_SSH_KEY'])
+if not os.path.exists('proxmox_ssh_key'):
+    with open('proxmox_ssh_key', 'w') as ssh_key_file:
+        ssh_key_file.write(app.config['PROXMOX_SSH_KEY'])
 
 ssh_tunnels = []
 
@@ -277,6 +278,7 @@ def vm_console(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
+        # import pdb; pdb.set_trace()
         vm = VM(vmid)
         stop_ssh_tunnel(vm.id, ssh_tunnels)
         port = str(5900 + int(vmid))
@@ -290,19 +292,6 @@ def vm_console(vmid):
         return token, 200
     else:
         return '', 403
-
-@app.route('/novnc')
-def get_resource():  # pragma: no cover
-    mimetypes = {
-        ".css": "text/css",
-        ".html": "text/html",
-        ".js": "application/javascript",
-    }
-    complete_path = os.path.join('/opt/proxstar/proxstar/', 'static/noVNC/vnc.html')
-    # ext = os.path.splitext(path)[1]
-    # mimetype = mimetypes.get(ext, "text/html")
-    content = open(complete_path).read()
-    return Response(content)
 
 @app.route('/vm/<string:vmid>/cpu/<int:cores>', methods=['POST'])
 @auth.oidc_auth

@@ -38,6 +38,7 @@ def get_vnc_targets():
 
 
 def add_vnc_target(port):
+    # TODO (willnilges): This doesn't throw an error if the target file is wrong.
     targets = get_vnc_targets()
     target = next((target for target in targets if target['port'] == port), None)
     if target:
@@ -66,6 +67,7 @@ def start_ssh_tunnel(node, port):
     to the proxstar container
     """
     port = int(port)
+    
     server = SSHTunnelForwarder(
         node,
         ssh_username=app.config['PROXMOX_SSH_USER'],

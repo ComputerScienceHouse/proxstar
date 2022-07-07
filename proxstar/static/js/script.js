@@ -652,7 +652,10 @@ $("#console-vm").click(function(){
     }).then((response) => {
         return response.text()
     }).then((token) => {
-        window.open(`/static/noVNC/vnc.html?autoconnect=true&encrypt=true&host=proxstar-vnc.csh.rit.edu&port=443&path=path?token=${token}`, '_blank');
+        // window.open(`/static/noVNC/vnc.html?autoconnect=true&encrypt=true&host=proxstar-vnc.csh.rit.edu&port=443&path=path?token=${token}`, '_blank');
+        // TODO (willnilges): encrypt=true
+        // TODO (willnilges): set host and port to an env variable
+        window.open(`/static/noVNC/vnc.html?autoconnect=true&host=freedom.csh.rit.edu&port=8081&path=path?token=${token}`, '_blank');
     }).catch(err => {
         if (err) {
             swal("Uh oh...", `Unable to start console for ${vmname}. Please try again later.`, "error");
