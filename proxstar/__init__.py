@@ -6,6 +6,7 @@ import logging
 import subprocess
 import psutil
 import psycopg2
+from gunicorn_conf import start_websockify
 import rq_dashboard
 from rq import Queue
 from redis import Redis
@@ -59,6 +60,11 @@ app.config.from_pyfile(config)
 app.config['GIT_REVISION'] = (
     subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
 )
+
+# Probably cursed.
+if 'localhost' in app.config['SERVER_NAME']:
+    print("Server name is localhost. Starting websockify...")
+    start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])
 
 # Sentry setup
 sentry_sdk.init(
@@ -289,7 +295,8 @@ def vm_console(vmid):
         vm.configure_vnc_in_vm_config(app.config['PROXMOX_SSH_USER'], app.config['PROXMOX_SSH_KEY_PASS'])
         ssh_tunnels.append(tunnel)
         # vm.start_vnc(port) # Broken :(
-        return token, 200
+        # return json.dumps([app.config['VNC_HOST'], token]), 200
+        return {'host' : app.config['VNC_HOST'], 'token' : token}, 200
     else:
         return '', 403
 

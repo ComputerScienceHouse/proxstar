@@ -64,6 +64,7 @@ REDIS_PORT = int(environ.get('PROXSTAR_REDIS_PORT', '6379'))
 # VNC
 WEBSOCKIFY_PATH = environ.get('PROXSTAR_WEBSOCKIFY_PATH', '/usr/local/bin/websockify')
 WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE', '/opt/proxstar/targets')
+VNC_HOST = environ.get('PROXSTAR_VNC_HOST', 'proxmox-vnc.csh.rit.edu')
 
 # SENTRY
 # If you set the sentry dsn locally, make sure you use the local-dev or some
