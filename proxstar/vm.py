@@ -274,9 +274,7 @@ class VM:
     def configure_vnc_in_vm_config(self, ssh_user, ssh_pass):
         """ Sets the vm up for VNC. Enables it to open a socket on localhost
         with a pre-determined password, which proxstar can then proxy to a noVNC
-        instance.
-        
-        TODO (willnilges): Current password is "chomchom1", but should be changed lol
+        instance.        
         """
         # proxmox = connect_proxmox()
         config = f'args: -object secret,id=secvnc{self.id},data={self.id} -vnc 127.0.0.1:{int(self.id)+5900},password-secret=secvnc{self.id}'

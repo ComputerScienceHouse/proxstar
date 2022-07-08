@@ -5,6 +5,7 @@ import time
 import requests
 from flask import current_app as app
 from sshtunnel import SSHTunnelForwarder
+import urllib.parse
 
 from proxstar import logging
 from proxstar.util import gen_password
@@ -31,36 +32,69 @@ def get_vnc_targets():
             target_dict = {}
             values = line.strip().split(':')
             target_dict['token'] = values[0]
-            target_dict['port'] = values[2]
+            target_dict['host'] = values[1] + values[2]
             targets.append(target_dict)
         target_file.close()
     return targets
 
-
-def add_vnc_target(port):
+def add_vnc_target(node, port):
     # TODO (willnilges): This doesn't throw an error if the target file is wrong.
     targets = get_vnc_targets()
-    target = next((target for target in targets if target['port'] == port), None)
+    target = next((target for target in targets if target['host'] == f'{node}:{port}'), None)
     if target:
         return target['token']
     else:
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'a')
         token = gen_password(32, 'abcdefghijklmnopqrstuvwxyz0123456789')
-        target_file.write('{}: 127.0.0.1:{}\n'.format(token, str(port)))
+        target_file.write(f'{token}: {node}:{port}\n')
         target_file.close()
         return token
 
-
-def delete_vnc_target(port):
+def delete_vnc_target(node, port):
     targets = get_vnc_targets()
-    target = next((target for target in targets if target['port'] == str(port)), None)
+    target = next((target for target in targets if target['host'] == f'{node}:{port}'), None)
     if target:
         targets.remove(target)
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w')
         for target in targets:
-            target_file.write('{}: 127.0.0.1:{}\n'.format(target['token'], target['port']))
+            target_file.write(f"{target['token']}: {target['host']}\n")
         target_file.close()
 
+def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
+    """ Pings the Proxmox API to request a VNC Proxy connection. Authenticates
+    against the API using a Uname/Pass, gets a few tokens back, then uses those
+    tokens to  open the VNC Proxy. Use these to connect to the VM's host with
+    websockify proxy.
+    Returns: Ticket to use as the noVNC password, and a port.
+    """
+    # Get Proxmox API ticket and CSRF_Prevention_Token
+    # TODO: Use Proxmoxer to get this information?
+    # TODO: Report errors!?
+    data = {"username": proxmox_user, "password": proxmox_pass}
+    response_data = requests.post(
+        f"https://{node}.csh.rit.edu:8006/" + "api2/json/access/ticket",
+        verify=False,
+        data=data,
+    ).json()["data"]
+    if response_data is None:
+        raise AuthenticationError(
+            "Could not authenticate against `ticket` endpoint! Check uname/password"
+        )
+    csrf_prevention_token = response_data['CSRFPreventionToken']
+    ticket = response_data['ticket']
+
+    proxy_params = {"node": node, "vmid": str(vmid), "websocket": '1', "generate-password": '0'}
+
+    vncproxy_response_data = requests.post(
+        "https://proxmox01-nrh.csh.rit.edu:8006" + f"/api2/json/nodes/{node}/qemu/{vmid}/vncproxy",
+        verify=False,
+        timeout=5,
+        params=proxy_params,
+        headers={"CSRFPreventionToken": csrf_prevention_token},
+        cookies={"PVEAuthCookie": ticket}
+    ).json()["data"]
+    
+    return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
 
 def start_ssh_tunnel(node, port):
     """Forwards a port on a node

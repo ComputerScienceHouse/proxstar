@@ -42,6 +42,7 @@ from proxstar.vnc import (
     get_vnc_targets,
     delete_vnc_target,
     stop_websockify,
+    open_vnc_session,
 )
 from proxstar.auth import get_auth
 from proxstar.util import gen_password
@@ -286,17 +287,12 @@ def vm_console(vmid):
     if user.rtp or int(vmid) in user.allowed_vms:
         # import pdb; pdb.set_trace()
         vm = VM(vmid)
-        stop_ssh_tunnel(vm.id, ssh_tunnels)
-        port = str(5900 + int(vmid))
-        token = add_vnc_target(port)
-        node = '{}.csh.rit.edu'.format(vm.node)
-        logging.info('creating SSH tunnel to %s for VM %s', node, vm.id)
-        tunnel = start_ssh_tunnel(node, port)
-        vm.configure_vnc_in_vm_config(app.config['PROXMOX_SSH_USER'], app.config['PROXMOX_SSH_KEY_PASS'])
-        ssh_tunnels.append(tunnel)
-        # vm.start_vnc(port) # Broken :(
-        # return json.dumps([app.config['VNC_HOST'], token]), 200
-        return {'host' : app.config['VNC_HOST'], 'token' : token}, 200
+        vnc_ticket, vnc_port = open_vnc_session(vmid, vm.node, app.config['PROXMOX_USER'], app.config['PROXMOX_PASS'])
+        node = f'proxmox01-nrh.csh.rit.edu'
+        token = add_vnc_target(node, vnc_port)
+        # return {'host' : node, 'port' : vnc_port, 'token' : token, 'password' : vnc_ticket}, 200
+        return {'host' : app.config['VNC_HOST'], 'port' : 8081, 'token' : token, 'password' : vnc_ticket}, 200
+
     else:
         return '', 403
 
