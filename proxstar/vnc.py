@@ -68,8 +68,8 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
     Returns: Ticket to use as the noVNC password, and a port.
     """
     # Get Proxmox API ticket and CSRF_Prevention_Token
-    # TODO: Use Proxmoxer to get this information?
-    # TODO: Report errors!?
+    # TODO (willnilges): Use Proxmoxer to get this information
+    # TODO (willnilges): Report errors
     data = {"username": proxmox_user, "password": proxmox_pass}
     response_data = requests.post(
         f"https://{node}.csh.rit.edu:8006/" + "api2/json/access/ticket",
@@ -82,11 +82,9 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
         )
     csrf_prevention_token = response_data['CSRFPreventionToken']
     ticket = response_data['ticket']
-
     proxy_params = {"node": node, "vmid": str(vmid), "websocket": '1', "generate-password": '0'}
-
     vncproxy_response_data = requests.post(
-        "https://proxmox01-nrh.csh.rit.edu:8006" + f"/api2/json/nodes/{node}/qemu/{vmid}/vncproxy",
+        f"https://{node}.csh.rit.edu:8006/api2/json/nodes/{node}/qemu/{vmid}/vncproxy",
         verify=False,
         timeout=5,
         params=proxy_params,

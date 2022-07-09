@@ -288,7 +288,7 @@ def vm_console(vmid):
         # import pdb; pdb.set_trace()
         vm = VM(vmid)
         vnc_ticket, vnc_port = open_vnc_session(vmid, vm.node, app.config['PROXMOX_USER'], app.config['PROXMOX_PASS'])
-        node = f'proxmox01-nrh.csh.rit.edu'
+        node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
         # return {'host' : node, 'port' : vnc_port, 'token' : token, 'password' : vnc_ticket}, 200
         return {'host' : app.config['VNC_HOST'], 'port' : 8081, 'token' : token, 'password' : vnc_ticket}, 200
