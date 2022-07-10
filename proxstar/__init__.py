@@ -125,6 +125,7 @@ if 'process_expiring_vms' not in scheduler:
     logging.info('adding process expiring VMs task to scheduler')
     scheduler.cron('0 5 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
 
+# FIXME (willnilges): is this operating in the right container?
 if 'cleanup_vnc' not in scheduler:
     logging.info('adding cleanup VNC task to scheduler')
     scheduler.schedule(
@@ -133,7 +134,6 @@ if 'cleanup_vnc' not in scheduler:
         func=cleanup_vnc_task,
         interval=3600,
     )
-
 
 def add_rq_dashboard_auth(blueprint):
     @blueprint.before_request
@@ -575,29 +575,34 @@ def allowed_users(user):
 @app.route('/console/cleanup', methods=['POST'])
 def cleanup_vnc():
     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
-        for target in get_vnc_targets():
-            tunnel = next(
-                (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == int(target['port'])),
-                None,
-            )
-            if tunnel:
-                if not next(
-                    (
-                        conn
-                        for conn in psutil.net_connections()
-                        if conn.laddr[1] == int(target['port']) and conn.status == 'ESTABLISHED'
-                    ),
-                    None,
-                ):
-                    try:
-                        tunnel.stop()
-                    except:
-                        pass
-                    ssh_tunnels.remove(tunnel)
-                    delete_vnc_target(target['port'])
-        return '', 200
-    else:
-        return '', 403
+        with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
+            targets.truncate()
+            return '', 200
+    return '', 403
+    # if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
+    #     for target in get_vnc_targets():
+    #         tunnel = next(
+    #             (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == int(target['port'])),
+    #             None,
+    #         )
+    #         if tunnel:
+    #             if not next(
+    #                 (
+    #                     conn
+    #                     for conn in psutil.net_connections()
+    #                     if conn.laddr[1] == int(target['port']) and conn.status == 'ESTABLISHED'
+    #                 ),
+    #                 None,
+    #             ):
+    #                 try:
+    #                     tunnel.stop()
+    #                 except:
+    #                     pass
+    #                 ssh_tunnels.remove(tunnel)
+    #                 delete_vnc_target(target['port'])
+    #     return '', 200
+    # else:
+    #     return '', 403
 
 
 @app.route('/template/<string:template_id>/disk')

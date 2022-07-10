@@ -227,8 +227,14 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
 
 
 def cleanup_vnc_task():
+    """Removes all open VNC sessions. This runs in the RQ worker, and so
+    needs to be routed properly via the Proxstar API
+    TODO (willnilges): Use API, track the task IDs, and kill only the finished
+    ones every couple of minutes
+    https://github.com/ComputerScienceHouse/proxstar/issues/153
+    """
     requests.post(
-        'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),
+        f'https://{app.config["VNC_HOST"]}/console/cleanup',
         data={'token': app.config['VNC_CLEANUP_TOKEN']},
         verify=False,
     )
