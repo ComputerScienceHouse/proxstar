@@ -2,10 +2,10 @@ import os
 import subprocess
 import time
 
+import urllib.parse
 import requests
 from flask import current_app as app
 from sshtunnel import SSHTunnelForwarder
-import urllib.parse
 
 from proxstar import logging
 from proxstar.util import gen_password
@@ -75,27 +75,27 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
     # Get Proxmox API ticket and CSRF_Prevention_Token
     # TODO (willnilges): Use Proxmoxer to get this information
     # TODO (willnilges): Report errors
-    data = {"username": proxmox_user, "password": proxmox_pass}
+    data = {'username': proxmox_user, 'password': proxmox_pass}
     response_data = requests.post(
-        f"https://{node}.csh.rit.edu:8006/" + "api2/json/access/ticket",
+        f'https://{node}.csh.rit.edu:8006/' + 'api2/json/access/ticket',
         verify=False,
         data=data,
-    ).json()["data"]
+    ).json()['data']
     if response_data is None:
-        raise AuthenticationError(
-            "Could not authenticate against `ticket` endpoint! Check uname/password"
+        raise requests.AuthenticationError(
+            'Could not authenticate against `ticket` endpoint! Check uname/password'
         )
     csrf_prevention_token = response_data['CSRFPreventionToken']
     ticket = response_data['ticket']
-    proxy_params = {"node": node, "vmid": str(vmid), "websocket": '1', "generate-password": '0'}
+    proxy_params = {'node': node, 'vmid': str(vmid), 'websocket': '1', 'generate-password': '0'}
     vncproxy_response_data = requests.post(
-        f"https://{node}.csh.rit.edu:8006/api2/json/nodes/{node}/qemu/{vmid}/vncproxy",
+        f'https://{node}.csh.rit.edu:8006/api2/json/nodes/{node}/qemu/{vmid}/vncproxy',
         verify=False,
         timeout=5,
         params=proxy_params,
-        headers={"CSRFPreventionToken": csrf_prevention_token},
-        cookies={"PVEAuthCookie": ticket},
-    ).json()["data"]
+        headers={'CSRFPreventionToken': csrf_prevention_token},
+        cookies={'PVEAuthCookie': ticket},
+    ).json()['data']
 
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
 
@@ -118,18 +118,21 @@ def start_ssh_tunnel(node, port):
     return server
 
 
-def stop_ssh_tunnel(vmid, ssh_tunnels):
+def stop_ssh_tunnel():#vmid, ssh_tunnels):
+    # FIXME (willnilges): Dead code. Delete this function.
     # Tear down the SSH tunnel and VNC target entry for a given VM
-    port = 5900 + int(vmid)
-    tunnel = next((tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port), None)
-    if tunnel:
-        logging.info('tearing down SSH tunnel for VM %s', vmid)
-        try:
-            tunnel.stop()
-        except:
-            pass
-        ssh_tunnels.remove(tunnel)
-        delete_vnc_target(port)
+    print(f'This code is useless')
+    pass
+    # port = 5900 + int(vmid)
+    # tunnel = next((tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port), None)
+    # if tunnel:
+    #     logging.info('tearing down SSH tunnel for VM %s', vmid)
+    #     try:
+    #         tunnel.stop()
+    #     except:
+    #         pass
+    #     ssh_tunnels.remove(tunnel)
+        # delete_vnc_target(port)
 
 
 def send_stop_ssh_tunnel(vmid):
