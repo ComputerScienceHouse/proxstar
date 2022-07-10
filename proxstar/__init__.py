@@ -13,7 +13,17 @@ from redis import Redis
 from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask import Flask, render_template, request, redirect, session, abort, url_for, jsonify, Response
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    session,
+    abort,
+    url_for,
+    jsonify,
+    Response,
+)
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.rq import RqIntegration
@@ -135,6 +145,7 @@ if 'cleanup_vnc' not in scheduler:
         interval=3600,
     )
 
+
 def add_rq_dashboard_auth(blueprint):
     @blueprint.before_request
     @auth.oidc_auth
@@ -158,6 +169,7 @@ def not_found(e):
 def forbidden(e):
     user = User(session['userinfo']['preferred_username'])
     return render_template('403.html', user=user, e=e), 403
+
 
 @app.route('/')
 @app.route('/user/<string:user_view>')
@@ -287,14 +299,22 @@ def vm_console(vmid):
     if user.rtp or int(vmid) in user.allowed_vms:
         # import pdb; pdb.set_trace()
         vm = VM(vmid)
-        vnc_ticket, vnc_port = open_vnc_session(vmid, vm.node, app.config['PROXMOX_USER'], app.config['PROXMOX_PASS'])
+        vnc_ticket, vnc_port = open_vnc_session(
+            vmid, vm.node, app.config['PROXMOX_USER'], app.config['PROXMOX_PASS']
+        )
         node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
         # return {'host' : node, 'port' : vnc_port, 'token' : token, 'password' : vnc_ticket}, 200
-        return {'host' : app.config['VNC_HOST'], 'port' : 8081, 'token' : token, 'password' : vnc_ticket}, 200
+        return {
+            'host': app.config['VNC_HOST'],
+            'port': 8081,
+            'token': token,
+            'password': vnc_ticket,
+        }, 200
 
     else:
         return '', 403
+
 
 @app.route('/vm/<string:vmid>/cpu/<int:cores>', methods=['POST'])
 @auth.oidc_auth

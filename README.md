@@ -17,6 +17,13 @@ It is available to house members at [proxstar.csh.rit.edu](https://proxstar.csh.
 
 1. [Fork](https://help.github.com/en/articles/fork-a-repo) this repository
   - Optionally create a new [git branch](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell) if your change is more than a small tweak (`git checkout -b BRANCH-NAME-HERE`)
+2. Create a Virtualenv to do your work in.
+```
+mkdir venv
+python3.8 -m venv venv
+source venv/bin/activate
+```
+
 3. Make your changes locally, commit, and push to your fork
   - If you want to test locally, you should copy `config.py` to `config_local.py`, and talk to an RTP about filling in secrets.
   - Lint and format your local changes with `pylint proxstar` and `black proxstar`

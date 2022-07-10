@@ -37,6 +37,7 @@ def get_vnc_targets():
         target_file.close()
     return targets
 
+
 def add_vnc_target(node, port):
     # TODO (willnilges): This doesn't throw an error if the target file is wrong.
     # TODO (willnilges): This will duplicate targets
@@ -52,6 +53,7 @@ def add_vnc_target(node, port):
         target_file.close()
         return token
 
+
 def delete_vnc_target(node, port):
     targets = get_vnc_targets()
     target = next((target for target in targets if target['host'] == f'{node}:{port}'), None)
@@ -62,8 +64,9 @@ def delete_vnc_target(node, port):
             target_file.write(f"{target['token']}: {target['host']}\n")
         target_file.close()
 
+
 def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
-    """ Pings the Proxmox API to request a VNC Proxy connection. Authenticates
+    """Pings the Proxmox API to request a VNC Proxy connection. Authenticates
     against the API using a Uname/Pass, gets a few tokens back, then uses those
     tokens to  open the VNC Proxy. Use these to connect to the VM's host with
     websockify proxy.
@@ -91,17 +94,18 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
         timeout=5,
         params=proxy_params,
         headers={"CSRFPreventionToken": csrf_prevention_token},
-        cookies={"PVEAuthCookie": ticket}
+        cookies={"PVEAuthCookie": ticket},
     ).json()["data"]
-    
+
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
+
 
 def start_ssh_tunnel(node, port):
     """Forwards a port on a node
     to the proxstar container
     """
     port = int(port)
-    
+
     server = SSHTunnelForwarder(
         node,
         ssh_username=app.config['PROXMOX_SSH_USER'],
@@ -112,6 +116,7 @@ def start_ssh_tunnel(node, port):
     )
     server.start()
     return server
+
 
 def stop_ssh_tunnel(vmid, ssh_tunnels):
     # Tear down the SSH tunnel and VNC target entry for a given VM
