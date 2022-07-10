@@ -74,7 +74,7 @@ app.config['GIT_REVISION'] = (
 
 # Probably cursed.
 if 'localhost' in app.config['SERVER_NAME']:
-    print("Server name is localhost. Starting websockify...")
+    print('Server name is localhost. Starting websockify...')
     start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])
 
 # Sentry setup
@@ -307,7 +307,7 @@ def vm_console(vmid):
         # return {'host' : node, 'port' : vnc_port, 'token' : token, 'password' : vnc_ticket}, 200
         return {
             'host': app.config['VNC_HOST'],
-            'port': 8081,
+            'port': app.config['VNC_PORT'],
             'token': token,
             'password': vnc_ticket,
         }, 200
