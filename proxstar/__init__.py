@@ -6,7 +6,7 @@ import logging
 import subprocess
 import psutil
 import psycopg2
-from gunicorn_conf import start_websockify
+# from gunicorn_conf import start_websockify
 import rq_dashboard
 from rq import Queue
 from redis import Redis
@@ -73,9 +73,9 @@ app.config['GIT_REVISION'] = (
 )
 
 # Probably cursed.
-if 'localhost' in app.config['SERVER_NAME']:
-    print('Server name is localhost. Starting websockify...')
-    start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])
+# if 'localhost' in app.config['SERVER_NAME']:
+#     print('Server name is localhost. Starting websockify...')
+#     start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])
 
 # Sentry setup
 sentry_sdk.init(
@@ -598,6 +598,7 @@ def cleanup_vnc():
         with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
             targets.truncate()
             return '', 200
+    print("Got bad cleanup request")
     return '', 403
     # if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
     #     for target in get_vnc_targets():

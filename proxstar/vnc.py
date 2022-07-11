@@ -14,11 +14,12 @@ from proxstar.util import gen_password
 def stop_websockify():
     result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False)
     if result.stdout:
-        pid = result.stdout.strip()
-        subprocess.run(['kill', pid], stdout=subprocess.PIPE, check=False)
-        time.sleep(3)
+        pids = result.stdout.splitlines()
+        for pid in pids:
+            subprocess.run(['kill', pid], stdout=subprocess.PIPE, check=False)
+        time.sleep(1)
         if subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False).stdout:
-            time.sleep(10)
+            time.sleep(5)
             if subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False).stdout:
                 logging.info("websockify didn't stop, killing forcefully")
                 subprocess.run(['kill', '-9', pid], stdout=subprocess.PIPE, check=False)

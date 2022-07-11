@@ -233,8 +233,17 @@ def cleanup_vnc_task():
     ones every couple of minutes
     https://github.com/ComputerScienceHouse/proxstar/issues/153
     """
-    requests.post(
-        f'https://{app.config["VNC_HOST"]}/console/cleanup',
-        data={'token': app.config['VNC_CLEANUP_TOKEN']},
-        verify=False,
-    )
+    print('Clearing vnc targets')
+    with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
+        targets.truncate()
+
+    # FIXME (willnilges): This is straight-up not working, no matter what I try.
+    # The whole scheduling system needs a lotta work.
+    try:
+        requests.post(
+            f'https://proxstar.csh.rit.edu/console/cleanup',
+            data={'token': app.config['VNC_CLEANUP_TOKEN']},
+            verify=False,
+        )
+    except Exception as e:
+        print(e)
