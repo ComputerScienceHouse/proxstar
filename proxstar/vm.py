@@ -271,7 +271,7 @@ class VM:
     #         command='change vnc 127.0.0.1:{}'.format(port)
     #     )
 
-    def configure_vnc_in_vm_config():#self, ssh_user, ssh_pass):
+    def configure_vnc_in_vm_config():  # self, ssh_user, ssh_pass):
         """Sets the vm up for VNC. Enables it to open a socket on localhost
         with a pre-determined password, which proxstar can then proxy to a noVNC
         instance.

@@ -119,7 +119,7 @@ def start_ssh_tunnel(node, port):
     return server
 
 
-def stop_ssh_tunnel():#vmid, ssh_tunnels):
+def stop_ssh_tunnel():  # vmid, ssh_tunnels):
     # FIXME (willnilges): Dead code. Delete this function.
     # Tear down the SSH tunnel and VNC target entry for a given VM
     print(f'This code is useless')
@@ -133,7 +133,7 @@ def stop_ssh_tunnel():#vmid, ssh_tunnels):
     #     except:
     #         pass
     #     ssh_tunnels.remove(tunnel)
-        # delete_vnc_target(port)
+    # delete_vnc_target(port)
 
 
 def send_stop_ssh_tunnel(vmid):
