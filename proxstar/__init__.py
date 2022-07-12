@@ -162,14 +162,20 @@ app.register_blueprint(rq_dashboard_blueprint, url_prefix='/rq')
 
 @app.errorhandler(404)
 def not_found(e):
-    user = User(session['userinfo']['preferred_username'])
-    return render_template('404.html', user=user, e=e), 404
+    try:
+        user = User(session['userinfo']['preferred_username'])
+        return render_template('404.html', user=user, e=e), 404
+    except Exception as e:
+        return render_template('404.html', user='chom', e=e), 404
 
 
 @app.errorhandler(403)
 def forbidden(e):
-    user = User(session['userinfo']['preferred_username'])
-    return render_template('403.html', user=user, e=e), 403
+    try:
+        user = User(session['userinfo']['preferred_username'])
+        return render_template('403.html', user=user, e=e), 403
+    except Exception as e:
+        return render_template('403.html', user='chom', e=e), 403
 
 
 @app.route('/')
@@ -596,6 +602,7 @@ def allowed_users(user):
 @app.route('/console/cleanup', methods=['POST'])
 def cleanup_vnc():
     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
+        print('Cleaning up targets file...')
         with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
             targets.truncate()
             return '', 200
