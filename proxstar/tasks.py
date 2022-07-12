@@ -245,5 +245,5 @@ def cleanup_vnc_task():
             data={'token': app.config['VNC_CLEANUP_TOKEN']},
             verify=False,
         )
-    except Exception as e: # pylint: disable=W0703
+    except Exception as e:  # pylint: disable=W0703
         print(e)

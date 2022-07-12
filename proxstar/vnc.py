@@ -21,7 +21,9 @@ def stop_websockify():
             time.sleep(1)
             if subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False).stdout:
                 time.sleep(5)
-                if subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False).stdout:
+                if subprocess.run(
+                    ['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False
+                ).stdout:
                     logging.info("websockify didn't stop, killing forcefully")
                     subprocess.run(['kill', '-9', pid], stdout=subprocess.PIPE, check=False)
 
@@ -125,16 +127,16 @@ def start_ssh_tunnel(node, port):
 #     # Tear down the SSH tunnel and VNC target entry for a given VM
 #     print(f'This code is useless')
 #     pass
-    # port = 5900 + int(vmid)
-    # tunnel = next((tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port), None)
-    # if tunnel:
-    #     logging.info('tearing down SSH tunnel for VM %s', vmid)
-    #     try:
-    #         tunnel.stop()
-    #     except:
-    #         pass
-    #     ssh_tunnels.remove(tunnel)
-    # delete_vnc_target(port)
+# port = 5900 + int(vmid)
+# tunnel = next((tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port), None)
+# if tunnel:
+#     logging.info('tearing down SSH tunnel for VM %s', vmid)
+#     try:
+#         tunnel.stop()
+#     except:
+#         pass
+#     ssh_tunnels.remove(tunnel)
+# delete_vnc_target(port)
 
 
 # def send_stop_ssh_tunnel(vmid):

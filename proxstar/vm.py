@@ -275,26 +275,26 @@ class VM:
     #     instance.
     #     FIXME (willnilges): Dead Code. Remove this function.
     #     """
-        # proxmox = connect_proxmox()
-        # config = f'args: -object secret,id=secvnc{self.id},data={self.id} -vnc
-        # 127.0.0.1:{int(self.id)+5900},password-secret=secvnc{self.id}'
-        # path = f'/etc/pve/local/qemu-server/{self.id}.conf'
-        # with paramiko.SSHClient() as ssh:
-        #     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        #     ssh.connect(
-        #         self.node,
-        #         port=22,
-        #         username=ssh_user,
-        #         key_filename='proxmox_ssh_key',
-        #         passphrase=ssh_pass,
-        #     )
-        #     ssh.exec_command(
-        #         f"if grep -- '{config}' {path}; then echo identical config found;
-        #         else sed -i /dev/null '/-vnc/d' {path}"
-        #     )  # YOLO
-        #     ssh.exec_command(
-        #         f"if grep -- '-vnc' {path}; then echo found config; else echo {config} >> {path}; fi"
-        #     )
+    # proxmox = connect_proxmox()
+    # config = f'args: -object secret,id=secvnc{self.id},data={self.id} -vnc
+    # 127.0.0.1:{int(self.id)+5900},password-secret=secvnc{self.id}'
+    # path = f'/etc/pve/local/qemu-server/{self.id}.conf'
+    # with paramiko.SSHClient() as ssh:
+    #     ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    #     ssh.connect(
+    #         self.node,
+    #         port=22,
+    #         username=ssh_user,
+    #         key_filename='proxmox_ssh_key',
+    #         passphrase=ssh_pass,
+    #     )
+    #     ssh.exec_command(
+    #         f"if grep -- '{config}' {path}; then echo identical config found;
+    #         else sed -i /dev/null '/-vnc/d' {path}"
+    #     )  # YOLO
+    #     ssh.exec_command(
+    #         f"if grep -- '-vnc' {path}; then echo found config; else echo {config} >> {path}; fi"
+    #     )
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def eject_iso(self):
