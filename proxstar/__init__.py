@@ -46,10 +46,7 @@ from proxstar.db import (
     set_template_info,
 )
 from proxstar.vnc import (
-    send_stop_ssh_tunnel,
-    stop_ssh_tunnel,
     add_vnc_target,
-    start_ssh_tunnel,
     get_vnc_targets,
     delete_vnc_target,
     stop_websockify,
@@ -165,7 +162,8 @@ def not_found(e):
     try:
         user = User(session['userinfo']['preferred_username'])
         return render_template('404.html', user=user, e=e), 404
-    except Exception as e:
+    except KeyError as exception:
+        print(exception)
         return render_template('404.html', user='chom', e=e), 404
 
 
@@ -174,7 +172,8 @@ def forbidden(e):
     try:
         user = User(session['userinfo']['preferred_username'])
         return render_template('403.html', user=user, e=e), 403
-    except Exception as e:
+    except KeyError as exception:
+        print(exception)
         return render_template('403.html', user='chom', e=e), 403
 
 
@@ -273,15 +272,16 @@ def vm_power(vmid, action):
             vm.start()
         elif action == 'stop':
             vm.stop()
-            send_stop_ssh_tunnel(vmid)
+            # TODO (willnilges): Replace with remove target function or something
+            # send_stop_ssh_tunnel(vmid)
         elif action == 'shutdown':
             vm.shutdown()
-            send_stop_ssh_tunnel(vmid)
+            # send_stop_ssh_tunnel(vmid)
         elif action == 'reset':
             vm.reset()
         elif action == 'suspend':
             vm.suspend()
-            send_stop_ssh_tunnel(vmid)
+            # send_stop_ssh_tunnel(vmid)
         elif action == 'resume':
             vm.resume()
         return '', 200
@@ -289,13 +289,13 @@ def vm_power(vmid, action):
         return '', 403
 
 
-@app.route('/console/vm/<string:vmid>/stop', methods=['POST'])
-def vm_console_stop(vmid):
-    if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
-        stop_ssh_tunnel(vmid, ssh_tunnels)
-        return '', 200
-    else:
-        return '', 403
+# @app.route('/console/vm/<string:vmid>/stop', methods=['POST'])
+# def vm_console_stop(vmid):
+#     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
+#         stop_ssh_tunnel(vmid, ssh_tunnels)
+#         return '', 200
+#     else:
+#         return '', 403
 
 
 @app.route('/console/vm/<string:vmid>', methods=['POST'])
@@ -430,7 +430,7 @@ def delete(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
-        send_stop_ssh_tunnel(vmid)
+        # send_stop_ssh_tunnel(vmid)
         # Submit the delete VM task to RQ
         q.enqueue(delete_vm_task, vmid)
         return '', 200
@@ -606,7 +606,7 @@ def cleanup_vnc():
         with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
             targets.truncate()
             return '', 200
-    print("Got bad cleanup request")
+    print('Got bad cleanup request')
     return '', 403
     # if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
     #     for target in get_vnc_targets():

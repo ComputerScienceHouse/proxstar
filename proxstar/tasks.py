@@ -22,7 +22,6 @@ from proxstar.proxmox import connect_proxmox, get_pools
 from proxstar.starrs import get_next_ip, register_starrs, delete_starrs
 from proxstar.user import User, get_vms_for_rtp
 from proxstar.vm import VM, clone_vm, create_vm
-from proxstar.vnc import send_stop_ssh_tunnel
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
@@ -151,7 +150,7 @@ def process_expiring_vms_task():
                             vm.name, vm.id
                         )
                     )
-                    send_stop_ssh_tunnel(vm.id)
+                    # send_stop_ssh_tunnel(vm.id) # TODO (willnilges): Remove target from targets file
                     delete_vm_task(vm.id)
             if expiring_vms:
                 send_vm_expire_email(pool, expiring_vms)
@@ -239,11 +238,12 @@ def cleanup_vnc_task():
 
     # FIXME (willnilges): This is straight-up not working, no matter what I try.
     # The whole scheduling system needs a lotta work.
+
     try:
         requests.post(
-            f'https://proxstar.csh.rit.edu/console/cleanup',
+            'https://proxstar.csh.rit.edu/console/cleanup',
             data={'token': app.config['VNC_CLEANUP_TOKEN']},
             verify=False,
         )
-    except Exception as e:
+    except Exception as e: # pylint: disable=W0703
         print(e)

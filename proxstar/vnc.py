@@ -17,12 +17,13 @@ def stop_websockify():
         pids = result.stdout.splitlines()
         for pid in pids:
             subprocess.run(['kill', pid], stdout=subprocess.PIPE, check=False)
-        time.sleep(1)
-        if subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False).stdout:
-            time.sleep(5)
+            # FIXME (willnilges): Willard is lazy.
+            time.sleep(1)
             if subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False).stdout:
-                logging.info("websockify didn't stop, killing forcefully")
-                subprocess.run(['kill', '-9', pid], stdout=subprocess.PIPE, check=False)
+                time.sleep(5)
+                if subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False).stdout:
+                    logging.info("websockify didn't stop, killing forcefully")
+                    subprocess.run(['kill', '-9', pid], stdout=subprocess.PIPE, check=False)
 
 
 def get_vnc_targets():
@@ -119,11 +120,11 @@ def start_ssh_tunnel(node, port):
     return server
 
 
-def stop_ssh_tunnel():  # vmid, ssh_tunnels):
-    # FIXME (willnilges): Dead code. Delete this function.
-    # Tear down the SSH tunnel and VNC target entry for a given VM
-    print(f'This code is useless')
-    pass
+# def stop_ssh_tunnel():  # vmid, ssh_tunnels):
+#     # FIXME (willnilges): Dead code. Delete this function.
+#     # Tear down the SSH tunnel and VNC target entry for a given VM
+#     print(f'This code is useless')
+#     pass
     # port = 5900 + int(vmid)
     # tunnel = next((tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port), None)
     # if tunnel:
@@ -136,9 +137,9 @@ def stop_ssh_tunnel():  # vmid, ssh_tunnels):
     # delete_vnc_target(port)
 
 
-def send_stop_ssh_tunnel(vmid):
-    requests.post(
-        'https://{}/console/vm/{}/stop'.format(app.config['SERVER_NAME'], vmid),
-        data={'token': app.config['VNC_CLEANUP_TOKEN']},
-        verify=False,
-    )
+# def send_stop_ssh_tunnel(vmid):
+#     requests.post(
+#         'https://{}/console/vm/{}/stop'.format(app.config['SERVER_NAME'], vmid),
+#         data={'token': app.config['VNC_CLEANUP_TOKEN']},
+#         verify=False,
+#     )

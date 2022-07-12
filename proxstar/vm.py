@@ -1,10 +1,8 @@
 import json
-from sqlite3 import connect
 import urllib
 
 from flask import current_app as app
 from tenacity import retry, stop_after_attempt, wait_fixed
-import paramiko
 
 from proxstar import db, starrs
 from proxstar.db import delete_vm_expire, get_vm_expire
@@ -271,12 +269,12 @@ class VM:
     #         command='change vnc 127.0.0.1:{}'.format(port)
     #     )
 
-    def configure_vnc_in_vm_config():  # self, ssh_user, ssh_pass):
-        """Sets the vm up for VNC. Enables it to open a socket on localhost
-        with a pre-determined password, which proxstar can then proxy to a noVNC
-        instance.
-        FIXME (willnilges): Dead Code. Remove this function.
-        """
+    # def configure_vnc_in_vm_config():  # self, ssh_user, ssh_pass):
+    #     """Sets the vm up for VNC. Enables it to open a socket on localhost
+    #     with a pre-determined password, which proxstar can then proxy to a noVNC
+    #     instance.
+    #     FIXME (willnilges): Dead Code. Remove this function.
+    #     """
         # proxmox = connect_proxmox()
         # config = f'args: -object secret,id=secvnc{self.id},data={self.id} -vnc
         # 127.0.0.1:{int(self.id)+5900},password-secret=secvnc{self.id}'
