@@ -1,3 +1,5 @@
 #!/bin/sh
 
-/opt/app-root/bin/rqscheduler -u "$PROXSTAR_REDIS_URL"
+PROXSTAR_REDIS_URL=redis://$PROXSTAR_REDIS_HOST:$PROXSTAR_REDIS_PORT
+
+rqscheduler -u "$PROXSTAR_REDIS_URL"
