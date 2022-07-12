@@ -70,11 +70,6 @@ app.config['GIT_REVISION'] = (
     subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
 )
 
-# Probably cursed.
-# if 'localhost' in app.config['SERVER_NAME']:
-#     print('Server name is localhost. Starting websockify...')
-#     start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])
-
 # Sentry setup
 sentry_sdk.init(
     dsn=app.config['SENTRY_DSN'],
@@ -133,7 +128,6 @@ if 'process_expiring_vms' not in scheduler:
     logging.info('adding process expiring VMs task to scheduler')
     scheduler.cron('0 5 * * *', id='process_expiring_vms', func=process_expiring_vms_task)
 
-# FIXME (willnilges): is this operating in the right container?
 if 'cleanup_vnc' not in scheduler:
     logging.info('adding cleanup VNC task to scheduler')
     scheduler.schedule(
@@ -289,15 +283,6 @@ def vm_power(vmid, action):
         return '', 403
 
 
-# @app.route('/console/vm/<string:vmid>/stop', methods=['POST'])
-# def vm_console_stop(vmid):
-#     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
-#         stop_ssh_tunnel(vmid, ssh_tunnels)
-#         return '', 200
-#     else:
-#         return '', 403
-
-
 @app.route('/console/vm/<string:vmid>', methods=['POST'])
 @auth.oidc_auth
 def vm_console(vmid):
@@ -311,7 +296,6 @@ def vm_console(vmid):
         )
         node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
-        # return {'host' : node, 'port' : vnc_port, 'token' : token, 'password' : vnc_ticket}, 200
         return {
             'host': app.config['VNC_HOST'],
             'port': app.config['VNC_PORT'],
@@ -608,30 +592,6 @@ def cleanup_vnc():
             return '', 200
     print('Got bad cleanup request')
     return '', 403
-    # if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
-    #     for target in get_vnc_targets():
-    #         tunnel = next(
-    #             (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == int(target['port'])),
-    #             None,
-    #         )
-    #         if tunnel:
-    #             if not next(
-    #                 (
-    #                     conn
-    #                     for conn in psutil.net_connections()
-    #                     if conn.laddr[1] == int(target['port']) and conn.status == 'ESTABLISHED'
-    #                 ),
-    #                 None,
-    #             ):
-    #                 try:
-    #                     tunnel.stop()
-    #                 except:
-    #                     pass
-    #                 ssh_tunnels.remove(tunnel)
-    #                 delete_vnc_target(target['port'])
-    #     return '', 200
-    # else:
-    #     return '', 403
 
 
 @app.route('/template/<string:template_id>/disk')

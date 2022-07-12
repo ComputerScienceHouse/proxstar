@@ -236,8 +236,7 @@ def cleanup_vnc_task():
     with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
         targets.truncate()
 
-    # FIXME (willnilges): This is straight-up not working, no matter what I try.
-    # The whole scheduling system needs a lotta work.
+    # FIXME (willnilges): This... might be working...?
 
     try:
         requests.post(

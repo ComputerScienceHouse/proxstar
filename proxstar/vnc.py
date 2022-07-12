@@ -120,28 +120,3 @@ def start_ssh_tunnel(node, port):
     )
     server.start()
     return server
-
-
-# def stop_ssh_tunnel():  # vmid, ssh_tunnels):
-#     # FIXME (willnilges): Dead code. Delete this function.
-#     # Tear down the SSH tunnel and VNC target entry for a given VM
-#     print(f'This code is useless')
-#     pass
-# port = 5900 + int(vmid)
-# tunnel = next((tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == port), None)
-# if tunnel:
-#     logging.info('tearing down SSH tunnel for VM %s', vmid)
-#     try:
-#         tunnel.stop()
-#     except:
-#         pass
-#     ssh_tunnels.remove(tunnel)
-# delete_vnc_target(port)
-
-
-# def send_stop_ssh_tunnel(vmid):
-#     requests.post(
-#         'https://{}/console/vm/{}/stop'.format(app.config['SERVER_NAME'], vmid),
-#         data={'token': app.config['VNC_CLEANUP_TOKEN']},
-#         verify=False,
-#     )
