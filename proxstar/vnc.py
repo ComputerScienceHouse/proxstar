@@ -1,6 +1,7 @@
 import os
 import subprocess
 import time
+from deprecated import deprecated
 
 import urllib.parse
 import requests
