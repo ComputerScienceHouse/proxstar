@@ -104,6 +104,7 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
 
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
 
+
 @deprecated('No longer in use')
 def start_ssh_tunnel(node, port):
     """Forwards a port on a node
