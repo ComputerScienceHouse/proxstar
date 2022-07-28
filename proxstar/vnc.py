@@ -1,9 +1,9 @@
 import os
 import subprocess
 import time
-from deprecated import deprecated
-
 import urllib.parse
+
+from deprecated import deprecated
 import requests
 from flask import current_app as app
 from sshtunnel import SSHTunnelForwarder
