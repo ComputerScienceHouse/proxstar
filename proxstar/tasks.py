@@ -240,7 +240,7 @@ def cleanup_vnc_task():
 
     try:
         requests.post(
-            'https://proxstar.csh.rit.edu/console/cleanup',
+            'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),
             data={'token': app.config['VNC_CLEANUP_TOKEN']},
             verify=False,
         )
