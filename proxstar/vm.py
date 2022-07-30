@@ -262,13 +262,6 @@ class VM:
             iso = 'None'
         return iso
 
-    def start_vnc(self, port):
-        proxmox = connect_proxmox()
-        port = str(int(port) - 5900)
-        proxmox.nodes(self.node).qemu(self.id).monitor.post(
-            command='change vnc 127.0.0.1:{}'.format(port)
-        )
-
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def eject_iso(self):
         proxmox = connect_proxmox()

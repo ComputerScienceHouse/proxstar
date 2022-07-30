@@ -22,7 +22,6 @@ from proxstar.proxmox import connect_proxmox, get_pools
 from proxstar.starrs import get_next_ip, register_starrs, delete_starrs
 from proxstar.user import User, get_vms_for_rtp
 from proxstar.vm import VM, clone_vm, create_vm
-from proxstar.vnc import send_stop_ssh_tunnel
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
@@ -151,7 +150,7 @@ def process_expiring_vms_task():
                             vm.name, vm.id
                         )
                     )
-                    send_stop_ssh_tunnel(vm.id)
+                    # send_stop_ssh_tunnel(vm.id) # TODO (willnilges): Remove target from targets file
                     delete_vm_task(vm.id)
             if expiring_vms:
                 send_vm_expire_email(pool, expiring_vms)
@@ -227,8 +226,23 @@ def setup_template_task(template_id, name, user, ssh_key, cores, memory):
 
 
 def cleanup_vnc_task():
-    requests.post(
-        'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),
-        data={'token': app.config['VNC_CLEANUP_TOKEN']},
-        verify=False,
-    )
+    """Removes all open VNC sessions. This runs in the RQ worker, and so
+    needs to be routed properly via the Proxstar API
+    TODO (willnilges): Use API, track the task IDs, and kill only the finished
+    ones every couple of minutes
+    https://github.com/ComputerScienceHouse/proxstar/issues/153
+    """
+    print('Clearing vnc targets')
+    with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
+        targets.truncate()
+
+    # FIXME (willnilges): This... might be working...?
+
+    try:
+        requests.post(
+            'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),
+            data={'token': app.config['VNC_CLEANUP_TOKEN']},
+            verify=False,
+        )
+    except Exception as e:  # pylint: disable=W0703
+        print(e)

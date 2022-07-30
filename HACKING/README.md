@@ -1,3 +1,43 @@
+# Contributing
+1. [Fork](https://help.github.com/en/articles/fork-a-repo) this repository
+  - Optionally create a new [git branch](https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell) if your change is more than a small tweak (`git checkout -b BRANCH-NAME-HERE`)
+
+2. Follow the _Podman Environment Instructions_ to set up a Podman dev environment. If you'd like to run Proxstar entirely on your own hardware, check out _Setting up a full dev environment_
+
+3. Create a Virtualenv to do your linting in
+```
+mkdir venv
+python3.8 -m venv venv
+source venv/bin/activate
+```
+
+4. Make your changes locally, commit, and push to your fork
+  - If you want to test locally, you should copy `HACKING/.env.sample` to `HACKING/.env`, and talk to an RTP about filling in secrets.
+  - Lint and format your local changes with `pylint proxstar` and `black proxstar`
+    - You'll need dependencies installed locally to do this. You should do that in a [venv](https://packaging.python.org/tutorials/installing-packages/#creating-virtual-environments) of some sort to keep your system clean. All the dependencies are listed in [requirements.txt](./requirements.txt), so you can install everything with `pip install -r requirements.txt`. You'll need python 3.6 at minimum, though things should work up to python 3.8.
+
+5. Create a [Pull Request](https://help.github.com/en/articles/about-pull-requests) on this repo for our Webmasters to review
+
+### Podman Environment Instructions
+
+1.  Build your containers. The `proxstar` container serves as proxstar, rq, rq-scheduler, and VNC. The `proxstar-postgres` container sets up the database schema.
+
+`mkdir HACKING/proxstar-postgres/volume`
+
+`podman build . --tag=proxstar`
+
+`podman build HACKING/proxstar-postgres --tag=proxstar-postgres`
+
+2. Configure your environment variables. I'd recommend setting up a .env file and passing that into your container. Check `.env.template` for more info.
+
+3. Run it. This sets up redis, postgres, rq, and proxstar.
+
+`./HACKING/launch_env.sh`
+
+4. To stop all containers, use the provided script
+
+`./HACKING/stop_env.sh`
+
 ## Setting up a full dev environment
 
 If you want to work on Proxstar using a 1:1 development setup, there are a couple things you're going to need
@@ -6,9 +46,11 @@ If you want to work on Proxstar using a 1:1 development setup, there are a coupl
     - SSH into
         - With portforwarding (see `man ssh` for info on the `-L` option)
     - and run
+        - Podman
         - Flask
-        - Redis
-        - Docker
+		- Redis
+		- Postgres
+		- RQ
 - At least one (1) Proxmox host running Proxmox >6.3
 - A CSH account
 - An RTP (to tell you secrets)
@@ -25,24 +67,4 @@ If you're trying to run this all on a VM without a graphical web browser, you ca
 ```
 ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000
 ```
-# New Deployment Instructions
 
-1.  Build your containers. The `proxstar` container serves as proxstar, rq, rq-scheduler, and VNC. The `proxstar-postgres` container sets up the database schema.
-
-`mkdir HACKING/proxstar-postgres/volume`
-
-`podman build . --tag=proxstar`
-
-`podman build HACKING/proxstar-postgres --tag=proxstar-postgres`
-
-2. Configure your environment variables. I'd recommend setting up a .env file and passing that into your container. Check `.env.template` for more info.
-
-3. Run it. This sets up redis, postgres, rq, and proxstar.
-
-```
-podman run --rm -d --network=proxstar --name=proxstar-redis redis:alpine
-podman run --rm -d --network=proxstar --name=proxstar-postgres -e POSTGRES_PASSWORD=changeme -v ./HACKING/proxstar-postgres/volume:/var/lib/postgresql/data:Z proxstar-postgres
-podman run --rm -d --network=proxstar --name=proxstar-rq-scheduler  --env-file=HACKING/.env --entrypoint ./start_scheduler.sh proxstar
-podman run --rm -d --network=proxstar --name=proxstar-rq  --env-file=HACKING/.env --entrypoint ./start_worker.sh proxstar
-podman run --rm -d --network=proxstar --name=proxstar -p 8000:8000 --env-file=HACKING/.env proxstar
-```

@@ -1,3 +1,4 @@
 volume/
 volume/*
 .env
+ssh_key

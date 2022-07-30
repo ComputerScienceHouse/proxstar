@@ -6,13 +6,25 @@ import logging
 import subprocess
 import psutil
 import psycopg2
+
+# from gunicorn_conf import start_websockify
 import rq_dashboard
 from rq import Queue
 from redis import Redis
 from rq_scheduler import Scheduler
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from flask import Flask, render_template, request, redirect, session, abort, url_for, jsonify
+from flask import (
+    Flask,
+    render_template,
+    request,
+    redirect,
+    session,
+    abort,
+    url_for,
+    jsonify,
+    Response,
+)
 import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 from sentry_sdk.integrations.rq import RqIntegration
@@ -34,13 +46,11 @@ from proxstar.db import (
     set_template_info,
 )
 from proxstar.vnc import (
-    send_stop_ssh_tunnel,
-    stop_ssh_tunnel,
     add_vnc_target,
-    start_ssh_tunnel,
     get_vnc_targets,
     delete_vnc_target,
     stop_websockify,
+    open_vnc_session,
 )
 from proxstar.auth import get_auth
 from proxstar.util import gen_password
@@ -67,8 +77,9 @@ sentry_sdk.init(
     environment=app.config['SENTRY_ENV'],
 )
 
-with open('proxmox_ssh_key', 'w') as ssh_key_file:
-    ssh_key_file.write(app.config['PROXMOX_SSH_KEY'])
+if not os.path.exists('proxmox_ssh_key'):
+    with open('proxmox_ssh_key', 'w') as ssh_key_file:
+        ssh_key_file.write(app.config['PROXMOX_SSH_KEY'])
 
 ssh_tunnels = []
 
@@ -142,14 +153,22 @@ app.register_blueprint(rq_dashboard_blueprint, url_prefix='/rq')
 
 @app.errorhandler(404)
 def not_found(e):
-    user = User(session['userinfo']['preferred_username'])
-    return render_template('404.html', user=user, e=e), 404
+    try:
+        user = User(session['userinfo']['preferred_username'])
+        return render_template('404.html', user=user, e=e), 404
+    except KeyError as exception:
+        print(exception)
+        return render_template('404.html', user='chom', e=e), 404
 
 
 @app.errorhandler(403)
 def forbidden(e):
-    user = User(session['userinfo']['preferred_username'])
-    return render_template('403.html', user=user, e=e), 403
+    try:
+        user = User(session['userinfo']['preferred_username'])
+        return render_template('403.html', user=user, e=e), 403
+    except KeyError as exception:
+        print(exception)
+        return render_template('403.html', user='chom', e=e), 403
 
 
 @app.route('/')
@@ -247,26 +266,18 @@ def vm_power(vmid, action):
             vm.start()
         elif action == 'stop':
             vm.stop()
-            send_stop_ssh_tunnel(vmid)
+            # TODO (willnilges): Replace with remove target function or something
+            # send_stop_ssh_tunnel(vmid)
         elif action == 'shutdown':
             vm.shutdown()
-            send_stop_ssh_tunnel(vmid)
+            # send_stop_ssh_tunnel(vmid)
         elif action == 'reset':
             vm.reset()
         elif action == 'suspend':
             vm.suspend()
-            send_stop_ssh_tunnel(vmid)
+            # send_stop_ssh_tunnel(vmid)
         elif action == 'resume':
             vm.resume()
-        return '', 200
-    else:
-        return '', 403
-
-
-@app.route('/console/vm/<string:vmid>/stop', methods=['POST'])
-def vm_console_stop(vmid):
-    if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
-        stop_ssh_tunnel(vmid, ssh_tunnels)
         return '', 200
     else:
         return '', 403
@@ -278,16 +289,20 @@ def vm_console(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
+        # import pdb; pdb.set_trace()
         vm = VM(vmid)
-        stop_ssh_tunnel(vm.id, ssh_tunnels)
-        port = str(5900 + int(vmid))
-        token = add_vnc_target(port)
-        node = '{}.csh.rit.edu'.format(vm.node)
-        logging.info('creating SSH tunnel to %s for VM %s', node, vm.id)
-        tunnel = start_ssh_tunnel(node, port)
-        ssh_tunnels.append(tunnel)
-        vm.start_vnc(port)
-        return token, 200
+        vnc_ticket, vnc_port = open_vnc_session(
+            vmid, vm.node, app.config['PROXMOX_USER'], app.config['PROXMOX_PASS']
+        )
+        node = f'{vm.node}.csh.rit.edu'
+        token = add_vnc_target(node, vnc_port)
+        return {
+            'host': app.config['VNC_HOST'],
+            'port': app.config['VNC_PORT'],
+            'token': token,
+            'password': vnc_ticket,
+        }, 200
+
     else:
         return '', 403
 
@@ -399,7 +414,7 @@ def delete(vmid):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
-        send_stop_ssh_tunnel(vmid)
+        # send_stop_ssh_tunnel(vmid)
         # Submit the delete VM task to RQ
         q.enqueue(delete_vm_task, vmid)
         return '', 200
@@ -571,29 +586,12 @@ def allowed_users(user):
 @app.route('/console/cleanup', methods=['POST'])
 def cleanup_vnc():
     if request.form['token'] == app.config['VNC_CLEANUP_TOKEN']:
-        for target in get_vnc_targets():
-            tunnel = next(
-                (tunnel for tunnel in ssh_tunnels if tunnel.local_bind_port == int(target['port'])),
-                None,
-            )
-            if tunnel:
-                if not next(
-                    (
-                        conn
-                        for conn in psutil.net_connections()
-                        if conn.laddr[1] == int(target['port']) and conn.status == 'ESTABLISHED'
-                    ),
-                    None,
-                ):
-                    try:
-                        tunnel.stop()
-                    except:
-                        pass
-                    ssh_tunnels.remove(tunnel)
-                    delete_vnc_target(target['port'])
-        return '', 200
-    else:
-        return '', 403
+        print('Cleaning up targets file...')
+        with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
+            targets.truncate()
+            return '', 200
+    print('Got bad cleanup request')
+    return '', 403
 
 
 @app.route('/template/<string:template_id>/disk')
