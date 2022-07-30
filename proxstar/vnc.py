@@ -45,7 +45,6 @@ def get_vnc_targets():
 
 def add_vnc_target(node, port):
     # TODO (willnilges): This doesn't throw an error if the target file is wrong.
-    # TODO (willnilges): This will duplicate targets
     targets = get_vnc_targets()
     target = next((target for target in targets if target['host'] == f'{node}:{port}'), None)
     if target:
