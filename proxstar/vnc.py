@@ -6,7 +6,6 @@ import urllib.parse
 from deprecated import deprecated
 import requests
 from flask import current_app as app
-from sshtunnel import SSHTunnelForwarder
 
 from proxstar import logging
 from proxstar.util import gen_password
@@ -102,22 +101,3 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
     ).json()['data']
 
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
-
-
-@deprecated('No longer in use')
-def start_ssh_tunnel(node, port):
-    """Forwards a port on a node
-    to the proxstar container
-    """
-    port = int(port)
-
-    server = SSHTunnelForwarder(
-        node,
-        ssh_username=app.config['PROXMOX_SSH_USER'],
-        ssh_pkey='proxmox_ssh_key',
-        ssh_private_key_password=app.config['PROXMOX_SSH_KEY_PASS'],
-        remote_bind_address=('127.0.0.1', port),
-        local_bind_address=('127.0.0.1', port),
-    )
-    server.start()
-    return server

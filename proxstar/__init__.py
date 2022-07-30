@@ -77,12 +77,6 @@ sentry_sdk.init(
     environment=app.config['SENTRY_ENV'],
 )
 
-if not os.path.exists('proxmox_ssh_key'):
-    with open('proxmox_ssh_key', 'w') as ssh_key_file:
-        ssh_key_file.write(app.config['PROXMOX_SSH_KEY'])
-
-ssh_tunnels = []
-
 auth = get_auth(app)
 
 redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
@@ -630,11 +624,6 @@ def health():
 
 def exit_handler():
     stop_websockify()
-    for tunnel in ssh_tunnels:
-        try:
-            tunnel.stop()
-        except:
-            pass
 
 
 atexit.register(exit_handler)
