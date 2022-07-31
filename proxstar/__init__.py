@@ -252,6 +252,9 @@ def vm_power(vmid, action):
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
+        vnc_token_key = f'vnc_token|{vmid}'
+        vnc_token = redis_conn.get(vnc_token_key).decode('utf-8') # For deleting the token from redis later
+        print(f'vnc_token = {vnc_token}')
         if action == 'start':
             vmconfig = vm.config
             usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'], 0)
@@ -260,16 +263,18 @@ def vm_power(vmid, action):
             vm.start()
         elif action == 'stop':
             vm.stop()
-            # TODO (willnilges): Replace with remove target function or something
-            # send_stop_ssh_tunnel(vmid)
+            delete_vnc_target(token=vnc_token)
+            redis_conn.delete(vnc_token_key)
         elif action == 'shutdown':
             vm.shutdown()
-            # send_stop_ssh_tunnel(vmid)
+            delete_vnc_target(token=vnc_token)
+            redis_conn.delete(vnc_token_key)
         elif action == 'reset':
             vm.reset()
         elif action == 'suspend':
             vm.suspend()
-            # send_stop_ssh_tunnel(vmid)
+            delete_vnc_target(token=vnc_token)
+            redis_conn.delete(vnc_token_key)
         elif action == 'resume':
             vm.resume()
         return '', 200
@@ -290,6 +295,7 @@ def vm_console(vmid):
         )
         node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
+        redis_conn.set(f'vnc_token|{vmid}', str(token)) # Store the VNC token in Redis.
         return {
             'host': app.config['VNC_HOST'],
             'port': app.config['VNC_PORT'],

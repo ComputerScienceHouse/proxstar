@@ -6,6 +6,7 @@ import psycopg2
 import requests
 from flask import Flask
 from rq import get_current_job
+from redis import Redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -31,7 +32,6 @@ if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config_
 else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
-
 
 def connect_db():
     engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
