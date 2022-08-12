@@ -63,7 +63,7 @@ def delete_vnc_target(node=None, port=None, token=None):
     elif token is not None:
         target = next((target for target in targets if target['token'] == f'{token}'), None)
     else:
-        raise ValueError("Need either a node and port, or a token.")
+        raise ValueError('Need either a node and port, or a token.')
     if target:
         targets.remove(target)
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w')
@@ -71,7 +71,7 @@ def delete_vnc_target(node=None, port=None, token=None):
             target_file.write(f"{target['token']}: {target['host']}\n")
         target_file.close()
     else:
-        raise LookupError("Target does not exist")
+        raise LookupError('Target does not exist')
 
 
 def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):

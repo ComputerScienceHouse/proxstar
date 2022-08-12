@@ -253,8 +253,8 @@ def vm_power(vmid, action):
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         vnc_token_key = f'vnc_token|{vmid}'
-        vnc_token = redis_conn.get(vnc_token_key).decode('utf-8') # For deleting the token from redis later
-        print(f'vnc_token = {vnc_token}')
+        # For deleting the token from redis later
+        vnc_token = redis_conn.get(vnc_token_key).decode('utf-8')
         if action == 'start':
             vmconfig = vm.config
             usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'], 0)
@@ -295,7 +295,7 @@ def vm_console(vmid):
         )
         node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
-        redis_conn.set(f'vnc_token|{vmid}', str(token)) # Store the VNC token in Redis.
+        redis_conn.set(f'vnc_token|{vmid}', str(token))  # Store the VNC token in Redis.
         return {
             'host': app.config['VNC_HOST'],
             'port': app.config['VNC_PORT'],
