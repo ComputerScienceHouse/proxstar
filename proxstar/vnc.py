@@ -3,10 +3,8 @@ import subprocess
 import time
 import urllib.parse
 
-from deprecated import deprecated
 import requests
 from flask import current_app as app
-from sshtunnel import SSHTunnelForwarder
 
 from proxstar import logging
 from proxstar.util import gen_password
@@ -45,7 +43,6 @@ def get_vnc_targets():
 
 def add_vnc_target(node, port):
     # TODO (willnilges): This doesn't throw an error if the target file is wrong.
-    # TODO (willnilges): This will duplicate targets
     targets = get_vnc_targets()
     target = next((target for target in targets if target['host'] == f'{node}:{port}'), None)
     if target:
@@ -59,15 +56,22 @@ def add_vnc_target(node, port):
         return token
 
 
-def delete_vnc_target(node, port):
+def delete_vnc_target(node=None, port=None, token=None):
     targets = get_vnc_targets()
-    target = next((target for target in targets if target['host'] == f'{node}:{port}'), None)
+    if node is not None and port is not None:
+        target = next((target for target in targets if target['host'] == f'{node}:{port}'), None)
+    elif token is not None:
+        target = next((target for target in targets if target['token'] == f'{token}'), None)
+    else:
+        raise ValueError('Need either a node and port, or a token.')
     if target:
         targets.remove(target)
         target_file = open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w')
         for target in targets:
             target_file.write(f"{target['token']}: {target['host']}\n")
         target_file.close()
+    else:
+        raise LookupError('Target does not exist')
 
 
 def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
@@ -103,22 +107,3 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
     ).json()['data']
 
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
-
-
-@deprecated('No longer in use')
-def start_ssh_tunnel(node, port):
-    """Forwards a port on a node
-    to the proxstar container
-    """
-    port = int(port)
-
-    server = SSHTunnelForwarder(
-        node,
-        ssh_username=app.config['PROXMOX_SSH_USER'],
-        ssh_pkey='proxmox_ssh_key',
-        ssh_private_key_password=app.config['PROXMOX_SSH_KEY_PASS'],
-        remote_bind_address=('127.0.0.1', port),
-        local_bind_address=('127.0.0.1', port),
-    )
-    server.start()
-    return server

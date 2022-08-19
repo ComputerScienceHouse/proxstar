@@ -6,6 +6,7 @@ import psycopg2
 import requests
 from flask import Flask
 from rq import get_current_job
+from redis import Redis
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -22,6 +23,7 @@ from proxstar.proxmox import connect_proxmox, get_pools
 from proxstar.starrs import get_next_ip, register_starrs, delete_starrs
 from proxstar.user import User, get_vms_for_rtp
 from proxstar.vm import VM, clone_vm, create_vm
+from proxstar.vnc import delete_vnc_target
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
 
@@ -150,7 +152,16 @@ def process_expiring_vms_task():
                             vm.name, vm.id
                         )
                     )
-                    # send_stop_ssh_tunnel(vm.id) # TODO (willnilges): Remove target from targets file
+                    try:
+                        redis_conn = Redis(app.config['REDIS_HOST'], app.config['REDIS_PORT'])
+                        vmid = vm['vmid']
+                        vnc_token_key = f'vnc_token|{vmid}'
+                        vnc_token = redis_conn.get(vnc_token_key).decode('utf-8')
+                        delete_vnc_target(token=vnc_token)
+                        redis_conn.delete(vnc_token_key)
+                    except Exception as e:  # pylint: disable=W0703
+                        print(f'ERROR: Could not delete target from targets file: {e}')
+
                     delete_vm_task(vm.id)
             if expiring_vms:
                 send_vm_expire_email(pool, expiring_vms)

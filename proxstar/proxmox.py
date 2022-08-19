@@ -23,24 +23,6 @@ def connect_proxmox():
                 raise
 
 
-def connect_proxmox_ssh():
-    for host in app.config['PROXMOX_HOSTS']:
-        try:
-            proxmox = ProxmoxAPI(
-                host,
-                user=app.config['PROXMOX_SSH_USER'],
-                private_key_file='proxmox_ssh_key',
-                password=app.config['PROXMOX_SSH_KEY_PASS'],
-                backend='ssh_paramiko',
-            )
-            proxmox.version.get()
-            return proxmox
-        except:
-            if app.config['PROXMOX_HOSTS'].index(host) == (len(app.config['PROXMOX_HOSTS']) - 1):
-                logging.error('unable to connect to any of the given Proxmox servers')
-                raise
-
-
 def get_node_least_mem(proxmox):
     nodes = proxmox.nodes.get()
     sorted_nodes = sorted(nodes, key=lambda x: ('mem' not in x, x.get('mem', None)))
