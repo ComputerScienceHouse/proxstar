@@ -65,6 +65,6 @@ When you log into your Proxstar instance, it should auto-create the pool. If for
 
 If you're trying to run this all on a VM without a graphical web browser, you can forward traffic to your computer using SSH.
 ```
-ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000
+ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000 -L 8001:localhost:8001
 ```
 
