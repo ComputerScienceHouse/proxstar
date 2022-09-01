@@ -62,6 +62,7 @@ WEBSOCKIFY_PATH = environ.get('PROXSTAR_WEBSOCKIFY_PATH', '/usr/local/bin/websoc
 WEBSOCKIFY_TARGET_FILE = environ.get('PROXSTAR_WEBSOCKIFY_TARGET_FILE', '/opt/proxstar/targets')
 VNC_HOST = environ.get('PROXSTAR_VNC_HOST', 'proxstar-vnc.csh.rit.edu')
 VNC_PORT = environ.get('PROXSTAR_VNC_PORT', '443')
+WEBSOCKIFY_PORT = environ.get('PROXSTAR_WEBSOCKIFY_PORT', '8081')
 
 # SENTRY
 # If you set the sentry dsn locally, make sure you use the local-dev or some
