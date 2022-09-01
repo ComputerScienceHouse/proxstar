@@ -254,10 +254,11 @@ def vm_power(vmid, action):
         vm = VM(vmid)
         vnc_token_key = f'vnc_token|{vmid}'
         # For deleting the token from redis later
+        vnc_token = None
         try:
             vnc_token = redis_conn.get(vnc_token_key).decode('utf-8')
         except AttributeError as e:
-            print(f'Error: Could not get vnc_token:{e}')
+            print(f'Warning: Could not get vnc_token during {action}:{e}. Going to attempt anyway. Likely, someone never opened a VNC session.')
         if action == 'start':
             vmconfig = vm.config
             usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'], 0)
@@ -266,18 +267,21 @@ def vm_power(vmid, action):
             vm.start()
         elif action == 'stop':
             vm.stop()
-            delete_vnc_target(token=vnc_token)
-            redis_conn.delete(vnc_token_key)
+            if vnc_token is not None:
+                delete_vnc_target(token=vnc_token)
+                redis_conn.delete(vnc_token_key)
         elif action == 'shutdown':
             vm.shutdown()
-            delete_vnc_target(token=vnc_token)
-            redis_conn.delete(vnc_token_key)
+            if vnc_token is not None:
+                delete_vnc_target(token=vnc_token)
+                redis_conn.delete(vnc_token_key)
         elif action == 'reset':
             vm.reset()
         elif action == 'suspend':
             vm.suspend()
-            delete_vnc_target(token=vnc_token)
-            redis_conn.delete(vnc_token_key)
+            if vnc_token is not None:
+                delete_vnc_target(token=vnc_token)
+                redis_conn.delete(vnc_token_key)
         elif action == 'resume':
             vm.resume()
         return '', 200
