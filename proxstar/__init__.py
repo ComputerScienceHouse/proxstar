@@ -258,7 +258,9 @@ def vm_power(vmid, action):
         try:
             vnc_token = redis_conn.get(vnc_token_key).decode('utf-8')
         except AttributeError as e:
-            print(f'Warning: Could not get vnc_token during {action}:{e}. Going to attempt anyway. Likely, someone never opened a VNC session.')
+            print(
+                f'Warning: Could not get vnc_token during {action}:{e}. {action} is still being performed.'
+            )
         if action == 'start':
             vmconfig = vm.config
             usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'], 0)
