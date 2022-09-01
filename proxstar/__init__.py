@@ -596,7 +596,14 @@ def cleanup_vnc():
         print('Cleaning up targets file...')
         with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
             targets.truncate()
-            return '', 200
+        print('Clearing vnc tokens from Redis...')
+        count = 0
+        ns_keys = 'vnc_token*'
+        for key in redis_conn.scan_iter(ns_keys):
+            redis_conn.delete(key)
+            count += 1
+        print(f'Deleted {count} key(s).')
+        return '', 200
     print('Got bad cleanup request')
     return '', 403
 
