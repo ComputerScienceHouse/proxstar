@@ -254,10 +254,7 @@ def vm_power(vmid, action):
         vm = VM(vmid)
         vnc_token_key = f'vnc_token|{vmid}'
         # For deleting the token from redis later
-        try:
-            vnc_token = redis_conn.get(vnc_token_key).decode('utf-8')
-        except AttributeError as e:
-            print(f'Error: Could not get vnc_token:{e}')
+        vnc_token = redis_conn.get(vnc_token_key).decode('utf-8')
         if action == 'start':
             vmconfig = vm.config
             usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'], 0)
