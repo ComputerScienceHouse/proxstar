@@ -254,10 +254,13 @@ def vm_power(vmid, action):
         vm = VM(vmid)
         vnc_token_key = f'vnc_token|{vmid}'
         # For deleting the token from redis later
+        vnc_token = None
         try:
             vnc_token = redis_conn.get(vnc_token_key).decode('utf-8')
         except AttributeError as e:
-            print(f'Error: Could not get vnc_token:{e}')
+            print(
+                f'Warning: Could not get vnc_token during {action}:{e}. {action} is still being performed.'
+            )
         if action == 'start':
             vmconfig = vm.config
             usage_check = user.check_usage(vmconfig['cores'], vmconfig['memory'], 0)
@@ -266,18 +269,21 @@ def vm_power(vmid, action):
             vm.start()
         elif action == 'stop':
             vm.stop()
-            delete_vnc_target(token=vnc_token)
-            redis_conn.delete(vnc_token_key)
+            if vnc_token is not None:
+                delete_vnc_target(token=vnc_token)
+                redis_conn.delete(vnc_token_key)
         elif action == 'shutdown':
             vm.shutdown()
-            delete_vnc_target(token=vnc_token)
-            redis_conn.delete(vnc_token_key)
+            if vnc_token is not None:
+                delete_vnc_target(token=vnc_token)
+                redis_conn.delete(vnc_token_key)
         elif action == 'reset':
             vm.reset()
         elif action == 'suspend':
             vm.suspend()
-            delete_vnc_target(token=vnc_token)
-            redis_conn.delete(vnc_token_key)
+            if vnc_token is not None:
+                delete_vnc_target(token=vnc_token)
+                redis_conn.delete(vnc_token_key)
         elif action == 'resume':
             vm.resume()
         return '', 200
@@ -592,7 +598,14 @@ def cleanup_vnc():
         print('Cleaning up targets file...')
         with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
             targets.truncate()
-            return '', 200
+        print('Clearing vnc tokens from Redis...')
+        count = 0
+        ns_keys = 'vnc_token*'
+        for key in redis_conn.scan_iter(ns_keys):
+            redis_conn.delete(key)
+            count += 1
+        print(f'Deleted {count} key(s).')
+        return '', 200
     print('Got bad cleanup request')
     return '', 403
 

@@ -243,12 +243,7 @@ def cleanup_vnc_task():
     ones every couple of minutes
     https://github.com/ComputerScienceHouse/proxstar/issues/153
     """
-    print('Clearing vnc targets')
-    with open(app.config['WEBSOCKIFY_TARGET_FILE'], 'w') as targets:
-        targets.truncate()
-
     # FIXME (willnilges): This... might be working...?
-
     try:
         requests.post(
             'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),

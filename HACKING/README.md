@@ -68,3 +68,10 @@ If you're trying to run this all on a VM without a graphical web browser, you ca
 ssh example@dev-server.csh.rit.edu -L 8000:localhost:8000 -L 8001:localhost:8001
 ```
 
+### Firing off Jobs
+
+To fire off a targets cleanup job, run a curl request:
+
+```
+curl -X POST http://localhost:8000/console/cleanup -F 'token={VNC_CLEANUP_TOKEN}'
+```

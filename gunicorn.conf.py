@@ -16,10 +16,11 @@ def start_websockify(websockify_path, target_file):
     result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE)
     if not result.stdout:
         print("Websockify is stopped. Starting websockify.")
+        proxstar_port = app.config.get('VNC_PORT')
         subprocess.call(
             [
                 websockify_path,
-                '8081',
+                proxstar_port,
                 '--token-plugin',
                 'TokenFile',
                 '--token-source',
