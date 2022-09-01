@@ -16,7 +16,7 @@ def start_websockify(websockify_path, target_file):
     result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE)
     if not result.stdout:
         print("Websockify is stopped. Starting websockify.")
-        proxstar_port = app.config.get('VNC_PORT')
+        proxstar_port = app.config.get('WEBSOCKIFY_PORT')
         subprocess.call(
             [
                 websockify_path,
