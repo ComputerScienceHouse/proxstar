@@ -197,7 +197,7 @@ def list_vms(user_view=None):
                     vms.append(pending_vm)
         else:
             vms = 'INACTIVE'
-    return render_template('list_vms.html', user=user, rtp_view=False, vms=vms)
+    return render_template('list_vms.html', user=user, user_view=user_view, vms=vms)
 
 @app.route("/pools")
 def list_pools():
@@ -208,7 +208,7 @@ def list_pools():
         abort(403)
     connect_proxmox()
     vms = get_pool_cache(db)
-    return render_template('list_vms.html', user=user, rtp_view=True, vms=vms)
+    return render_template('list_pools.html', user=user, rtp_view=True, vms=vms)
 
 @app.route('/isos')
 @auth.oidc_auth

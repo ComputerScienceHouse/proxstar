@@ -3,11 +3,11 @@
 
 <div class="container">
     <div class="row">
-        {% if user['rtp'] and rtp_view != True %}
+        {% if user_view %}
         <div class="col-md-12 col-sm-12">
             <div class="card bg-light mb-3">
                 <div class="card-header text-center">
-                    <h5 class="card-title">{{ rtp_view }}</h5>
+                    <h5 class="card-title">{{ user_view.name }}</h5>
                 </div>
             </div>
         </div>
@@ -28,7 +28,7 @@
                 </div>
             </div>
         </div>
-        {% elif rtp_view != True %}
+        {% else %}
             {% for vm in vms %}
                 <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
                     <div class="card bg-light mb-3">
@@ -41,66 +41,6 @@
                             <p>{{ vm['name'] }}</p>
                             {% endif %}
                             <p>Status: {{ vm['status'] }}</p>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
-        {% else %}
-            {% for pool in vms %}
-                <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
-                    <div class="card bg-light mb-3">
-                        <div class="card-header text-center">
-                            <img class="user-img float-left" src="https://profiles.csh.rit.edu/image/{{ pool['user'] }}" title="{{ pool['user'] }}">
-                            <h5 class="card-title user-title">
-                                <a href="/user/{{ pool['user'] }}">
-                                    {{ pool['user'] }}
-                                </a>
-                            </h5>
-                            <span class="float-right">{{ pool['num_vms'] }}</span>
-                        </div>
-                        <div class="card-body">
-                            <div class="resource-bar">
-                                <span class="float-left">CPU</span>
-                                <div class="progress" data-toggle="tooltip" title="{{ pool['usage']['cpu'] }}/{{ pool['limits']['cpu'] }}">
-                                    {% if pool['percents']['cpu'] <= 60 %}
-                                    <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ pool['percents']['cpu'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['cpu'] }}%"></div>
-                                    {% elif pool['percents']['cpu'] <= 80 %}
-                                    <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ pool['percents']['cpu'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['cpu'] }}%"></div>
-                                    {% else %}
-                                    <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ pool['percents']['cpu'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['cpu'] }}%"></div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="resource-bar">
-                                <span class="float-left">MEM</span>
-                                <div class="progress" data-toggle="tooltip" title="{{ pool['usage']['mem'] }}GB/{{ pool['limits']['mem'] }}.0GB">
-                                    {% if pool['percents']['mem'] <= 60 %}
-                                    <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ pool['percents']['mem'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['mem'] }}%"></div>
-                                    {% elif pool['percents']['mem'] <= 80 %}
-                                    <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ pool['percents']['mem'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['mem'] }}%"></div>
-                                    {% else %}
-                                    <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ pool['percents']['mem'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['mem'] }}%"></div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="resource-bar">
-                                <span class="float-left">DISK</span>
-                                <div class="progress" data-toggle="tooltip" title="{{ pool['usage']['disk'] }}GB/{{ pool['limits']['disk'] }}GB">
-                                    {% if pool['percents']['disk'] <= 60 %}
-                                    <div class="progress-bar bg-success" role="progressbar" aria-valuenow="{{ pool['percents']['disk'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['disk'] }}%"></div>
-                                    {% elif pool['percents']['disk'] <= 80 %}
-                                    <div class="progress-bar bg-warning" role="progressbar" aria-valuenow="{{ pool['percents']['disk'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['disk'] }}%"></div>
-                                    {% else %}
-                                    <div class="progress-bar bg-danger" role="progressbar" aria-valuenow="{{ pool['percents']['disk'] }}" aria-valuemin="0" aria-valuemax="100" style="width:{{ pool['percents']['disk'] }}%"></div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <div class="text-center">
-                                <button class="btn btn-info proxstar-poolbtn edit-limit" data-user="{{ pool['user'] }}" data-cpu="{{ pool['limits']['cpu'] }}" data-mem="{{ pool['limits']['mem'] }}" data-disk="{{ pool['limits']['disk'] }}">EDIT</button>
-                                {% if not pool['vms'] %}
-                                <button class="btn btn-danger proxstar-poolbtn delete-user" data-user="{{ pool['user'] }}">DELETE</button>
-                            {% endif %}
-                            </div>
                         </div>
                     </div>
                 </div>
