@@ -208,7 +208,7 @@ def list_pools():
         abort(403)
     connect_proxmox()
     vms = get_pool_cache(db)
-    return render_template('list_pools.html', user=user, rtp_view=True, vms=vms)
+    return render_template('list_pools.html', user=user, vms=vms)
 
 @app.route('/isos')
 @auth.oidc_auth
