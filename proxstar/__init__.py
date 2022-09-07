@@ -200,7 +200,7 @@ def list_vms(user_view=None):
     return render_template('list_vms.html', user=user, user_view=user_view, vms=vms)
 
 
-@app.route("/pools")
+@app.route('/pools')
 def list_pools():
     user = User(session['userinfo']['preferred_username'])
     if app.config['FORCE_STANDARD_USER']:
