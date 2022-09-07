@@ -199,6 +199,7 @@ def list_vms(user_view=None):
             vms = 'INACTIVE'
     return render_template('list_vms.html', user=user, user_view=user_view, vms=vms)
 
+
 @app.route("/pools")
 def list_pools():
     user = User(session['userinfo']['preferred_username'])
@@ -209,6 +210,7 @@ def list_pools():
     connect_proxmox()
     vms = get_pool_cache(db)
     return render_template('list_pools.html', user=user, vms=vms)
+
 
 @app.route('/isos')
 @auth.oidc_auth
