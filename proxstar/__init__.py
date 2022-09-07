@@ -170,13 +170,12 @@ def forbidden(e):
 @auth.oidc_auth
 def list_vms(user_view=None):
     user = User(session['userinfo']['preferred_username'])
-    rtp_view = False
     connect_proxmox()
     if app.config['FORCE_STANDARD_USER']:
         user.rtp = False
-    if user_view and not user.rtp:
-        abort(403)
-    elif user_view and user.rtp:
+    if user_view:
+        if not user.rtp:
+            abort(403)
         user_view = User(user_view)
         vms = user_view.vms
         for pending_vm in user_view.pending_vms:
@@ -186,10 +185,6 @@ def list_vms(user_view=None):
                 vms[vms.index(vm)]['pending'] = True
             else:
                 vms.append(pending_vm)
-        rtp_view = user_view.name
-    elif user.rtp:
-        vms = get_pool_cache(db)
-        rtp_view = True
     else:
         if user.active:
             vms = user.vms
@@ -202,8 +197,18 @@ def list_vms(user_view=None):
                     vms.append(pending_vm)
         else:
             vms = 'INACTIVE'
-    return render_template('list_vms.html', user=user, rtp_view=rtp_view, vms=vms)
+    return render_template('list_vms.html', user=user, rtp_view=False, vms=vms)
 
+@app.route("/pools")
+def list_pools():
+    user = User(session['userinfo']['preferred_username'])
+    if app.config['FORCE_STANDARD_USER']:
+        user.rtp = False
+    if not user.rtp:
+        abort(403)
+    connect_proxmox()
+    vms = get_pool_cache(db)
+    return render_template('list_vms.html', user=user, rtp_view=True, vms=vms)
 
 @app.route('/isos')
 @auth.oidc_auth
