@@ -485,16 +485,13 @@ def create():
             if iso != 'none':
                 iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'], iso)
             if not user.rtp:
-                if template == 'none':
-                    usage_check = user.check_usage(0, 0, disk)
-                else:
-                    usage_check = user.check_usage(cores, memory, disk)
+                usage_check = user.check_usage(cores, memory, disk)
                 username = user.name
             else:
                 usage_check = None
                 username = request.form['user']
             if usage_check:
-                return usage_check
+                return usage_check, 403
             else:
                 valid, available = (
                     check_hostname(starrs, name) if app.config['USE_STARRS'] else (True, True)
