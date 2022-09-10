@@ -636,18 +636,44 @@ $("#process-expiring-vms-task-button").click(function(){
 
 $("#cleanup-vnc-task-button").click(function(){
     const vncCleanupToken = $(this).data('vnc_cleanup_token');
-//    let data = {'token': vncCleanupToken};
-
-    console.log(vncCleanupToken);
-
-    var formData = new FormData();
-    formData.append('token', vncCleanupToken);
-    fetch(`/console/cleanup`, {
-      method: 'post',
-      credentials: 'same-origin',
-      body: formData 
-    }).then(res => {
-      console.log("Request complete! response:", res);
+    
+    swal({
+        title: "Are you sure you want to clear VNC tokens?",
+        text: "This will clear the websockify targets file, and remove all entries from Redis. Ongoing VNC sessions may be disrupted.",
+        icon: "warning",
+        buttons: {
+            cancel: true,
+            action: {
+                text: "Cleanup VNC Sessions",
+                closeModal: false,
+                className: "swal-button--danger",
+            }
+        },
+        dangerMode: true,
+    })
+    .then((willComplete) => {
+        if (willComplete) {
+            var formData = new FormData();
+            formData.append('token', vncCleanupToken);
+            fetch(`/console/cleanup`, {
+              method: 'post',
+              credentials: 'same-origin',
+              body: formData 
+            }).then((response) => {
+                return swal("VNC Sessions have been cleared", {
+                    icon: "success",
+                });
+            }).then(() => {
+                window.location = location;
+            }).catch(err => {
+                if (err) {
+                    swal("Uh oh...", "Unable to clear VNC sessions", "error");
+                } else {
+                    swal.stopLoading();
+                    swal.close();
+                }
+            });
+        }
     });
 });
 
