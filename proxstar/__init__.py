@@ -568,6 +568,8 @@ def settings():
             templates=templates,
             ignored_pools=db_ignored_pools,
             allowed_users=db_allowed_users,
+            vnc_cleanup_token=app.config['VNC_CLEANUP_TOKEN'],
+            server_name=app.config['SERVER_NAME']
         )
     else:
         return abort(403)

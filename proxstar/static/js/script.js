@@ -627,6 +627,31 @@ $(".add-ignored-pool").click(function(){
     });
 });
 
+$("#generate-pool-cache-task-button").click(function(){
+
+});
+
+$("#process-expiring-vms-task-button").click(function(){
+});
+
+$("#cleanup-vnc-task-button").click(function(){
+    const vncCleanupToken = $(this).data('vnc_cleanup_token');
+//    let data = {'token': vncCleanupToken};
+
+    console.log(vncCleanupToken);
+
+    var formData = new FormData();
+    formData.append('token', vncCleanupToken);
+    fetch(`/console/cleanup`, {
+      method: 'post',
+      credentials: 'same-origin',
+      body: formData 
+    }).then(res => {
+      console.log("Request complete! response:", res);
+    });
+});
+
+
 function change_for_template(obj) {
     var template_element = obj;
     var selected = template_element.options[template_element.selectedIndex].value;
@@ -653,7 +678,6 @@ $("#console-vm").click(function(){
         return response.json()
     }).then((vnc_params) => {
         // TODO (willnilges): encrypt=true
-        // TODO (willnilges): set host and port to an env variable
         window.open(`/static/noVNC/vnc.html?autoconnect=true&password=${vnc_params.password}&host=${vnc_params.host}&port=${vnc_params.port}&path=path?token=${vnc_params.token}`, '_blank');
     }).catch(err => {
         if (err) {
