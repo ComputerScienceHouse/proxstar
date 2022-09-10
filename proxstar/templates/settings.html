@@ -114,10 +114,11 @@
             </div>
         </div>
         <div class="panel-body">
-
-         
-            <button class="btn btn-secondary" id="generate-pool-cache-task-button" name="generate-pool-cache-task-button" >GENERATE POOL CACHE</button>
-            <button class="btn btn-secondary" id="process-expiring-vms-task-button" name="process-expiring-vms-task-button">PROCESS EXPIRING VMS</button>
+            <!--TODO: Expose these functions through Flask so that they can be called with the API-->
+            <!--
+                <button class="btn btn-secondary" id="generate-pool-cache-task-button" name="generate-pool-cache-task-button" >GENERATE POOL CACHE</button>
+                <button class="btn btn-secondary" id="process-expiring-vms-task-button" name="process-expiring-vms-task-button">PROCESS EXPIRING VMS</button>
+            -->
             <button class="btn btn-secondary" id="cleanup-vnc-task-button" name="cleanup-vnc-task-button" data-vnc_cleanup_token="{{ vnc_cleanup_token }}" data-server_name="{{ server_name }}">CLEANUP VNC SESSIONS</button>
         </div>
     </div>

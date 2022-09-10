@@ -627,12 +627,14 @@ $(".add-ignored-pool").click(function(){
     });
 });
 
+// TODO: Move these tasks so they're callable via JS?
+/*
 $("#generate-pool-cache-task-button").click(function(){
-
 });
 
 $("#process-expiring-vms-task-button").click(function(){
 });
+*/
 
 $("#cleanup-vnc-task-button").click(function(){
     const vncCleanupToken = $(this).data('vnc_cleanup_token');
