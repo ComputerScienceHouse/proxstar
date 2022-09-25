@@ -46,7 +46,7 @@ from proxstar.db import (
     set_template_info,
     add_shared_pool,
     get_shared_pool,
-    get_shared_pools
+    get_shared_pools,
 )
 from proxstar.vnc import (
     add_vnc_target,
@@ -228,8 +228,17 @@ def list_pools():
         user.rtp = False
     proxmox = connect_proxmox()
     user_pools = get_pool_cache(db) if user.rtp else []
-    shared_pools = map(lambda pool: {"name": pool.name, "members": pool.members, "vms": proxmox.pools(pool.name).get()['members']}, get_shared_pools(db, user.name, user.rtp))
-    return render_template('list_pools.html', user=user, user_pools=user_pools, shared_pools=shared_pools)
+    shared_pools = map(
+        lambda pool: {
+            "name": pool.name,
+            "members": pool.members,
+            "vms": proxmox.pools(pool.name).get()['members'],
+        },
+        get_shared_pools(db, user.name, user.rtp),
+    )
+    return render_template(
+        'list_pools.html', user=user, user_pools=user_pools, shared_pools=shared_pools
+    )
 
 
 @app.route('/isos')
@@ -607,12 +616,13 @@ def ignored_pools(pool):
     else:
         return '', 403
 
+
 @app.route('/pool/shared/create', methods=['GET', 'POST'])
 @auth.oidc_auth
 def create_shared_pool():
     user = User(session['userinfo']['preferred_username'])
     if request.method == 'GET':
-        return render_template('create_pool.html',user=user)
+        return render_template('create_pool.html', user=user)
     elif request.method == 'POST':
         name = request.form['name']
         members = request.form['members'].split(';')

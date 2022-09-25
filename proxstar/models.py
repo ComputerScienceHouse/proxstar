@@ -55,6 +55,7 @@ class Allowed_Users(Base):
     __tablename__ = 'allowed_users'
     id = Column(String(32), primary_key=True)
 
+
 @default_repr
 class Shared_Pools(Base):
     __tablename__ = 'shared_pools'
