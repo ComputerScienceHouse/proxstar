@@ -3,7 +3,7 @@ from rq.registry import StartedJobRegistry
 
 from proxstar.ldapdb import is_active, is_user, is_current_student
 from proxstar import db, q, redis_conn
-from proxstar.db import get_allowed_users, get_user_usage_limits, is_rtp
+from proxstar.db import get_allowed_users, get_user_usage_limits, is_rtp, get_shared_pools
 from proxstar.proxmox import connect_proxmox, get_pools
 from proxstar.util import lazy_property, default_repr
 from proxstar.vm import VM
@@ -39,6 +39,7 @@ class User:
             if 'name' not in vm:
                 vms.remove(vm)
         vms = sorted(vms, key=lambda k: k['name'])
+
         return vms
 
     @lazy_property
@@ -63,6 +64,12 @@ class User:
         allowed_vms = []
         for vm in self.vms:
             allowed_vms.append(vm['vmid'])
+        shared_pools = get_shared_pools(db, self.name, False)
+        proxmox = connect_proxmox()
+        for pool in shared_pools:
+            vms = proxmox.pools(pool.name).get()['members']
+            for vm in vms:
+                allowed_vms.append(vm['vmid'])
         return allowed_vms
 
     @lazy_property

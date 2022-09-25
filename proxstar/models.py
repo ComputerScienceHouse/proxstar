@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Date, Integer, String
 from sqlalchemy.dialects import postgresql
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.ext.mutable import MutableList
 from sqlalchemy.types import JSON, Text
 
 from proxstar.util import default_repr
@@ -53,3 +54,9 @@ class Ignored_Pools(Base):
 class Allowed_Users(Base):
     __tablename__ = 'allowed_users'
     id = Column(String(32), primary_key=True)
+
+@default_repr
+class Shared_Pools(Base):
+    __tablename__ = 'shared_pools'
+    name = Column(String(32), primary_key=True)
+    members = Column(MutableList.as_mutable(postgresql.ARRAY(String(32))))

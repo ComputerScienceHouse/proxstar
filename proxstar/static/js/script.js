@@ -379,6 +379,54 @@ $("#create-vm").click(function(){
     });
 });
 
+$("#create-pool").click(function(){
+    console.log("bingus");
+    const name = document.getElementById('name').value.toLowerCase();
+    const description = document.getElementById('description').value;
+    const members = document.getElementById('members').value;
+    var info = document.createElement('span');
+    swal({
+        title: `Are you sure you want to create ${name}?`,
+        content: info,
+        icon: "info",
+        buttons: {
+            cancel: true,
+            confirm: {
+                text: "Create",
+                closeModal: false,
+            }
+        }
+    })
+    .then((willCreate) => {
+        if (willCreate) {
+            var data  = new FormData();
+            data.append('name', name);
+            data.append('description', description);
+            data.append('members', members);
+            fetch('/pool/shared/create', {
+                credentials: 'same-origin',
+                method: 'POST',
+                body: data
+            }).then((response) => {
+                console.log(response);
+                var swal_text = `${name} is now being created. Check back soon and it should be good to go.`
+                return swal(`${swal_text}`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
+                });
+            }).then(() => {
+                window.location = "/";
+            });
+        }
+    });
+});
+
 $("#change-cores").click(function(){
     const vmid = $(this).data('vmid');
     const usage = $(this).data('usage');
@@ -569,6 +617,67 @@ $(".edit-limit").click(function(){
     });
 });
 
+$(".edit-shared-members").click(function(){
+    const pool = $(this).data('pool');
+    const currentMembers = $(this).data('members').slice(1,-1).split(', ');
+    var currentMembersString = "";
+    currentMembers.forEach(name => {
+        currentMembersString += name.slice(1,-1) + ',';
+    });
+    var options = document.createElement('div');
+    var members = document.createElement('input');
+    members.type = 'text';
+    members.defaultValue = currentMembersString.slice(0,-1);
+    options.append(members);
+    swal({
+        title: `Enter the new member list for ${pool}:`,
+        content: options,
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            confirm: {
+                text: "Submit",
+                closeModal: false,
+            }
+        },
+    })
+    .then((willChange) => {
+        if (willChange) {
+            var data  = new FormData();
+            data.append('members', $(members).val());
+            fetch(`/pool/shared/${pool}/modify`, {
+                credentials: 'same-origin',
+                method: 'post',
+                body: data
+            }).then((response) => {
+                return swal(`Now applying new member list to ${pool}!`, {
+                    icon: "success",
+                    buttons: {
+                        ok: {
+                            text: "OK",
+                            closeModal: true,
+                            className: "",
+                        }
+                    }
+                });
+            }).then(() => {
+                window.location = "/";
+            });
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to change the members of ${pool}. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});
+
 $(".delete-user").click(function(){
     const user = $(this).data('user');
     swal({
@@ -598,6 +707,44 @@ $(".delete-user").click(function(){
             }).catch(err => {
                 if (err) {
                     swal("Uh oh...", `Unable to delete the pool for ${user}. Please try again later.`, "error");
+                } else {
+                    swal.stopLoading();
+                    swal.close();
+                }
+            });
+        }
+    });
+});
+
+$(".delete-pool").click(function(){
+    const pool = $(this).data('pool');
+    swal({
+        title: `Are you sure you want to delete the pool ${pool}?`,
+        icon: "warning",
+        buttons: {
+            cancel: true,
+            delete: {
+                text: "delete",
+                closeModal: false,
+                className: "swal-button--danger",
+            }
+        },
+        dangerMode: true,
+    })
+    .then((willDelete) => {
+        if (willDelete) {
+            fetch(`/pool/shared/${ pool }/delete`, {
+                credentials: 'same-origin',
+                method: 'post'
+            }).then((response) => {
+                return swal(`The pool ${pool} has been deleted!`, {
+                    icon: "success",
+                });
+            }).then(() => {
+                window.location = "/";
+            }).catch(err => {
+                if (err) {
+                    swal("Uh oh...", `Unable to delete the pool ${pool}. Please try again later.`, "error");
                 } else {
                     swal.stopLoading();
                     swal.close();

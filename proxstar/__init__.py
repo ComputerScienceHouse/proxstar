@@ -44,6 +44,9 @@ from proxstar.db import (
     delete_allowed_user,
     get_template_disk,
     set_template_info,
+    add_shared_pool,
+    get_shared_pool,
+    get_shared_pools
 )
 from proxstar.vnc import (
     add_vnc_target,
@@ -197,7 +200,25 @@ def list_vms(user_view=None):
                     vms.append(pending_vm)
         else:
             vms = 'INACTIVE'
-    return render_template('list_vms.html', user=user, user_view=user_view, vms=vms)
+    return render_template('list_vms.html', user=user, external_view=user_view, vms=vms)
+
+
+@app.route('/pool/shared/<string:name>')
+@auth.oidc_auth
+def list_shared_vms(name=None):
+    user = User(session['userinfo']['preferred_username'])
+    pool = get_shared_pool(db, name)
+    if pool:
+        if user.name in pool.members or user.rtp:
+            proxmox = connect_proxmox()
+            vms = proxmox.pools(pool.name).get()['members']
+        else:
+            return 'Not Member of Pool', 403
+    else:
+        return 'Pool does not exist', 400
+    if app.config['FORCE_STANDARD_USER']:
+        user.rtp = False
+    return render_template('list_vms.html', user=user, external_view=pool, vms=vms)
 
 
 @app.route('/pools')
@@ -205,11 +226,10 @@ def list_pools():
     user = User(session['userinfo']['preferred_username'])
     if app.config['FORCE_STANDARD_USER']:
         user.rtp = False
-    if not user.rtp:
-        abort(403)
-    connect_proxmox()
-    vms = get_pool_cache(db)
-    return render_template('list_pools.html', user=user, vms=vms)
+    proxmox = connect_proxmox()
+    user_pools = get_pool_cache(db) if user.rtp else []
+    shared_pools = map(lambda pool: {"name": pool.name, "members": pool.members, "vms": proxmox.pools(pool.name).get()['members']}, get_shared_pools(db, user.name, user.rtp))
+    return render_template('list_pools.html', user=user, user_pools=user_pools, shared_pools=shared_pools)
 
 
 @app.route('/isos')
@@ -463,9 +483,11 @@ def create():
         if request.method == 'GET':
             stored_isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
             pools = get_pools(proxmox, db)
+            for pool in get_shared_pools(db, user.name, True):
+                pools.append(pool.name)
             templates = get_templates(db)
             return render_template(
-                'create.html',
+                'create_vm.html',
                 user=user,
                 usage=user.usage,
                 limits=user.limits,
@@ -582,6 +604,58 @@ def ignored_pools(pool):
         elif request.method == 'DELETE':
             delete_ignored_pool(db, pool)
         return '', 200
+    else:
+        return '', 403
+
+@app.route('/pool/shared/create', methods=['GET', 'POST'])
+@auth.oidc_auth
+def create_shared_pool():
+    user = User(session['userinfo']['preferred_username'])
+    if request.method == 'GET':
+        return render_template('create_pool.html',user=user)
+    elif request.method == 'POST':
+        name = request.form['name']
+        members = request.form['members'].split(';')
+        description = request.form['description']
+        if 'rtp' in session['userinfo']['groups']:
+            try:
+                proxmox = connect_proxmox()
+                proxmox.pools.post(poolid=name, comment=description)
+            except:
+                return 'Error creating pool', 400
+            add_shared_pool(db, name, members)
+            return '', 200
+        else:
+            return '', 403
+
+
+@app.route('/pool/shared/<string:name>/modify', methods=['POST'])
+@auth.oidc_auth
+def modify_shared_pool(name):
+    members = request.form['members'].split(',')
+    if 'rtp' in session['userinfo']['groups']:
+        pool = get_shared_pool(db, name)
+        if pool:
+            pool.members = members
+            db.commit()
+            return '', 200
+        return 'Pool not found', 400
+    else:
+        return '', 403
+
+
+@app.route('/pool/shared/<string:name>/delete', methods=['POST'])
+@auth.oidc_auth
+def delete_shared_pool(name):
+    if 'rtp' in session['userinfo']['groups']:
+        pool = get_shared_pool(db, name)
+        if pool:
+            db.delete(pool)
+            db.commit()
+            proxmox = connect_proxmox()
+            proxmox.pools(name).delete()
+            return '', 200
+        return 'Pool not found', 400
     else:
         return '', 403
 

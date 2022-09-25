@@ -267,6 +267,18 @@ ALTER TABLE ONLY public.vm_expiration
 
 
 --
+-- Name: allowed_users; Type: TABLE; Schema: public; Owner: proxstar
+--
+
+CREATE TABLE public.shared_pools (
+    name VARCHAR(32) PRIMARY KEY,
+	members VARCHAR(32)[]
+);
+
+
+ALTER TABLE public.shared_pools OWNER TO proxstar;
+
+--
 -- Name: DATABASE proxstar; Type: ACL; Schema: -; Owner: postgres
 --
 

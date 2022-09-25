@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        {% if user['rtp'] %}
+        <div class="col-md-12 col-sm-12">
+        {% else %}
+        <div class="col-lg-9 col-md-8 col-sm-12">
+        {% endif %}
+            <div class="card bg-light mb-3">
+                <div class="card-header">
+                    <h3 class="card-title">Create Shared Pool</h3>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <label for="name" class="pull-left">Pool Name</label>
+                        <input type="text" name="name" id="name" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="description" class="pull-left">Description</label>
+                        <input type="text" name="description" id="description" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label for="members" class="pull-left">Members</label>
+                        <input type="text" name="members" id="members" class="form-control">
+                    </div>
+                    <div class="text-center">
+                        <button class="btn btn-success" id="create-pool" name="create">CREATE</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

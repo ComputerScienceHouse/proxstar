@@ -54,11 +54,17 @@
                             Create VM
                         </a>
                     </li>
-                    {% if user.rtp %}
                     <li class="nav-item navbar-user dropdown">
                         <a class="nav-link" href="/pools">
                             <i class="fas fa-user"></i>
-                            User Pools
+                            Pools
+                        </a>
+                    </li>
+                    {% if user.rtp %}
+                    <li class="nav-item navbar-user dropdown">
+                        <a class="nav-link" href="/pool/shared/create">
+                            <i class="fas fa-plus-circle"></i>
+                            Create Shared Pool
                         </a>
                     </li>
                     <li class="nav-item navbar-user dropdown">

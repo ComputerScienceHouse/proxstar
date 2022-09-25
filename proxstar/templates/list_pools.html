@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 {% block body %}
-
 <div class="container">
     <div class="row">
-        {% for pool in vms %}
+        {% for pool in user_pools %}
             <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
                 <div class="card bg-light mb-3">
                     <div class="card-header text-center">
@@ -56,7 +55,30 @@
                             <button class="btn btn-info proxstar-poolbtn edit-limit" data-user="{{ pool['user'] }}" data-cpu="{{ pool['limits']['cpu'] }}" data-mem="{{ pool['limits']['mem'] }}" data-disk="{{ pool['limits']['disk'] }}">EDIT</button>
                             {% if not pool['vms'] %}
                             <button class="btn btn-danger proxstar-poolbtn delete-user" data-user="{{ pool['user'] }}">DELETE</button>
-                        {% endif %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        {% for pool in shared_pools %}
+            <div class="col-lg-3 col-md-4 col-sm-6 col-xs-12">
+                <div class="card bg-light mb-3">
+                    <div class="card-header text-center">
+                        <h5 class="card-title user-title">
+                            <a href="/pool/{{ pool.name }}">
+                                {{ pool.name }}
+                            </a>
+                        </h5>
+                        
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center">
+                            <h6>{{ pool.members|length }} members</h5>
+                            <button class="btn btn-info proxstar-poolbtn edit-shared-members" data-pool="{{ pool.name }}" data-members="{{ pool.members }}">EDIT</button>
+                            {% if not pool['vms'] %}
+                            <button class="btn btn-danger proxstar-poolbtn delete-pool" data-pool="{{ pool.name }}">DELETE</button>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
