@@ -625,7 +625,7 @@ def create_shared_pool():
         return render_template('create_pool.html', user=user)
     elif request.method == 'POST':
         name = request.form['name']
-        members = request.form['members'].split(';')
+        members = request.form['members'].split(',')
         description = request.form['description']
         if 'rtp' in session['userinfo']['groups']:
             try:
