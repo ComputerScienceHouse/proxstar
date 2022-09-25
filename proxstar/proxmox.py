@@ -2,7 +2,7 @@ from flask import current_app as app
 from proxmoxer import ProxmoxAPI
 
 from proxstar import logging
-from proxstar.db import get_ignored_pools, get_shared_pool
+from proxstar.db import get_ignored_pools
 from proxstar.ldapdb import is_user
 
 
