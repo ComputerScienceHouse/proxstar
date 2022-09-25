@@ -217,7 +217,7 @@ def set_template_info(db, template_id, name, disk):
 
 def add_shared_pool(db, name, members):
     if db.query(Shared_Pools).get(name):
-        return "Name Already in Use"
+        return 'Name Already in Use'
     db.add(Shared_Pools(name=name, members=members))
     db.commit()
 
@@ -230,6 +230,6 @@ def get_shared_pools(db, user, all_pools):
     if all_pools:
         return db.query(Shared_Pools).all()
     pools = []
-    for pool in db.query(Shared_Pools).filter(Shared_Pools.members.contains(f"{{{user}}}")).all():
+    for pool in db.query(Shared_Pools).filter(Shared_Pools.members.contains(f'{{{user}}}')).all():
         pools.append(pool)
     return pools

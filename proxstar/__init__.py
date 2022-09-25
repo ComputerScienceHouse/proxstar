@@ -230,9 +230,9 @@ def list_pools():
     user_pools = get_pool_cache(db) if user.rtp else []
     shared_pools = map(
         lambda pool: {
-            "name": pool.name,
-            "members": pool.members,
-            "vms": proxmox.pools(pool.name).get()['members'],
+            'name': pool.name,
+            'members': pool.members,
+            'vms': proxmox.pools(pool.name).get()['members'],
         },
         get_shared_pools(db, user.name, user.rtp),
     )
