@@ -3,7 +3,6 @@ import subprocess
 import time
 import urllib.parse
 
-import requests
 from flask import current_app as app
 
 from proxstar import logging
@@ -74,36 +73,15 @@ def delete_vnc_target(node=None, port=None, token=None):
         raise LookupError('Target does not exist')
 
 
-def open_vnc_session(vmid, node, proxmox_user, proxmox_pass):
+def open_vnc_session(vmid, node, proxmox):
     """Pings the Proxmox API to request a VNC Proxy connection. Authenticates
     against the API using a Uname/Pass, gets a few tokens back, then uses those
     tokens to  open the VNC Proxy. Use these to connect to the VM's host with
     websockify proxy.
     Returns: Ticket to use as the noVNC password, and a port.
     """
-    # Get Proxmox API ticket and CSRF_Prevention_Token
-    # TODO (willnilges): Use Proxmoxer to get this information
     # TODO (willnilges): Report errors
-    data = {'username': proxmox_user, 'password': proxmox_pass}
-    response_data = requests.post(
-        f'https://{node}.csh.rit.edu:8006/api2/json/access/ticket',
-        verify=False,
-        data=data,
-    ).json()['data']
-    if response_data is None:
-        raise requests.AuthenticationError(
-            'Could not authenticate against `ticket` endpoint! Check uname/password'
-        )
-    csrf_prevention_token = response_data['CSRFPreventionToken']
-    ticket = response_data['ticket']
-    proxy_params = {'node': node, 'vmid': str(vmid), 'websocket': '1', 'generate-password': '0'}
-    vncproxy_response_data = requests.post(
-        f'https://{node}.csh.rit.edu:8006/api2/json/nodes/{node}/qemu/{vmid}/vncproxy',
-        verify=False,
-        timeout=5,
-        params=proxy_params,
-        headers={'CSRFPreventionToken': csrf_prevention_token},
-        cookies={'PVEAuthCookie': ticket},
-    ).json()['data']
+    params = {'websocket': '1', 'generate-password': '0'}
+    vncproxy_response_data = proxmox.nodes(node).qemu(str(vmid)).vncproxy.post(**params)
 
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']

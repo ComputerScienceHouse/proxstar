@@ -2,6 +2,7 @@ import os
 import subprocess
 
 from flask import Flask
+
 app = Flask(__name__)
 if os.path.exists(os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config_local.py")):
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), "config_local.py")
