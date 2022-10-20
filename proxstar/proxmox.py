@@ -6,22 +6,35 @@ from proxstar.db import get_ignored_pools
 from proxstar.ldapdb import is_user
 
 
-def connect_proxmox():
+def connect_proxmox(host=None):
+    if host:
+        attempted_connection = attempt_proxmox_connection(host)
+        if attempted_connection:
+            return attempted_connection
+        logging.error(f'unable to connect to {host}')
+        raise
+
     for host in app.config['PROXMOX_HOSTS']:
-        try:
-            proxmox = ProxmoxAPI(
-                host,
-                user=app.config['PROXMOX_USER'],
-                token_name=app.config['PROXMOX_TOKEN_NAME'],
-                token_value=app.config['PROXMOX_TOKEN_VALUE'],
-                verify_ssl=False,
-            )
-            proxmox.version.get()
-            return proxmox
-        except:
-            if app.config['PROXMOX_HOSTS'].index(host) == (len(app.config['PROXMOX_HOSTS']) - 1):
-                logging.error('unable to connect to any of the given Proxmox servers')
-                raise
+        attempted_connection = attempt_proxmox_connection(host)
+        if attempted_connection:
+            return attempted_connection
+    logging.error('unable to connect to any of the given Proxmox servers')
+    raise
+
+
+def attempt_proxmox_connection(host):
+    try:
+        proxmox = ProxmoxAPI(
+            host,
+            user=app.config['PROXMOX_USER'],
+            token_name=app.config['PROXMOX_TOKEN_NAME'],
+            token_value=app.config['PROXMOX_TOKEN_VALUE'],
+            verify_ssl=False,
+        )
+        proxmox.version.get()
+        return proxmox
+    except:
+        return None
 
 
 def get_node_least_mem(proxmox):
