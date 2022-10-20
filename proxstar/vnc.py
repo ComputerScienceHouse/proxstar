@@ -75,7 +75,7 @@ def delete_vnc_target(node=None, port=None, token=None):
 
 def open_vnc_session(vmid, node, proxmox):
     """Pings the Proxmox API to request a VNC Proxy connection. Authenticates
-    against the API using a Uname/Pass, gets a few tokens back, then uses those
+    against the API using a Uname/Token, gets a few tokens back, then uses those
     tokens to  open the VNC Proxy. Use these to connect to the VM's host with
     websockify proxy.
     Returns: Ticket to use as the noVNC password, and a port.
