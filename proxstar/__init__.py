@@ -331,12 +331,12 @@ def vm_power(vmid, action):
 @auth.oidc_auth
 def vm_console(vmid):
     user = User(session['userinfo']['preferred_username'])
-    connect_proxmox()
+    proxmox = connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         # import pdb; pdb.set_trace()
         vm = VM(vmid)
         vnc_ticket, vnc_port = open_vnc_session(
-            vmid, vm.node, app.config['PROXMOX_USER'], app.config['PROXMOX_PASS']
+            vmid, vm.node, proxmox
         )
         node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
