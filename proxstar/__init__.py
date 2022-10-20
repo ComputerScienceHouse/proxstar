@@ -335,6 +335,7 @@ def vm_console(vmid):
     if user.rtp or int(vmid) in user.allowed_vms:
         # import pdb; pdb.set_trace()
         vm = VM(vmid)
+        proxmox = connect_proxmox(f'{vm.node}.csh.rit.edu')
         vnc_ticket, vnc_port = open_vnc_session(vmid, vm.node, proxmox)
         node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
