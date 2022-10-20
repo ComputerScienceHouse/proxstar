@@ -3,7 +3,6 @@ import subprocess
 import time
 import urllib.parse
 
-import requests
 from flask import current_app as app
 
 from proxstar import logging
@@ -85,4 +84,4 @@ def open_vnc_session(vmid, node, proxmox):
     params = {'websocket': '1', 'generate-password': '0'}
     vncproxy_response_data = proxmox.nodes(node).qemu(str(vmid)).vncproxy.post(**params)
 
-    return urllib.parse.quote_plus(vncproxy_response_data['ticket']) vncproxy_response_data['port']
+    return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']

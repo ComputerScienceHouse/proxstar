@@ -335,9 +335,7 @@ def vm_console(vmid):
     if user.rtp or int(vmid) in user.allowed_vms:
         # import pdb; pdb.set_trace()
         vm = VM(vmid)
-        vnc_ticket, vnc_port = open_vnc_session(
-            vmid, vm.node, proxmox
-        )
+        vnc_ticket, vnc_port = open_vnc_session(vmid, vm.node, proxmox)
         node = f'{vm.node}.csh.rit.edu'
         token = add_vnc_target(node, vnc_port)
         redis_conn.set(f'vnc_token|{vmid}', str(token))  # Store the VNC token in Redis.
