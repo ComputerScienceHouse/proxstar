@@ -12,7 +12,8 @@ def connect_proxmox():
             proxmox = ProxmoxAPI(
                 host,
                 user=app.config['PROXMOX_USER'],
-                password=app.config['PROXMOX_PASS'],
+                token_name=app.config['PROXMOX_TOKEN_NAME'],
+                token_value=app.config['PROXMOX_TOKEN_VALUE'],
                 verify_ssl=False,
             )
             proxmox.version.get()
