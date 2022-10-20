@@ -8,33 +8,33 @@ from proxstar.ldapdb import is_user
 
 def connect_proxmox(host=None):
     if host:
-        attempted_connection = attempt_proxmox_connection(host)
-        if attempted_connection:
-            return attempted_connection
-        logging.error(f'unable to connect to {host}')
-        raise
+        try:
+            return attempt_proxmox_connection(host)
+        except:
+            logging.error(f'unable to connect to {host}')
+            raise
 
-    for host in app.config['PROXMOX_HOSTS']:
-        attempted_connection = attempt_proxmox_connection(host)
-        if attempted_connection:
-            return attempted_connection
-    logging.error('unable to connect to any of the given Proxmox servers')
-    raise
+    for host_candidate in app.config['PROXMOX_HOSTS']:
+        try:
+            return attempt_proxmox_connection(host_candidate)
+        except:
+            if app.config['PROXMOX_HOSTS'].index(host_candidate) == (
+                len(app.config['PROXMOX_HOSTS']) - 1
+            ):
+                logging.error('unable to connect to any of the given Proxmox servers')
+                raise
 
 
 def attempt_proxmox_connection(host):
-    try:
-        proxmox = ProxmoxAPI(
-            host,
-            user=app.config['PROXMOX_USER'],
-            token_name=app.config['PROXMOX_TOKEN_NAME'],
-            token_value=app.config['PROXMOX_TOKEN_VALUE'],
-            verify_ssl=False,
-        )
-        proxmox.version.get()
-        return proxmox
-    except:
-        return None
+    proxmox = ProxmoxAPI(
+        host,
+        user=app.config['PROXMOX_USER'],
+        token_name=app.config['PROXMOX_TOKEN_NAME'],
+        token_value=app.config['PROXMOX_TOKEN_VALUE'],
+        verify_ssl=False,
+    )
+    proxmox.version.get()
+    return proxmox
 
 
 def get_node_least_mem(proxmox):
