@@ -90,7 +90,9 @@ def open_vnc_session(vmid, node, proxmox_user, proxmox_token_name, proxmox_token
         verify=False,
         timeout=5,
         params=proxy_params,
-        headers={'Authorization': f"PVEAPIToken={proxmox_user}!{proxmox_token_name}={proxmox_token_value}"},
+        headers={
+            'Authorization': f'PVEAPIToken={proxmox_user}!{proxmox_token_name}={proxmox_token_value}'
+        },
     ).json()['data']
 
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
