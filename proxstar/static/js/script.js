@@ -4,7 +4,7 @@ $(document).ready(function(){
     $('[data-toggle="tooltip"]').tooltip();
 });
 
-function confirmDialog(url, confirm, confirmButton, complete, error, location) {
+function confirmDialog(url, confirm, confirmButton, complete, error, location, danger) {
     swal({
         title: confirm,
         icon: "warning",
@@ -13,7 +13,7 @@ function confirmDialog(url, confirm, confirmButton, complete, error, location) {
             action: {
                 text: confirmButton,
                 closeModal: false,
-                className: "swal-button--danger",
+                className: danger ? "swal-button--danger" : "swal-button--confirm",
             }
         },
         dangerMode: true,
@@ -44,31 +44,31 @@ function confirmDialog(url, confirm, confirmButton, complete, error, location) {
 $("#delete-vm").click(function(){
     const vmname = $(this).data('vmname');
     const vmid = $(this).data('vmid')
-    confirmDialog(`/vm/${vmid}/delete`, `Are you sure you want to delete ${vmname}?`, "Delete", `${vmname} is now being deleted.`, `Unable to delete ${vmname}. Please try again later.`, '/')
+    confirmDialog(`/vm/${vmid}/delete`, `Are you sure you want to delete ${vmname}?`, "Delete", `${vmname} is now being deleted.`, `Unable to delete ${vmname}. Please try again later.`, '/', true)
 });
 
 $("#stop-vm").click(function(){
     const vmname = $(this).data('vmname');
     const vmid = $(this).data('vmid')
-    confirmDialog(`/vm/${vmid}/power/stop`, `Are you sure you want to stop ${vmname}?`, "Stop", `${vmname} is now stopping!`, `Unable to stop ${vmname}. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/power/stop`, `Are you sure you want to stop ${vmname}?`, "Stop", `${vmname} is now stopping!`, `Unable to stop ${vmname}. Please try again later.`, `/vm/${vmid}`, true)
 });
 
 $("#reset-vm").click(function(){
     const vmname = $(this).data('vmname');
     const vmid = $(this).data('vmid')
-    confirmDialog(`/vm/${vmid}/power/reset`, `Are you sure you want to reset ${vmname}?`, "Reset", `${vmname} is now resetting!`, `Unable to reset ${vmname}. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/power/reset`, `Are you sure you want to reset ${vmname}?`, "Reset", `${vmname} is now resetting!`, `Unable to reset ${vmname}. Please try again later.`, `/vm/${vmid}`, true)
 });
 
 $("#shutdown-vm").click(function(){
     const vmname = $(this).data('vmname');
     const vmid = $(this).data('vmid')
-    confirmDialog(`/vm/${vmid}/power/shutdown`, `Are you sure you want to shutdown ${vmname}?`, "Shutdown", `${vmname} is now shutting down!`, `Unable to shutdown ${vmname}. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/power/shutdown`, `Are you sure you want to shutdown ${vmname}?`, "Shutdown", `${vmname} is now shutting down!`, `Unable to shutdown ${vmname}. Please try again later.`, `/vm/${vmid}`, true)
 });
 
 $("#suspend-vm").click(function(){
     const vmname = $(this).data('vmname');
     const vmid = $(this).data('vmid')
-    confirmDialog(`/vm/${vmid}/power/suspend`, `Are you sure you want to suspend ${vmname}?`, "Suspend", `${vmname} is now suspending!`, `Unable to suspend ${vmname}. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/power/suspend`, `Are you sure you want to suspend ${vmname}?`, "Suspend", `${vmname} is now suspending!`, `Unable to suspend ${vmname}. Please try again later.`, `/vm/${vmid}`, true)
 });
 
 $("#start-vm").click(function(){
@@ -118,7 +118,7 @@ $("#resume-vm").click(function(){
 $(".eject-iso").click(function(){
     const iso = $(this).data('iso');
     const vmid = $(this).data('vmid');
-    confirmDialog(`/vm/${vmid}/iso/${iso}/eject`, `Are you sure you want to eject this ISO?`, "Eject", `Ejecting ISO!`, `Unable to eject ISO. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/iso/${iso}/eject`, `Are you sure you want to eject this ISO?`, "Eject", `Ejecting ISO!`, `Unable to eject ISO. Please try again later.`, `/vm/${vmid}`, true)
 });
 
 
@@ -794,7 +794,8 @@ $(".resize-disk").click(function(){
     const usage = $(this).data('usage');
     const limit = $(this).data('limit');
     swal({
-        title: 'Enter how many GB you would like to expand this disk by:',
+        title: 'Expand Disk',
+        text: 'Enter how many GB you would like to expand this disk by (GB)',
         content: {
             element: 'input',
             attributes: {
@@ -809,7 +810,7 @@ $(".resize-disk").click(function(){
                 className: "",
             },
             confirm: {
-                text: "Select",
+                text: "Expand",
                 closeModal: false,
             }
         },
@@ -1069,24 +1070,24 @@ $(document).on('focus click', "[id^=boot-order-]", function() {
 
 $("#create-net").click(function(){
     const vmid = $(this).data('vmid')
-    confirmDialog(`/vm/${vmid}/net/create`, `Are you sure you want to create a new interface?`, "Create", `Creating new interface!`, `Unable to create interface. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/net/create`, `Are you sure you want to create a new interface?`, "Create", `Creating new interface!`, `Unable to create interface. Please try again later.`, `/vm/${vmid}`, false)
 });
 
 $(".delete-net").click(function(){
     const vmid = $(this).data('vmid')
     const interface = $(this).data('interface')
-    confirmDialog(`/vm/${vmid}/net/${interface}/delete`, `Are you sure you want to delete ${interface}?`, "Delete", `Deleting ${interface}!`, `Unable to delete interface. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/net/${interface}/delete`, `Are you sure you want to delete ${interface}?`, "Delete", `Deleting ${interface}!`, `Unable to delete interface. Please try again later.`, `/vm/${vmid}`, true)
 });
 
 $("#create-iso").click(function(){
     const vmid = $(this).data('vmid')
-    confirmDialog(`/vm/${vmid}/iso/create`, `Are you sure you want to create a new ISO drive?`, "Create", `Creating new ISO drive!`, `Unable to create ISO drive. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/iso/create`, `Are you sure you want to create a new ISO drive?`, "Create", `Creating new ISO drive!`, `Unable to create ISO drive. Please try again later.`, `/vm/${vmid}`, false)
 });
 
 $(".delete-iso").click(function(){
     const vmid = $(this).data('vmid')
     const iso = $(this).data('iso')
-    confirmDialog(`/vm/${vmid}/iso/${iso}/delete`, `Are you sure you want to delete ${iso}?`, "Delete", `Deleting ${iso}!`, `Unable to delete ISO drive. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/iso/${iso}/delete`, `Are you sure you want to delete ${iso}?`, "Delete", `Deleting ${iso}!`, `Unable to delete ISO drive. Please try again later.`, `/vm/${vmid}`, true)
 });
 
 $("#create-disk").click(function(){
@@ -1095,7 +1096,8 @@ $("#create-disk").click(function(){
     const usage = $(this).data('usage');
     const limit = $(this).data('limit');
     swal({
-        title: 'Enter how many GB you would like to make this disk:',
+        title: 'Create New Disk',
+        text: 'Enter new disk size (GB)',
         content: {
             element: 'input',
             attributes: {
@@ -1110,7 +1112,7 @@ $("#create-disk").click(function(){
                 className: "",
             },
             confirm: {
-                text: "Select",
+                text: "Create",
                 closeModal: false,
             }
         },
@@ -1152,5 +1154,5 @@ $("#create-disk").click(function(){
 $(".delete-disk").click(function(){
     const vmid = $(this).data('vmid')
     const disk = $(this).data('disk')
-    confirmDialog(`/vm/${vmid}/disk/${disk}/delete`, `Are you sure you want to delete ${disk}?`, "Delete", `Deleting ${disk}!`, `Unable to delete disk. Please try again later.`, `/vm/${vmid}`)
+    confirmDialog(`/vm/${vmid}/disk/${disk}/delete`, `Are you sure you want to delete ${disk}?`, "Delete", `Deleting ${disk}!`, `Unable to delete disk. Please try again later.`, `/vm/${vmid}`, true)
 });
