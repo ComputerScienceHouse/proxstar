@@ -1,6 +1,6 @@
 FROM python:3.9-buster
 WORKDIR /opt/proxstar
-RUN apt-get update -y && apt-get install -y python3-dev libldap2-dev libsasl2-dev ldap-utils
+RUN apt-get update -y && apt-get install -y python3-dev libldap2-dev libsasl2-dev ldap-utils git
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY start_worker.sh start_scheduler.sh .
