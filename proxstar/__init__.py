@@ -393,6 +393,7 @@ def vm_mem(vmid, mem):
     else:
         return '', 403
 
+
 @app.route('/vm/<string:vmid>/renew', methods=['POST'])
 @auth.oidc_auth
 def vm_renew(vmid):
@@ -407,6 +408,7 @@ def vm_renew(vmid):
         return '', 200
     else:
         return '', 403
+
 
 @app.route('/vm/<string:vmid>/disk/create/<int:size>', methods=['POST'])
 @auth.oidc_auth
@@ -423,6 +425,7 @@ def create_disk(vmid, size):
     else:
         return '', 403
 
+
 @app.route('/vm/<string:vmid>/disk/<string:disk>/resize/<int:size>', methods=['POST'])
 @auth.oidc_auth
 def resize_disk(vmid, disk, size):
@@ -438,6 +441,7 @@ def resize_disk(vmid, disk, size):
     else:
         return '', 403
 
+
 @app.route('/vm/<string:vmid>/disk/<string:disk>/delete', methods=['POST'])
 @auth.oidc_auth
 def delete_disk(vmid, disk):
@@ -449,6 +453,7 @@ def delete_disk(vmid, disk):
         return '', 200
     else:
         return '', 403
+
 
 @app.route('/vm/<string:vmid>/iso/create', methods=['POST'])
 @auth.oidc_auth
@@ -462,6 +467,7 @@ def iso_create(vmid):
     else:
         return '', 403
 
+
 @app.route('/vm/<string:vmid>/iso/<string:iso_drive>/delete', methods=['POST'])
 @auth.oidc_auth
 def iso_delete(vmid, iso_drive):
@@ -473,6 +479,7 @@ def iso_delete(vmid, iso_drive):
         return '', 200
     else:
         return '', 403
+
 
 @app.route('/vm/<string:vmid>/iso/<string:iso_drive>/eject', methods=['POST'])
 @auth.oidc_auth

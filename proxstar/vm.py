@@ -219,7 +219,7 @@ class VM:
         while True:
             name = f'net{i}'
             if name not in self.config:
-                proxmox=connect_proxmox()
+                proxmox = connect_proxmox()
                 try:
                     proxmox.nodes(self.node).qemu(self.id).config.post(**{name: int_type})
                     return True
@@ -231,7 +231,7 @@ class VM:
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def delete_net(self, net_id):
         if net_id in self.config:
-            proxmox=connect_proxmox()
+            proxmox = connect_proxmox()
             proxmox.nodes(self.node).qemu(self.id).config.post(delete=net_id)
             return True
         return False
@@ -294,11 +294,11 @@ class VM:
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def add_iso_drive(self):
         iso_drives = list(filter(lambda interface: 'ide' in interface, self.config.keys()))
-        for i in range(1,5):
+        for i in range(1, 5):
             ide_name = f'ide{i}'
             if ide_name not in iso_drives:
                 proxmox = connect_proxmox()
-                proxmox.nodes(self.node).qemu(self.id).config.post(**{ide_name:'none,media=cdrom'})
+                proxmox.nodes(self.node).qemu(self.id).config.post(**{ide_name: 'none,media=cdrom'})
                 return True
         return False
 
@@ -310,21 +310,23 @@ class VM:
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def eject_iso(self, iso_drive):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(self.id).config.post(**{iso_drive:'none,media=cdrom'})
+        proxmox.nodes(self.node).qemu(self.id).config.post(**{iso_drive: 'none,media=cdrom'})
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def mount_iso(self, iso_drive, iso):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(self.id).config.post(**{iso_drive:'{},media=cdrom'.format(iso)})
+        proxmox.nodes(self.node).qemu(self.id).config.post(
+            **{iso_drive: '{},media=cdrom'.format(iso)}
+        )
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def create_disk(self, size):
         drives = list(filter(lambda interface: 'virtio' in interface, self.config.keys()))
-        for i in range(0,16):
+        for i in range(0, 16):
             disk_name = f'virtio{i}'
             if disk_name not in drives:
                 proxmox = connect_proxmox()
-                proxmox.nodes(self.node).qemu(self.id).config.post(**{disk_name:f'ceph:{size}'})
+                proxmox.nodes(self.node).qemu(self.id).config.post(**{disk_name: f'ceph:{size}'})
                 return True
         return False
 
