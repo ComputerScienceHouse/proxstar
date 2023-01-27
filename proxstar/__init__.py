@@ -269,7 +269,6 @@ def vm_details(vmid):
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
         usage_check = user.check_usage(vm.cpu, vm.mem, 0)
-        print(vm.boot_order)
         return render_template(
             'vm_details.html',
             user=user,
