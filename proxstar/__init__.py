@@ -70,7 +70,7 @@ else:
     config = os.path.join(app.config.get('ROOT_DIR', os.getcwd()), 'config.py')
 app.config.from_pyfile(config)
 app.config['GIT_REVISION'] = (
-    subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD']).decode('utf-8').rstrip()
+    subprocess.check_output('git rev-parse --short HEAD', shell=True).decode('utf-8').rstrip()
 )
 
 # Sentry setup
