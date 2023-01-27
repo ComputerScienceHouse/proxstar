@@ -393,22 +393,6 @@ def vm_mem(vmid, mem):
         return '', 403
 
 
-@app.route('/vm/<string:vmid>/disk/<string:disk>/<int:size>', methods=['POST'])
-@auth.oidc_auth
-def vm_disk(vmid, disk, size):
-    user = User(session['userinfo']['preferred_username'])
-    connect_proxmox()
-    if user.rtp or int(vmid) in user.allowed_vms:
-        vm = VM(vmid)
-        usage_check = user.check_usage(0, 0, size)
-        if usage_check:
-            return usage_check
-        vm.resize_disk(disk, size)
-        return '', 200
-    else:
-        return '', 403
-
-
 @app.route('/vm/<string:vmid>/renew', methods=['POST'])
 @auth.oidc_auth
 def vm_renew(vmid):
@@ -425,28 +409,125 @@ def vm_renew(vmid):
         return '', 403
 
 
-@app.route('/vm/<string:vmid>/eject', methods=['POST'])
+@app.route('/vm/<string:vmid>/disk/create/<int:size>', methods=['POST'])
 @auth.oidc_auth
-def iso_eject(vmid):
+def create_disk(vmid, size):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
-        vm.eject_iso()
+        usage_check = user.check_usage(0, 0, size)
+        if usage_check:
+            return usage_check
+        vm.create_disk(size)
         return '', 200
     else:
         return '', 403
 
 
-@app.route('/vm/<string:vmid>/mount/<string:iso>', methods=['POST'])
+@app.route('/vm/<string:vmid>/disk/<string:disk>/resize/<int:size>', methods=['POST'])
 @auth.oidc_auth
-def iso_mount(vmid, iso):
+def resize_disk(vmid, disk, size):
+    user = User(session['userinfo']['preferred_username'])
+    connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        usage_check = user.check_usage(0, 0, size)
+        if usage_check:
+            return usage_check
+        vm.resize_disk(disk, size)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/vm/<string:vmid>/disk/<string:disk>/delete', methods=['POST'])
+@auth.oidc_auth
+def delete_disk(vmid, disk):
+    user = User(session['userinfo']['preferred_username'])
+    connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm.delete_disk(disk)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/vm/<string:vmid>/iso/create', methods=['POST'])
+@auth.oidc_auth
+def iso_create(vmid):
+    user = User(session['userinfo']['preferred_username'])
+    connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm.add_iso_drive()
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/vm/<string:vmid>/iso/<string:iso_drive>/delete', methods=['POST'])
+@auth.oidc_auth
+def iso_delete(vmid, iso_drive):
+    user = User(session['userinfo']['preferred_username'])
+    connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm.delete_iso_drive(iso_drive)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/vm/<string:vmid>/iso/<string:iso_drive>/eject', methods=['POST'])
+@auth.oidc_auth
+def iso_eject(vmid, iso_drive):
+    user = User(session['userinfo']['preferred_username'])
+    connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm.eject_iso(iso_drive)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/vm/<string:vmid>/iso/<string:iso_drive>/mount/<string:iso>', methods=['POST'])
+@auth.oidc_auth
+def iso_mount(vmid, iso_drive, iso):
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'], iso)
         vm = VM(vmid)
-        vm.mount_iso(iso)
+        vm.mount_iso(iso_drive, iso)
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/vm/<string:vmid>/net/create', methods=['POST'])
+@auth.oidc_auth
+def create_net_interface(vmid):
+    user = User(session['userinfo']['preferred_username'])
+    connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm.create_net('virtio')
+        return '', 200
+    else:
+        return '', 403
+
+
+@app.route('/vm/<string:vmid>/net/<string:netid>/delete', methods=['POST'])
+@auth.oidc_auth
+def delete_net_interface(vmid, netid):
+    user = User(session['userinfo']['preferred_username'])
+    connect_proxmox()
+    if user.rtp or int(vmid) in user.allowed_vms:
+        vm = VM(vmid)
+        vm.delete_net(netid)
         return '', 200
     else:
         return '', 403

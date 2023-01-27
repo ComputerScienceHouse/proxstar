@@ -19,29 +19,56 @@
                         </li>
                         <li class="nav-header">Interfaces</li>
                         {% for interface in vm.interfaces %}
-                        <li>{{ interface[0] }}: {{ interface[2] }}</li>
+                        <li>{{ interface[0] }}: {{ interface[2] }}
+                        <button class="btn btn-danger proxstar-vmbtn delete-net" id="delete-net" name="delete" data-vmid="{{ vm.id }}" data-interface="{{ interface[0] }}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+			</li>
                         {% endfor %}
-                        <li class="nav-header">Disks</li>
+			<li>
+			    <button class="btn btn-success proxstar-vmbtn" id="create-net" name="create" data-vmid="{{ vm.id }}">
+				<i class="fas fa-plus"></i>
+			    </button>
+			</li>
+			<li class="nav-header">Disks</li>
                         {% for disk in vm.disks %}
                         <li>
                             {{ disk[0] }}: {{ disk[1] }}GB
                             <button class="btn btn-default proxstar-vmbtn resize-disk" id="resize-disk" name="resize" data-vmid="{{ vm.id }}" data-disk="{{ disk[0] }}" data-usage="{{ usage['disk'] }}" data-limit="{{ limits['disk'] }}">
                                 <i class="fas fa-cog"></i>
                             </button>
+			    <button class="btn btn-danger proxstar-vmbtn delete-disk" id="delete-disk" name="delete" data-vmid="{{ vm.id }}" data-disk="{{ disk[0] }}">
+				<i class="fas fa-trash"></i>
+			    </button>
                         </li>
+			<li>
+			    <button class="btn btn-success proxstar-vmbtn" id="create-disk" name="create" data-vmid="{{ vm.id }}" data-usage="{{ usage['disk'] }}" data-limit="{{ limits['disk'] }}">
+				<i class="fas fa-plus"></i>
+			    </button>
+			</li>
                         {% endfor %}
                         <li class="nav-header">ISO</li>
-                        <li>
-                            {{ vm.iso }}
-                            {% if vm.iso != 'None' %}
-                            <button class="btn btn-danger proxstar-vmbtn" id="eject-iso" name="eject" data-vmid="{{ vm.id }}" data-iso="{{ vm.iso }}">
+			{% for iso in vm.isos %}
+			<li>
+			    {{iso[0]}}: {{iso[1]}}
+                            <button class="btn btn-default proxstar-vmbtn change-iso" id="change-iso" name="change" data-vmid="{{ vm.id }}" data-iso="{{ iso[0] }}">
+                                <i class="fas fa-cog"></i>
+                            </button>
+                            {% if iso[1] != 'None' %}
+                            <button class="btn btn-warning proxstar-vmbtn eject-iso" id="eject-iso" name="eject" data-vmid="{{ vm.id }}" data-iso="{{ iso[0] }}">
                                 <i class="fas fa-eject"></i>
                             </button>
                             {% endif %}
-                            <button class="btn btn-default proxstar-vmbtn" id="change-iso" name="change" data-vmid="{{ vm.id }}" data-iso="{{ vm.iso }}">
-                                <i class="fas fa-cog"></i>
-                            </button>
+			    <button class="btn btn-danger proxstar-vmbtn delete-iso" id="delete-iso" name="delete" data-vmid="{{ vm.id }}" data-iso="{{ iso[0] }}">
+				<i class="fas fa-trash"></i>
+			    </button>
                         </li>
+			{% endfor %}
+			<li>
+			    <button class="btn btn-success proxstar-vmbtn" id="create-iso" name="create" data-vmid="{{ vm.id }}">
+				<i class="fas fa-plus"></i>
+			    </button>
+			</li>
                     </ul>
                 </div>
             </div>
