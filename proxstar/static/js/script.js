@@ -115,59 +115,14 @@ $("#resume-vm").click(function(){
     });
 });
 
-$("#eject-iso").click(function(){
+$(".eject-iso").click(function(){
     const iso = $(this).data('iso');
-    swal({
-        title: `Are you sure you want to eject ${iso}?`,
-        icon: "warning",
-        buttons: {
-            cancel: {
-                text: "Cancel",
-                visible: true,
-                closeModal: true,
-                className: "",
-            },
-            eject: {
-                text: "Eject",
-                closeModal: false,
-                className: "swal-button--danger",
-            }
-        },
-        dangerMode: true,
-    })
-    .then((willEject) => {
-        if (willEject) {
-            const vmid = $(this).data('vmid');
-            fetch(`/vm/${vmid}/eject`, {
-                credentials: 'same-origin',
-                method: 'post'
-            }).then((response) => {
-                return swal(`${iso} is now ejecting!`, {
-                    icon: "success",
-                    buttons: {
-                        ok: {
-                            text: "OK",
-                            closeModal: true,
-                            className: "",
-                        }
-                    }
-                });
-            }).then(() => {
-                window.location = `/vm/${vmid}`;
-            }).catch(err => {
-                if (err) {
-                    swal("Uh oh...", `Unable to eject ${iso}. Please try again later.`, "error");
-                } else {
-                    swal.stopLoading();
-                    swal.close();
-                }
-            });
-        }
-    });
+    const vmid = $(this).data('vmid');
+    confirmDialog(`/vm/${vmid}/iso/${iso}/eject`, `Are you sure you want to eject this ISO?`, "Eject", `Ejecting ISO!`, `Unable to eject ISO. Please try again later.`, `/vm/${vmid}`)
 });
 
 
-$("#change-iso").click(function(){
+$(".change-iso").click(function(){
     fetch(`/isos`, {
         credentials: 'same-origin',
     }).then((response) => {
@@ -197,8 +152,9 @@ $("#change-iso").click(function(){
         .then((willChange) => {
             if (willChange) {
                 const vmid = $(this).data('vmid');
+                const iso_drive = $(this).data('iso');
                 const iso = $(iso_list).val();
-                fetch(`/vm/${vmid}/mount/${iso}`, {
+                fetch(`/vm/${vmid}/iso/${iso_drive}/mount/${iso}`, {
                     credentials: 'same-origin',
                     method: 'post'
                 }).then((response) => {
@@ -861,7 +817,7 @@ $(".resize-disk").click(function(){
     .then((size) => {
         if (size) {
             if ((parseInt(usage) + parseInt(size)) <= parseInt(limit)) {
-                fetch(`/vm/${vmid}/disk/${disk}/${size}`, {
+                fetch(`/vm/${vmid}/disk/${disk}/resize/${size}`, {
                     credentials: 'same-origin',
                     method: 'post'
                 }).then((response) => {
@@ -1109,4 +1065,92 @@ $(document).on('focus click', "[id^=boot-order-]", function() {
             $(this).val(previous);
         }
     });
+});
+
+$("#create-net").click(function(){
+    const vmid = $(this).data('vmid')
+    confirmDialog(`/vm/${vmid}/net/create`, `Are you sure you want to create a new interface?`, "Create", `Creating new interface!`, `Unable to create interface. Please try again later.`, `/vm/${vmid}`)
+});
+
+$(".delete-net").click(function(){
+    const vmid = $(this).data('vmid')
+    const interface = $(this).data('interface')
+    confirmDialog(`/vm/${vmid}/net/${interface}/delete`, `Are you sure you want to delete ${interface}?`, "Delete", `Deleting ${interface}!`, `Unable to delete interface. Please try again later.`, `/vm/${vmid}`)
+});
+
+$("#create-iso").click(function(){
+    const vmid = $(this).data('vmid')
+    confirmDialog(`/vm/${vmid}/iso/create`, `Are you sure you want to create a new ISO drive?`, "Create", `Creating new ISO drive!`, `Unable to create ISO drive. Please try again later.`, `/vm/${vmid}`)
+});
+
+$(".delete-iso").click(function(){
+    const vmid = $(this).data('vmid')
+    const iso = $(this).data('iso')
+    confirmDialog(`/vm/${vmid}/iso/${iso}/delete`, `Are you sure you want to delete ${iso}?`, "Delete", `Deleting ${iso}!`, `Unable to delete ISO drive. Please try again later.`, `/vm/${vmid}`)
+});
+
+$("#create-disk").click(function(){
+    const vmid = $(this).data('vmid');
+    const disk = $(this).data('disk');
+    const usage = $(this).data('usage');
+    const limit = $(this).data('limit');
+    swal({
+        title: 'Enter how many GB you would like to make this disk:',
+        content: {
+            element: 'input',
+            attributes: {
+                type: 'number',
+            },
+        },
+        buttons: {
+            cancel: {
+                text: "Cancel",
+                visible: true,
+                closeModal: true,
+                className: "",
+            },
+            confirm: {
+                text: "Select",
+                closeModal: false,
+            }
+        },
+    })
+    .then((size) => {
+        if (size) {
+            if ((parseInt(usage) + parseInt(size)) <= parseInt(limit)) {
+                fetch(`/vm/${vmid}/disk/create/${size}`, {
+                    credentials: 'same-origin',
+                    method: 'post'
+                }).then((response) => {
+                    return swal(`Disk has been created!`, {
+                        icon: "success",
+                        buttons: {
+                            ok: {
+                                text: "OK",
+                                closeModal: true,
+                                className: "",
+                            }
+                        }
+                    });
+                }).then(() => {
+                    window.location = `/vm/${vmid}`;
+                });
+            } else {
+                swal("Uh oh...", `You don't have enough disk resources! Try again with a smaller size.`, "error");
+            }
+        }
+    }).catch(err => {
+        if (err) {
+            swal("Uh oh...", `Unable to create the disk. Please try again later.`, "error");
+        } else {
+            swal.stopLoading();
+            swal.close();
+        }
+    });
+});
+
+$(".delete-disk").click(function(){
+    const vmid = $(this).data('vmid')
+    const disk = $(this).data('disk')
+    confirmDialog(`/vm/${vmid}/disk/${disk}/delete`, `Are you sure you want to delete ${disk}?`, "Delete", `Deleting ${disk}!`, `Unable to delete disk. Please try again later.`, `/vm/${vmid}`)
 });

@@ -210,6 +210,32 @@ class VM:
         interfaces = sorted(interfaces, key=lambda x: x[0])
         return interfaces
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def create_net(self, int_type):
+        valid_int_types = ['virtio', 'e1000', 'rtl8139', 'vmxnet3']
+        if int_type not in valid_int_types:
+            return False
+        i = 0
+        while True:
+            name = f'net{i}'
+            if name not in self.config:
+                proxmox=connect_proxmox()
+                try:
+                    proxmox.nodes(self.node).qemu(self.id).config.post(**{name: int_type})
+                    return True
+                except Exception as e:
+                    print(e)
+                    raise e
+            i += 1
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def delete_net(self, net_id):
+        if net_id in self.config:
+            proxmox=connect_proxmox()
+            proxmox.nodes(self.node).qemu(self.id).config.post(delete=net_id)
+            return True
+        return False
+
     def get_mac(self, interface='net0'):
         mac = self.config[interface].split(',')
         if 'virtio' in mac[0]:
@@ -252,29 +278,65 @@ class VM:
         return cdroms
 
     @lazy_property
-    def iso(self):
-        if self.config.get('ide2'):
-            if self.config['ide2'].split(',')[0] == 'none':
-                iso = 'None'
+    def isos(self):
+        isos = []
+        for iso in filter(lambda interface: 'ide' in interface, self.config.keys()):
+            iso_info = self.config[iso]
+            if iso_info:
+                if iso_info.split(',')[0] == 'none':
+                    isos.append((iso, 'None'))
+                else:
+                    isos.append((iso, iso_info.split(',')[0].split('/')[1]))
             else:
-                iso = self.config['ide2'].split(',')[0].split('/')[1]
-        else:
-            iso = 'None'
-        return iso
+                isos.append((iso, 'None'))
+        return isos
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
-    def eject_iso(self):
-        proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(self.id).config.post(ide2='none,media=cdrom')
+    def add_iso_drive(self):
+        iso_drives = list(filter(lambda interface: 'ide' in interface, self.config.keys()))
+        for i in range(1,5):
+            ide_name = f'ide{i}'
+            if ide_name not in iso_drives:
+                proxmox = connect_proxmox()
+                proxmox.nodes(self.node).qemu(self.id).config.post(**{ide_name:'none,media=cdrom'})
+                return True
+        return False
 
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
-    def mount_iso(self, iso):
+    def delete_iso_drive(self, iso_drive):
         proxmox = connect_proxmox()
-        proxmox.nodes(self.node).qemu(self.id).config.post(ide2='{},media=cdrom'.format(iso))
+        proxmox.nodes(self.node).qemu(self.id).config.post(delete=iso_drive)
 
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def eject_iso(self, iso_drive):
+        proxmox = connect_proxmox()
+        proxmox.nodes(self.node).qemu(self.id).config.post(**{iso_drive:'none,media=cdrom'})
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def mount_iso(self, iso_drive, iso):
+        proxmox = connect_proxmox()
+        proxmox.nodes(self.node).qemu(self.id).config.post(**{iso_drive:'{},media=cdrom'.format(iso)})
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def create_disk(self, size):
+        drives = list(filter(lambda interface: 'virtio' in interface, self.config.keys()))
+        for i in range(0,16):
+            disk_name = f'virtio{i}'
+            if disk_name not in drives:
+                proxmox = connect_proxmox()
+                proxmox.nodes(self.node).qemu(self.id).config.post(**{disk_name:f'ceph:{size}'})
+                return True
+        return False
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def resize_disk(self, disk, size):
         proxmox = connect_proxmox()
         proxmox.nodes(self.node).qemu(self.id).resize.put(disk=disk, size='+{}G'.format(size))
+
+    @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
+    def delete_disk(self, disk):
+        proxmox = connect_proxmox()
+        proxmox.nodes(self.node).qemu(self.id).config.post(delete=disk)
 
     @lazy_property
     def expire(self):
