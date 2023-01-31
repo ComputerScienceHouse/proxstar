@@ -8,5 +8,5 @@ COPY .git .git/
 COPY *.py .
 COPY proxstar ./proxstar
 RUN touch targets && chmod a+w targets # This is some OKD shit.
-RUN git config --global --add safe.directory "*" # This is also some OKD shit.
+RUN git config --global --add safe.directory '*' && chmod 775 /etc/proxstar/.git # This is also some OKD shit.
 ENTRYPOINT ddtrace-run gunicorn proxstar:app --bind=0.0.0.0:8080
