@@ -1,4 +1,4 @@
-FROM python:3.9-bullseye
+FROM python:3.9-buster
 WORKDIR /etc/proxstar
 RUN apt-get update -y && apt-get install -y python3-dev libldap2-dev libsasl2-dev ldap-utils git
 COPY requirements.txt .
@@ -8,5 +8,5 @@ COPY .git .git/
 COPY *.py .
 COPY proxstar ./proxstar
 RUN touch targets && chmod a+w targets # This is some OKD shit.
-RUN git config --system --add safe.directory '*' && chmod 775 /etc/proxstar/.git # This is also some OKD shit.
+RUN git config --system --add safe.directory '*' # This is also some OKD shit.
 ENTRYPOINT ddtrace-run gunicorn proxstar:app --bind=0.0.0.0:8080
