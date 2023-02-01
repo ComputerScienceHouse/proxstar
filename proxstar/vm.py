@@ -283,10 +283,13 @@ class VM:
         for iso in filter(lambda interface: 'ide' in interface, self.config.keys()):
             iso_info = self.config[iso]
             if iso_info:
+                if 'cloudinit' in iso_info:
+                    isos.append((iso, 'Clountinit Drive'))
+                    continue
                 if iso_info.split(',')[0] == 'none':
                     isos.append((iso, 'None'))
-                else:
-                    isos.append((iso, iso_info.split(',')[0].split('/')[1]))
+                    continue
+                isos.append((iso, iso_info.split(',')[0].split('/')[1]))
             else:
                 isos.append((iso, 'None'))
         return isos
