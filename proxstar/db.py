@@ -69,8 +69,8 @@ def get_user_usage_limits(db, user):
         limits['mem'] = db.query(Usage_Limit).filter(Usage_Limit.id == user).one().mem
         limits['disk'] = db.query(Usage_Limit).filter(Usage_Limit.id == user).one().disk
     else:
-        limits['cpu'] = 4
-        limits['mem'] = 4
+        limits['cpu'] = 8
+        limits['mem'] = 8
         limits['disk'] = 250
     return limits
 
