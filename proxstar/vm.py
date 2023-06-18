@@ -251,6 +251,11 @@ class VM:
                 disk_size = split.split('=')[1].rstrip('G')
         return disk_size
 
+    def check_in_gb(size):
+        if size[-1] == 'M':
+            size = f'{int(size.rstrip("M")) / 1000}G'
+        return size
+
     @lazy_property
     def disks(self):
         disks = []
@@ -261,9 +266,7 @@ class VM:
                     disk_size = val.split(',')
                     for split in disk_size:
                         if 'size' in split:
-                            size = split.split('=')[1]
-                            if size[-1] == 'M':
-                                size = f'{int(size.rstrip("M")) / 1000}G'
+                            size = check_in_gb(split.split('=')[1])
                             disk_size = size.rstrip('G')
                     disks.append([key, disk_size])
         disks = sorted(disks, key=lambda x: x[0])
