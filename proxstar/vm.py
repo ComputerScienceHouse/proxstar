@@ -10,6 +10,10 @@ from proxstar.proxmox import connect_proxmox, get_free_vmid, get_node_least_mem,
 from proxstar.starrs import get_ip_for_mac
 from proxstar.util import lazy_property, default_repr
 
+def check_in_gb(size):
+    if size[-1] == 'M':
+        size = f'{int(size.rstrip("M")) / 1000}G'
+    return size
 
 @default_repr
 class VM:
@@ -250,11 +254,6 @@ class VM:
             if 'size' in split:
                 disk_size = split.split('=')[1].rstrip('G')
         return disk_size
-
-    def check_in_gb(size):
-        if size[-1] == 'M':
-            size = f'{int(size.rstrip("M")) / 1000}G'
-        return size
 
     @lazy_property
     def disks(self):
