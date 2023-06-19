@@ -11,6 +11,12 @@ from proxstar.starrs import get_ip_for_mac
 from proxstar.util import lazy_property, default_repr
 
 
+def check_in_gb(size):
+    if size[-1] == 'M':
+        size = f'{int(size.rstrip("M")) / 1000}G'
+    return size
+
+
 @default_repr
 class VM:
     def __init__(self, vmid):
@@ -261,7 +267,8 @@ class VM:
                     disk_size = val.split(',')
                     for split in disk_size:
                         if 'size' in split:
-                            disk_size = split.split('=')[1].rstrip('G')
+                            size = check_in_gb(split.split('=')[1])
+                            disk_size = size.rstrip('G')
                     disks.append([key, disk_size])
         disks = sorted(disks, key=lambda x: x[0])
         return disks
@@ -280,11 +287,10 @@ class VM:
     @lazy_property
     def isos(self):
         isos = []
-        for iso in filter(lambda interface: 'ide' in interface, self.config.keys()):
+        for iso in filter(lambda interface: interface in self.cdroms, self.config.keys()):
             iso_info = self.config[iso]
             if iso_info:
                 if 'cloudinit' in iso_info:
-                    isos.append((iso, 'Clountinit Drive'))
                     continue
                 if iso_info.split(',')[0] == 'none':
                     isos.append((iso, 'None'))
