@@ -90,7 +90,7 @@ class User:
                     usage['cpu'] += int(vm.cpu)
                     usage['mem'] += int(vm.mem) / 1024
                 for disk in vm.disks:
-                    usage['disk'] += int(ceil(disk[1]))
+                    usage['disk'] += int(ceil(float(disk[1])))
         return usage
 
     @lazy_property
