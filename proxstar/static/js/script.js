@@ -730,6 +730,59 @@ $(".add-ignored-pool").click(function(){
     });
 });
 
+// TODO: Move these tasks so they're callable via JS?
+/*
+$("#generate-pool-cache-task-button").click(function(){
+});
+
+$("#process-expiring-vms-task-button").click(function(){
+});
+*/
+
+$("#cleanup-vnc-task-button").click(function(){
+    const vncCleanupToken = $(this).data('vnc_cleanup_token');
+    
+    swal({
+        title: "Are you sure you want to clear VNC tokens?",
+        text: "This will clear the websockify targets file, and remove all entries from Redis. Ongoing VNC sessions may be disrupted.",
+        icon: "warning",
+        buttons: {
+            cancel: true,
+            action: {
+                text: "Cleanup VNC Sessions",
+                closeModal: false,
+                className: "swal-button--danger",
+            }
+        },
+        dangerMode: true,
+    })
+    .then((willComplete) => {
+        if (willComplete) {
+            var formData = new FormData();
+            formData.append('token', vncCleanupToken);
+            fetch(`/console/cleanup`, {
+              method: 'post',
+              credentials: 'same-origin',
+              body: formData 
+            }).then((response) => {
+                return swal("VNC Sessions have been cleared", {
+                    icon: "success",
+                });
+            }).then(() => {
+                window.location = location;
+            }).catch(err => {
+                if (err) {
+                    swal("Uh oh...", "Unable to clear VNC sessions", "error");
+                } else {
+                    swal.stopLoading();
+                    swal.close();
+                }
+            });
+        }
+    });
+});
+
+
 function change_for_template(obj) {
     var template_element = obj;
     var selected = template_element.options[template_element.selectedIndex].value;
@@ -756,7 +809,6 @@ $("#console-vm").click(function(){
         return response.json()
     }).then((vnc_params) => {
         // TODO (willnilges): encrypt=true
-        // TODO (willnilges): set host and port to an env variable
         window.open(`/static/noVNC/vnc.html?autoconnect=true&password=${vnc_params.password}&host=${vnc_params.host}&port=${vnc_params.port}&path=path?token=${vnc_params.token}`, '_blank');
     }).catch(err => {
         if (err) {
