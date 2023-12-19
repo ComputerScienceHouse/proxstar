@@ -223,7 +223,7 @@ $("#create-vm").click(function(){
     const max_cpu = $(this).data('max_cpu');
     const max_mem = $(this).data('max_mem');
     const max_disk = $(this).data('max_disk');
-    var ssh_regex = new RegExp("ssh-rsa AAAA[0-9A-Za-z+/]+[=]{0,3}( [^@]+@[^@]+)?")
+    var ssh_regex = new RegExp("ssh-[a-z]+ [0-9A-Za-z+/]+[=]{0,3}( [^@]+@[^@]+)?");
     var disk = document.getElementById('disk').value;
     fetch(`/template/${template}/disk`, {
         credentials: 'same-origin',
