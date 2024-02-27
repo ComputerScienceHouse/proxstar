@@ -238,12 +238,21 @@ $("#create-vm").click(function(){
         if (name && disk) {
             if (template != 'none' && !ssh_regex.test(ssh_key)) {
                 swal("Uh oh...", "Invalid SSH key!", "error");
+            // MAXIMUM BOUNDS CHECK
             } else if (disk > max_disk) {
                 swal("Uh oh...", `You do not have enough disk resources available! Please lower the VM disk size to ${max_disk}GB or lower.`, "error");
             } else if (template != 'none' && cores > max_cpu) {
                 swal("Uh oh...", `You do not have enough CPU resources available! Please lower the VM cores to ${max_cpu} or lower.`, "error");
             } else if (template != 'none' && mem/1024 > max_mem) {
                 swal("Uh oh...", `You do not have enough memory resources available! Please lower the VM memory to ${max_mem}GB or lower.`, "error");
+            // MINIMUM BOUNDS CHECK
+            else if(0 <= disk){
+              swal("Uh oh...", `Selected disk size is less than 0.`,"error");
+            }else if(0 <= cores){
+              swal("Uh oh...", `Selected cores amount is less than 0.`,"error");
+            }else if(0 <= mem){
+              swal("Uh oh...", `Selected memory size is less than 0.`,"error");
+            }
             } else {
                 fetch(`/hostname/${name}`, {
                     credentials: 'same-origin',

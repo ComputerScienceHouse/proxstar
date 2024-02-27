@@ -412,6 +412,8 @@ def vm_renew(vmid):
 @app.route('/vm/<string:vmid>/disk/create/<int:size>', methods=['POST'])
 @auth.oidc_auth
 def create_disk(vmid, size):
+    if(size =< 0):## are they trying to disk with zero size
+            return '', 400
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
@@ -589,8 +591,13 @@ def create():
             name = request.form['name'].lower()
             cores = request.form['cores']
             memory = request.form['mem']
-            template = request.form['template']
             disk = request.form['disk']
+            ## CHECK STUFF DEAR GOD
+            if(int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0){
+                return 'VM creation with cores and/or mem and/or disk values that are less than 0' 400
+            }
+
+            template = request.form['template']
             iso = request.form['iso']
             ssh_key = request.form['ssh_key']
             if iso != 'none':
