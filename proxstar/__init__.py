@@ -594,9 +594,8 @@ def create():
             memory = request.form['mem']
             disk = request.form['disk']
             ## CHECK STUFF DEAR GOD
-            if int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0{
+            if int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0:
                 return 'VM creation with cores and/or mem and/or disk values that are less than 0' 400
-            }
 
             template = request.form['template']
             iso = request.form['iso']
