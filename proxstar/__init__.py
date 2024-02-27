@@ -412,8 +412,9 @@ def vm_renew(vmid):
 @app.route('/vm/<string:vmid>/disk/create/<int:size>', methods=['POST'])
 @auth.oidc_auth
 def create_disk(vmid, size):
-    if(size =< 0):## are they trying to disk with zero size
-            return '', 400
+    ## are they trying to disk with zero size
+    if(size =< 0):
+        return '', 400
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
