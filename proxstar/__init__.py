@@ -566,86 +566,93 @@ def set_boot_order(vmid):
         return '', 403
 
 
-@app.route('/vm/create', methods=['GET', 'POST'])
+@app.route('/vm/create', methods=['GET'])
 @auth.oidc_auth
-def create():
+def get_create():
     user = User(session['userinfo']['preferred_username'])
     proxmox = connect_proxmox()
     if user.active or user.rtp:
-        if request.method == 'GET':
-            stored_isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
-            pools = get_pools(proxmox, db)
-            for pool in get_shared_pools(db, user.name, True):
-                pools.append(pool.name)
-            templates = get_templates(db)
-            return render_template(
-                'create_vm.html',
-                user=user,
-                usage=user.usage,
-                limits=user.limits,
-                percents=user.usage_percent,
-                isos=stored_isos,
-                pools=pools,
-                templates=templates,
+        stored_isos = get_isos(proxmox, app.config['PROXMOX_ISO_STORAGE'])
+        pools = get_pools(proxmox, db)
+        for pool in get_shared_pools(db, user.name, True):
+            pools.append(pool.name)
+        templates = get_templates(db)
+        return render_template(
+            'create_vm.html',
+            user=user,
+            usage=user.usage,
+            limits=user.limits,
+            percents=user.usage_percent,
+            isos=stored_isos,
+            pools=pools,
+            templates=templates,
+        )
+    else:
+        return '', 403
+
+
+@app.route('/vm/create', methods=['POST'])
+@auth.oidc_auth
+def create():
+    user = User(session['userinfo']['preferred_username'])
+    if user.active or user.rtp:
+        name = request.form['name'].lower()
+        cores = request.form['cores']
+        memory = request.form['mem']
+        disk = request.form['disk']
+        username = request.form['user']
+        ## CHECK STUFF DEAR GOD
+        if int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0 or user == '':
+            return (
+                'VM creation with cores and/or mem and/or disk values that are less than 0',
+                400,
             )
-        elif request.method == 'POST':
-            name = request.form['name'].lower()
-            cores = request.form['cores']
-            memory = request.form['mem']
-            disk = request.form['disk']
-            username = request.form['user']
-            ## CHECK STUFF DEAR GOD
-            if int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0 or user == '':
-                return (
-                    'VM creation with cores and/or mem and/or disk values that are less than 0',
-                    400,
-                )
 
-            template = request.form['template']
-            iso = request.form['iso']
-            ssh_key = request.form['ssh_key']
-            if iso != 'none':
-                iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'], iso)
-            if not user.rtp:
+        template = request.form['template']
+        iso = request.form['iso']
+        ssh_key = request.form['ssh_key']
+        if iso != 'none':
+            iso = '{}:iso/{}'.format(app.config['PROXMOX_ISO_STORAGE'], iso)
+        if not user.rtp:
+            if template == 'none':
+                usage_check = user.check_usage(0, 0, disk)
+            else:
+                usage_check = user.check_usage(cores, memory, disk)
+            username = user.name
+        else:
+            usage_check = None
+        if usage_check:
+            return usage_check
+        else:
+            valid, available = (
+                check_hostname(starrs, name) if app.config['USE_STARRS'] else (True, True)
+            )
+
+            if valid and available:
                 if template == 'none':
-                    usage_check = user.check_usage(0, 0, disk)
+                    q.enqueue(
+                        create_vm_task,
+                        username,
+                        name,
+                        cores,
+                        memory,
+                        disk,
+                        iso,
+                        job_timeout=300,
+                    )
                 else:
-                    usage_check = user.check_usage(cores, memory, disk)
-                username = user.name
-            else:
-                usage_check = None
-            if usage_check:
-                return usage_check
-            else:
-                valid, available = (
-                    check_hostname(starrs, name) if app.config['USE_STARRS'] else (True, True)
-                )
-
-                if valid and available:
-                    if template == 'none':
-                        q.enqueue(
-                            create_vm_task,
-                            username,
-                            name,
-                            cores,
-                            memory,
-                            disk,
-                            iso,
-                            job_timeout=300,
-                        )
-                    else:
-                        q.enqueue(
-                            setup_template_task,
-                            template,
-                            name,
-                            username,
-                            ssh_key,
-                            cores,
-                            memory,
-                            job_timeout=600,
-                        )
-                        return '', 200
-            return '', 200
+                    q.enqueue(
+                        setup_template_task,
+                        template,
+                        name,
+                        username,
+                        ssh_key,
+                        cores,
+                        memory,
+                        job_timeout=600,
+                    )
+                    return '', 200
+        return '', 200
     else:
         return '', 403
 
