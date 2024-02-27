@@ -413,7 +413,7 @@ def vm_renew(vmid):
 @auth.oidc_auth
 def create_disk(vmid, size):
     ## are they trying to disk with zero size
-    if(size =< 0):
+    if size <= 0:
         return '', 400
     user = User(session['userinfo']['preferred_username'])
     connect_proxmox()
@@ -594,7 +594,7 @@ def create():
             memory = request.form['mem']
             disk = request.form['disk']
             ## CHECK STUFF DEAR GOD
-            if(int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0){
+            if int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0{
                 return 'VM creation with cores and/or mem and/or disk values that are less than 0' 400
             }
 
