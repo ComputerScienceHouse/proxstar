@@ -593,8 +593,9 @@ def create():
             cores = request.form['cores']
             memory = request.form['mem']
             disk = request.form['disk']
+            username = request.form['user']
             ## CHECK STUFF DEAR GOD
-            if int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0:
+            if int(cores) <= 0 or int(memory) <= 0 or int(disk) <= 0 or user == '':
                 return (
                     'VM creation with cores and/or mem and/or disk values that are less than 0',
                     400,
@@ -613,7 +614,6 @@ def create():
                 username = user.name
             else:
                 usage_check = None
-                username = request.form['user']
             if usage_check:
                 return usage_check
             else:
@@ -646,7 +646,6 @@ def create():
                         )
                         return '', 200
             return '', 200
-        return None
     else:
         return '', 403
 
