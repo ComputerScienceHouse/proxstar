@@ -111,7 +111,7 @@
                             {{ vm.mem | int // 1024 }}GB
                             {% endif %}
                             {% if vm.qmpstatus == 'running' or vm.qmpstatus == 'suspended' or vm.qmpstatus == 'paused' %}
-                            <button class="btn btn-default proxstar-vmbtn" id="change-mem" data-vmid="{{ vm.id }}" data-usage="{{ usage['mem'] - vm.config['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
+                            <button class="btn btn-default proxstar-vmbtn" id="change-mem" data-vmid="{{ vm.id }}" data-usage="{{ usage['mem'] | int - vm.config['memory'] | int // 1024 }}" data-limit="{{ limits['mem'] }}">
                                 <i class="fas fa-cog"></i>
                             </button>
                             {% else %}
