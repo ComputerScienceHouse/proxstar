@@ -105,10 +105,10 @@
                         </dd>
                         <dt>Memory</dt>
                         <dd>
-                            {% if int(vm.mem) < 1024 %}
+                            {% if vm.mem | int < 1024 %}
                             {{ vm.mem }}MB
                             {% else %}
-                            {{ int(vm.mem) // 1024 }}GB
+                            {{ vm.mem | int // 1024 }}GB
                             {% endif %}
                             {% if vm.qmpstatus == 'running' or vm.qmpstatus == 'suspended' or vm.qmpstatus == 'paused' %}
                             <button class="btn btn-default proxstar-vmbtn" id="change-mem" data-vmid="{{ vm.id }}" data-usage="{{ usage['mem'] - vm.config['memory'] // 1024 }}" data-limit="{{ limits['mem'] }}">
