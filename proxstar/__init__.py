@@ -379,7 +379,7 @@ def vm_mem(vmid, mem):
     connect_proxmox()
     if user.rtp or int(vmid) in user.allowed_vms:
         vm = VM(vmid)
-        cur_mem = vm.mem // 1024
+        cur_mem = int(vm.mem) // 1024
         if mem >= cur_mem:
             if vm.qmpstatus in ('running', 'paused'):
                 usage_check = user.check_usage(0, mem - cur_mem, 0)
