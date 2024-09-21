@@ -9,4 +9,4 @@ COPY *.py .
 COPY proxstar ./proxstar
 RUN touch targets && chmod a+w targets # This is some OKD shit.
 RUN git config --system --add safe.directory '*' # This is also some OKD shit.
-ENTRYPOINT ddtrace-run gunicorn proxstar:app --bind=0.0.0.0:8080
+ENTRYPOINT gunicorn proxstar:app --bind=0.0.0.0:8080
