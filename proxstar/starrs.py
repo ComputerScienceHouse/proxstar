@@ -9,6 +9,9 @@ def get_next_ip(starrs, range_name):
         c.callproc('api.get_address_from_range', (range_name,))
         results = c.fetchall()
         c.execute('COMMIT')
+    except Exception as e:
+        print(e)
+        starrs.rollback()
     finally:
         c.close()
     return results[0][0]
@@ -22,6 +25,9 @@ def get_ip_for_mac(starrs, mac):
         c.callproc('api.get_system_interface_addresses', (mac.lower(),))
         results = c.fetchall()
         c.execute('COMMIT')
+    except Exception as e:
+        print(e)
+        starrs.rollback()
     finally:
         c.close()
     if not results:
@@ -37,6 +43,9 @@ def renew_ip(starrs, addr):
         c.callproc('api.renew_interface_address', (addr,))
         results = c.fetchall()
         c.execute('COMMIT')
+    except Exception as e:
+        print(e)
+        starrs.rollback()
     finally:
         c.close()
     return results
@@ -72,9 +81,11 @@ def check_hostname(starrs, hostname):
         if c.fetchall():
             available = False
         c.execute('COMMIT')
-    except psycopg2.InternalError:
+    except Exception as e:
+        print(e)
         valid = False
         available = False
+        starrs.rollback()
     finally:
         c.close()
     return valid, available
@@ -95,6 +106,9 @@ def register_starrs(starrs, name, owner, mac, addr):
         c.callproc('api.initialize', ('root',))
         c.callproc('api.modify_system', (name, 'comment', f'Owned by {owner}'))
         c.execute('COMMIT')
+    except Exception as e:
+        print(e)
+        starrs.rollback()
     finally:
         c.close()
     return results
@@ -108,6 +122,9 @@ def delete_starrs(starrs, name):
         c.callproc('api.remove_system', (name,))
         results = c.fetchall()
         c.execute('COMMIT')
+    except Exception as e:
+        print(e)
+        starrs.rollback()
     finally:
         c.close()
     return results

@@ -1,4 +1,6 @@
 volume/
 volume/*
+.env.local
 .env
+.env.ignore
 ssh_key

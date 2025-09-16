@@ -10,6 +10,8 @@ services:
       context: ./proxstar-postgres
     environment:
       POSTGRES_PASSWORD: changeme
+    ports:
+      - "5432:5432"
     volumes:
       - ./proxstar-postgres/volume:/var/lib/postgresql/data:Z
     networks:
@@ -19,7 +21,7 @@ services:
   proxstar-rq-scheduler:
     build:
       context: ..
-    env_file: .env
+    env_file: .env.local
     entrypoint: ./start_scheduler.sh
     networks:
       - proxstar
@@ -28,7 +30,7 @@ services:
   proxstar-rq:
     build:
       context: ..
-    env_file: .env
+    env_file: .env.local
     entrypoint: ./start_worker.sh
     networks:
       - proxstar
@@ -40,7 +42,7 @@ services:
     ports:
       - "8000:8000"
       - "8001:8001"
-    env_file: .env
+    env_file: .env.local
     entrypoint: ["gunicorn", "proxstar:app", "--bind=0.0.0.0:8000"]
     networks:
       - proxstar
