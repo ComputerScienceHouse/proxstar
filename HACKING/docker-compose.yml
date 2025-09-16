@@ -1,0 +1,48 @@
+services:
+  proxstar-redis:
+    image: docker.io/library/redis:alpine
+    networks:
+      - proxstar
+    restart: always
+
+  proxstar-postgres:
+    build:
+      context: ./proxstar-postgres
+    environment:
+      POSTGRES_PASSWORD: changeme
+    volumes:
+      - ./proxstar-postgres/volume:/var/lib/postgresql/data:Z
+    networks:
+      - proxstar
+    restart: always
+
+  proxstar-rq-scheduler:
+    build:
+      context: ..
+    env_file: .env
+    entrypoint: ./start_scheduler.sh
+    networks:
+      - proxstar
+    restart: always
+
+  proxstar-rq:
+    build:
+      context: ..
+    env_file: .env
+    entrypoint: ./start_worker.sh
+    networks:
+      - proxstar
+    restart: always
+
+  proxstar:
+    build:
+      context: ..
+    ports:
+      - "8000:8000"
+      - "8001:8001"
+    env_file: .env
+    entrypoint: ["gunicorn", "proxstar:app", "--bind=0.0.0.0:8000"]
+    networks:
+      - proxstar
+networks:
+  proxstar:
