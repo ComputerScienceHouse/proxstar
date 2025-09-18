@@ -23,13 +23,8 @@ SECRET_KEY = environ.get('PROXSTAR_SECRET_KEY', '')
 
 # OIDC
 OIDC_ISSUER = environ.get('PROXSTAR_OIDC_ISSUER', 'https://sso.csh.rit.edu/auth/realms/csh')
-OIDC_CLIENT_CONFIG = {
-    'client_id': environ.get('PROXSTAR_CLIENT_ID', 'proxstar'),
-    'client_secret': environ.get('PROXSTAR_CLIENT_SECRET', ''),
-    'post_logout_redirect_uris': [
-        environ.get('PROXSTAR_REDIRECT_URI', 'https://proxstar.csh.rit.edu/logout')
-    ],
-}
+OIDC_CLIENT_ID = environ.get('PROXSTAR_CLIENT_ID', 'proxstar')
+OIDC_CLIENT_SECRET = environ.get('PROXSTAR_CLIENT_SECRET', '')
 
 # Proxmox
 PROXMOX_HOSTS = [host.strip() for host in environ.get('PROXSTAR_PROXMOX_HOSTS', '').split(',')]
@@ -55,7 +50,7 @@ SQLALCHEMY_DATABASE_URI = environ.get('PROXSTAR_SQLALCHEMY_DATABASE_URI', '')
 
 # REDIS
 REDIS_HOST = environ.get('PROXSTAR_REDIS_HOST', 'localhost')
-RQ_DASHBOARD_REDIS_HOST = environ.get('PROXSTAR_REDIS_HOST', 'localhost')
+RQ_DASHBOARD_REDIS_URL = "redis://" + environ.get('PROXSTAR_REDIS_HOST', 'localhost') + ":" + environ.get('PROXSTAR_REDIS_PORT', '6379') + "/0"
 REDIS_PORT = int(environ.get('PROXSTAR_REDIS_PORT', '6379'))
 
 # VNC

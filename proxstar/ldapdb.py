@@ -3,14 +3,19 @@ from flask import current_app as app
 
 from proxstar import logging
 
+_ldap = None
+
 
 def connect_ldap():
+    global _ldap
     try:
-        ldap = CSHLDAP(app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'])
+        # This is fine because CSHLDAP functions are decorated with @reconnect_on_fail
+        if _ldap is None:
+            _ldap = CSHLDAP(app.config['LDAP_BIND_DN'], app.config['LDAP_BIND_PW'])
     except Exception as e:
         logging.error('unable to connect to LDAP: %s', e)
         raise
-    return ldap
+    return _ldap
 
 
 def is_rtp(user):

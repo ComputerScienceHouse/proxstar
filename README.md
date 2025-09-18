@@ -1,7 +1,8 @@
 Proxstar
 ===========
 
-[![Python 3.8](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
+[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/release/python-3130/)
+[![Proxstar](https://github.com/ComputerScienceHouse/proxstar/actions/workflows/python-app.yml/badge.svg)](https://github.com/ComputerScienceHouse/proxstar/actions/workflows/python-app.yml)
 
 Proxstar is a proxmox VM web management tool used by [Rochester Institute of Technology](https://rit.edu/)'s [Computer Science House](https://csh.rit.edu).
 

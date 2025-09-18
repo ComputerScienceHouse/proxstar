@@ -1,4 +1,4 @@
-FROM python:3.9-trixie
+FROM python:3.13-trixie
 WORKDIR /opt/proxstar
 RUN apt-get update -y && apt-get install -y python3-dev libldap2-dev libsasl2-dev ldap-utils git
 COPY requirements.txt .

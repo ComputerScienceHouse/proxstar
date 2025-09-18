@@ -21,7 +21,7 @@ services:
   proxstar-rq-scheduler:
     build:
       context: ..
-    env_file: .env.local
+    env_file: .env
     entrypoint: ./start_scheduler.sh
     networks:
       - proxstar
@@ -30,7 +30,7 @@ services:
   proxstar-rq:
     build:
       context: ..
-    env_file: .env.local
+    env_file: .env
     entrypoint: ./start_worker.sh
     networks:
       - proxstar
@@ -42,7 +42,7 @@ services:
     ports:
       - "8000:8000"
       - "8001:8001"
-    env_file: .env.local
+    env_file: .env
     entrypoint: ["gunicorn", "proxstar:app", "--bind=0.0.0.0:8000"]
     networks:
       - proxstar
