@@ -60,7 +60,7 @@ def set_job_status(job, status):
     job.save_meta()
 
 
-def create_vm_task(user, name, cores, memory, disk, iso):
+def create_vm_task(user, name, cores, memory, disk, iso):  # pylint: disable=too-many-arguments
     with app.app_context():
         job = get_current_job()
         proxmox = connect_proxmox()
@@ -177,7 +177,9 @@ def generate_pool_cache_task():
         store_pool_cache(db, pools)
 
 
-def setup_template_task(template_id, name, user, ssh_key, cores, memory):
+def setup_template_task(
+    template_id, name, user, ssh_key, cores, memory
+):  # pylint: disable=too-many-arguments
     with app.app_context():
         job = get_current_job()
         proxmox = connect_proxmox()
@@ -249,6 +251,7 @@ def cleanup_vnc_task():
             'https://{}/console/cleanup'.format(app.config['SERVER_NAME']),
             data={'token': app.config['VNC_CLEANUP_TOKEN']},
             verify=False,
+            timeout=30,
         )
     except Exception as e:  # pylint: disable=W0703
         print(e)
