@@ -28,8 +28,9 @@ disable =
 	consider-using-dict-items,
 	modified-iterating-dict,
 	too-many-arguments,
+	too-many-positional-arguments,
 	broad-exception-caught,
-	R0917
+check-quote-consistency=yes
 
 [REPORTS]
 output-format = text

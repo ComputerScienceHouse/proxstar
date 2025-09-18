@@ -31,7 +31,7 @@ def default_repr(cls):
 
     def __repr__(self):
         fields = [f'{key}={val}' for key, val in self.__dict__.items()]
-        return f'{type(self).__name__}({", ".join(fields)})'
+        return f'{type(self).__name__}({', '.join(fields)})'
 
     setattr(cls, '__repr__', __repr__)
 

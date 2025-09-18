@@ -13,7 +13,7 @@ from proxstar.util import lazy_property, default_repr
 
 def check_in_gb(size):
     if size[-1] == 'M':
-        size = f'{int(size.rstrip("M")) / 1000}G'
+        size = f'{int(size.rstrip('M')) / 1000}G'
     return size
 
 
