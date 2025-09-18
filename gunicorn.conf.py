@@ -14,7 +14,7 @@ timeout = app.config['TIMEOUT']
 
 
 def start_websockify(websockify_path, target_file):
-    result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE)
+    result = subprocess.run(['pgrep', 'websockify'], stdout=subprocess.PIPE, check=False)
     if not result.stdout:
         print("Websockify is stopped. Starting websockify.")
         proxstar_port = app.config.get('WEBSOCKIFY_PORT')
@@ -34,6 +34,6 @@ def start_websockify(websockify_path, target_file):
         print("Websockify started.")
 
 
-def on_starting(server):
+def on_starting(server):  # pylint: disable=unused-argument
     print("Booting Websockify server in daemon mode...")
     start_websockify(app.config['WEBSOCKIFY_PATH'], app.config['WEBSOCKIFY_TARGET_FILE'])

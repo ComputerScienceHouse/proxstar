@@ -1,7 +1,6 @@
 [MASTER]
 ignore = ,input
 persistent = yes
-load-plugins = pylint_quotes
 
 [MESSAGES CONTROL]
 disable =
@@ -10,7 +9,6 @@ disable =
 	duplicate-code,
 	no-member,
 	parse-error,
-	bad-continuation,
 	too-few-public-methods,
 	global-statement,
 	cyclic-import,
@@ -28,23 +26,20 @@ disable =
 	consider-iterating-dictionary,
 	inconsistent-return-statements,
 	consider-using-dict-items,
-	modified-iterating-dict
+	modified-iterating-dict,
+	too-many-arguments,
+	broad-exception-caught,
+	R0917
 
 [REPORTS]
 output-format = text
-files-output = no
 reports = no
 
 [FORMAT]
 max-line-length = 120
-max-statement-lines = 75
 single-line-if-stmt = no
-no-space-check = trailing-comma,dict-separator
 max-module-lines = 1000
 indent-string = '    '
-string-quote=single-avoid-escape
-triple-quote=single
-docstring-quote=double
 
 [MISCELLANEOUS]
 notes = FIXME,XXX,TODO
@@ -91,7 +86,6 @@ good-names=logger,id,ID
 bad-names=foo,bar,baz,toto,tutu,tata
 
 # List of builtins function names that should not be used, separated by a comma
-bad-functions=apply,input
 
 [DESIGN]
 max-args = 10
@@ -106,4 +100,4 @@ min-public-methods = 2
 max-public-methods = 20
 
 [EXCEPTIONS]
-overgeneral-exceptions = Exception
+overgeneral-exceptions = builtins.Exception

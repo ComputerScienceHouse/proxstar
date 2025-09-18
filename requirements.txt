@@ -19,7 +19,6 @@ sqlalchemy==2.0.43
 tenacity==9.1.2
 websockify==0.13.0
 pylint==3.3.8
-pylint-quotes==0.2.3
 sentry-sdk[rq]
 sentry-sdk[flask]
 sentry-sdk~=2.38.0

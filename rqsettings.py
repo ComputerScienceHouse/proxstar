@@ -5,7 +5,10 @@ from sentry_sdk.integrations.rq import RqIntegration
 from sentry_sdk.integrations.redis import RedisIntegration
 
 if os.path.exists('config_local.py'):
-    import config_local as config
+    try:
+        import config_local as config  # pylint: disable=import-error
+    except ImportError:
+        import config
 else:
     import config
 

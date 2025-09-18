@@ -102,6 +102,8 @@ if app.config['USE_STARRS']:
             app.config['STARRS_DB_PASS'],
         )
     )
+else:
+    starrs = None
 
 from proxstar.vm import VM
 from proxstar.user import User

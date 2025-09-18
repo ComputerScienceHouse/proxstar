@@ -1,6 +1,3 @@
-import psycopg2
-
-
 def get_next_ip(starrs, range_name):
     c = starrs.cursor()
     try:

@@ -50,7 +50,10 @@ SQLALCHEMY_DATABASE_URI = environ.get('PROXSTAR_SQLALCHEMY_DATABASE_URI', '')
 
 # REDIS
 REDIS_HOST = environ.get('PROXSTAR_REDIS_HOST', 'localhost')
-RQ_DASHBOARD_REDIS_URL = "redis://" + environ.get('PROXSTAR_REDIS_HOST', 'localhost') + ":" + environ.get('PROXSTAR_REDIS_PORT', '6379') + "/0"
+RQ_DASHBOARD_REDIS_URL = (
+    "redis://" + environ.get('PROXSTAR_REDIS_HOST', 'localhost') + ":" +
+    environ.get('PROXSTAR_REDIS_PORT', '6379') + "/0"
+)
 REDIS_PORT = int(environ.get('PROXSTAR_REDIS_PORT', '6379'))
 
 # VNC

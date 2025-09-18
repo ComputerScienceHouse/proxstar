@@ -372,7 +372,7 @@ class VM:
 
 # Will create a new VM with the given parameters, does not guarantee
 # the VM is done provisioning when returning
-def create_vm(proxmox, user, name, cores, memory, disk, iso):
+def create_vm(proxmox, user, name, cores, memory, disk, iso):  # pylint: disable=too-many-arguments
     node = proxmox.nodes(get_node_least_mem(proxmox))
     vmid = get_free_vmid(proxmox)
     # Make sure lingering expirations are deleted
