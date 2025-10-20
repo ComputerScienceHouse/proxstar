@@ -7,7 +7,7 @@ gunicorn==23.0.0
 markupsafe==3.0.2
 paramiko==2.11.0
 proxmoxer==2.2.0
-psutil==7.0.0
+psutil==7.1.1
 psycopg2-binary==2.9.10
 python-dateutil==2.9.0
 redis==6.4.0
