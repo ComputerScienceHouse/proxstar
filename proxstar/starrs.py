@@ -1,7 +1,7 @@
-
 import logging
 
 logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+
 
 def get_next_ip(starrs, range_name):
     c = starrs.cursor()
