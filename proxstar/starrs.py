@@ -1,3 +1,8 @@
+
+import logging
+
+logging.basicConfig(format='%(asctime)s %(levelname)s %(message)s', level=logging.INFO)
+
 def get_next_ip(starrs, range_name):
     c = starrs.cursor()
     try:
@@ -7,7 +12,7 @@ def get_next_ip(starrs, range_name):
         results = c.fetchall()
         c.execute('COMMIT')
     except Exception as e:
-        print(e)
+        logging.exception(e)
         starrs.rollback()
     finally:
         c.close()
@@ -23,7 +28,7 @@ def get_ip_for_mac(starrs, mac):
         results = c.fetchall()
         c.execute('COMMIT')
     except Exception as e:
-        print(e)
+        logging.exception(e)
         starrs.rollback()
     finally:
         c.close()
@@ -41,7 +46,7 @@ def renew_ip(starrs, addr):
         results = c.fetchall()
         c.execute('COMMIT')
     except Exception as e:
-        print(e)
+        logging.exception(e)
         starrs.rollback()
     finally:
         c.close()
@@ -79,7 +84,7 @@ def check_hostname(starrs, hostname):
             available = False
         c.execute('COMMIT')
     except Exception as e:
-        print(e)
+        logging.exception(e)
         valid = False
         available = False
         starrs.rollback()
@@ -104,7 +109,7 @@ def register_starrs(starrs, name, owner, mac, addr):
         c.callproc('api.modify_system', (name, 'comment', f'Owned by {owner}'))
         c.execute('COMMIT')
     except Exception as e:
-        print(e)
+        logging.exception(e)
         starrs.rollback()
     finally:
         c.close()
@@ -120,7 +125,7 @@ def delete_starrs(starrs, name):
         results = c.fetchall()
         c.execute('COMMIT')
     except Exception as e:
-        print(e)
+        logging.exception(e)
         starrs.rollback()
     finally:
         c.close()
