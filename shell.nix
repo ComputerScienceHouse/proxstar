@@ -2,7 +2,7 @@
 { pkgs ? import <nixpkgs> { } }:
 
 let
-  pythonEnv = pkgs.python3.withPackages (ps: with ps; [ ]);
+  pythonEnv = pkgs.python3.withPackages (ps: with ps; [ websockify ]);
 in
 pkgs.mkShell {
   packages = [
