@@ -4,6 +4,8 @@
 
 2. Follow the _Podman Environment Instructions_ to set up a Podman dev environment. If you'd like to run Proxstar entirely on your own hardware, check out _Setting up a full dev environment_
 
+If you'd like, you can also install the hooks by running `install_hooks.sh` from this directory.
+
 3. Create a Virtualenv to do your linting in
 ```
 mkdir venv
