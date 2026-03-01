@@ -3,5 +3,5 @@
 line-length = 100
 skip-string-normalization = true
 # default is per-file auto-detection
-target-version = ['py38']
+target-version = ['py313']
 include = '\.py$'
