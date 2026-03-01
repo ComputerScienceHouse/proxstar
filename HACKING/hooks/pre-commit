@@ -1,0 +1,18 @@
+files="./**/*.py *.py"
+# Check if any files need to be re-formatted
+black --check --quiet $files
+check_status=$?
+
+# Reformat the files
+black $files
+
+if [ $check_status -ne 0 ]; then
+# Check if Black made any changes
+  echo "Black has reformatted files."
+  echo "Please review the changes and run 'git add' to stage them."
+  exit 1
+fi
+
+# If no issues were found, exit successfully
+echo "All files are properly formatted."
+exit 0
