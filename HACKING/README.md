@@ -22,25 +22,26 @@ source venv/bin/activate
 
 ### Podman Environment Instructions
 
-1.  Build your containers. The `proxstar` container serves as proxstar, rq, rq-scheduler, and VNC. The `proxstar-postgres` container sets up the database schema.
+1. Copy `.env.template` to `.env` and fill it out with the help of an RTP
+
+2. Create volume for postgres
 
 `mkdir HACKING/proxstar-postgres/volume`
 
-`podman build . --tag=proxstar`
+3.  Build the proxstar container and launch it on your system.
 
-`podman build HACKING/proxstar-postgres --tag=proxstar-postgres`
+`podman compose up -d`
 
-2. Configure your environment variables. I'd recommend setting up a .env file and passing that into your container. Check `.env.template` for more info.
-
-3. Run it. This sets up redis, postgres, rq, and proxstar.
-
-`./HACKING/launch_env.sh`
+To access the proxstar WebUI, go to https://localhost:8000
 
 4. To stop all containers, use the provided script
 
-`./HACKING/stop_env.sh`
+`podman compose down`
 
-## Setting up a full dev environment
+## Setting up a full dev environment (Advanced)
+
+> [!INFO]
+> This is not required for most contributors
 
 If you want to work on Proxstar using a 1:1 development setup, there are a couple things you're going to need
 
