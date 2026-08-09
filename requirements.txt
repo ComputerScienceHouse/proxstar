@@ -1,5 +1,5 @@
 black~=25.1.0
-csh_ldap @ git+https://github.com/ComputerScienceHouse/csh_ldap@2.5.0
+csh_ldap>=2.5.8
 flask==3.1.2
 jinja2==3.1.6
 flask-pyoidc==3.14.3
