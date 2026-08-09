@@ -5,7 +5,7 @@ jinja2==3.1.6
 flask-pyoidc==3.14.3
 gunicorn==23.0.0
 markupsafe==3.0.2
-paramiko==2.11.0
+paramiko==3.4.0
 proxmoxer==2.2.0
 psutil==7.0.0
 psycopg2-binary==2.9.10
