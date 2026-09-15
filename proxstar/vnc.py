@@ -81,7 +81,7 @@ def open_vnc_session(vmid, node, proxmox):
     Returns: Ticket to use as the noVNC password, and a port.
     """
     # TODO (willnilges): Report errors
-    params = {'websocket': '1', 'generate-password': '0'}
+    params = {'websocket': '0', 'generate-password': '0'}
     vncproxy_response_data = proxmox.nodes(node).qemu(str(vmid)).vncproxy.post(**params)
 
     return urllib.parse.quote_plus(vncproxy_response_data['ticket']), vncproxy_response_data['port']
