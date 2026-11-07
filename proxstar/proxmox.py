@@ -71,3 +71,7 @@ def get_pools(proxmox, db):
             pools.append(poolid)
     pools = sorted(pools)
     return pools
+
+def get_task_status(proxmox, task_id):
+    node_name = task_id.split(':')[1]
+    return proxmox.nodes(node_name).tasks(task_id).status().get()

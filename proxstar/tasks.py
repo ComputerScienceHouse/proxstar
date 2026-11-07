@@ -19,7 +19,7 @@ from proxstar.db import (
     get_template,
 )
 from proxstar.mail import send_vm_expire_email, send_rtp_vm_delete_email
-from proxstar.proxmox import connect_proxmox, get_pools
+from proxstar.proxmox import connect_proxmox, get_pools, get_task_status
 from proxstar.starrs import get_next_ip, register_starrs, delete_starrs
 from proxstar.user import User, get_vms_for_rtp
 from proxstar.vm import VM, clone_vm, create_vm
@@ -69,17 +69,26 @@ def create_vm_task(user, name, cores, memory, disk, iso):  # pylint: disable=too
             starrs = connect_starrs()
         logging.info('[{}] Creating VM.'.format(name))
         set_job_status(job, 'creating VM')
-        vmid = create_vm(proxmox, user, name, cores, memory, disk, iso)
+        vmid, task_id = create_vm(proxmox, user, name, cores, memory, disk, iso)
         logging.info('[{}] Waiting until Proxmox is done provisioning.'.format(name))
         set_job_status(job, 'waiting for Proxmox')
         timeout = 20
         retry = 0
         while retry < timeout:
+            status = get_task_status(proxmox, task_id)
+
+            if status['status'] == 'stopped' and status['exitstatus'] != 'OK':
+                logging.warning('Failed to provision, error code is {}'.format(status['exitstatus']))
+                set_job_status(job, 'Failed to provision, error code is {}'.format(status['exitstatus']))
+                delete_vm_task(vmid)
+                return
+
             if not VM(vmid).is_provisioned():
                 retry += 1
                 time.sleep(3)
                 continue
             break
+
         if retry == timeout:
             logging.info('[{}] Failed to provision, deleting.'.format(name))
             set_job_status(job, 'failed to provision')
@@ -190,17 +199,26 @@ def setup_template_task(
         get_template(db, template_id)
         logging.info('[{}] Cloning template {}.'.format(name, template_id))
         set_job_status(job, 'cloning template')
-        vmid = clone_vm(proxmox, template_id, name, user)
+        vmid, task_id = clone_vm(proxmox, template_id, name, user)
         logging.info('[{}] Waiting until Proxmox is done provisioning.'.format(name))
         set_job_status(job, 'waiting for Proxmox')
         timeout = 25
         retry = 0
         while retry < timeout:
+            status = get_task_status(proxmox, task_id)
+
+            if status['status'] == 'stopped' and status['exitstatus'] != 'OK':
+                logging.warning('Failed to provision, error code is {}'.format(status['exitstatus']))
+                set_job_status(job, 'Failed to provision, error code is {}'.format(status['exitstatus']))
+                delete_vm_task(vmid)
+                return
+
             if not VM(vmid).is_provisioned():
                 retry += 1
                 time.sleep(12)
                 continue
             break
+
         if retry == timeout:
             logging.info('[{}] Failed to provision, deleting.'.format(name))
             set_job_status(job, 'failed to provision')
