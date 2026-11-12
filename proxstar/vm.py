@@ -377,7 +377,7 @@ def create_vm(proxmox, user, name, cores, memory, disk, iso):  # pylint: disable
     vmid = get_free_vmid(proxmox)
     # Make sure lingering expirations are deleted
     delete_vm_expire(db, vmid)
-    node.qemu.create(
+    task_id = node.qemu.create(
         vmid=vmid,
         name=name,
         cores=cores,
@@ -389,7 +389,7 @@ def create_vm(proxmox, user, name, cores, memory, disk, iso):  # pylint: disable
         pool=user,
         description='Managed by Proxstar',
     )
-    return vmid
+    return vmid, task_id
 
 
 # Will clone a new VM from a template, does not guarantee the
@@ -400,7 +400,8 @@ def clone_vm(proxmox, template_id, name, pool):
     # Make sure lingering expirations are deleted
     delete_vm_expire(db, vmid)
     target = get_node_least_mem(proxmox)
-    node.qemu(template_id).clone.post(
+    task_id = node.qemu(template_id).clone.post(
         newid=vmid, name=name, pool=pool, full=1, description='Managed by Proxstar', target=target
     )
-    return vmid
+
+    return vmid, task_id
