@@ -78,8 +78,12 @@ def create_vm_task(user, name, cores, memory, disk, iso):  # pylint: disable=too
             status = get_task_status(proxmox, task_id)
 
             if status['status'] == 'stopped' and status['exitstatus'] != 'OK':
-                logging.warning('Failed to provision, error code is {}'.format(status['exitstatus']))
-                set_job_status(job, 'Failed to provision, error code is {}'.format(status['exitstatus']))
+                logging.warning(
+                    'Failed to provision, error code is {}'.format(status['exitstatus'])
+                )
+                set_job_status(
+                    job, 'Failed to provision, error code is {}'.format(status['exitstatus'])
+                )
                 delete_vm_task(vmid)
                 return
 
@@ -208,8 +212,12 @@ def setup_template_task(
             status = get_task_status(proxmox, task_id)
 
             if status['status'] == 'stopped' and status['exitstatus'] != 'OK':
-                logging.warning('Failed to provision, error code is {}'.format(status['exitstatus']))
-                set_job_status(job, 'Failed to provision, error code is {}'.format(status['exitstatus']))
+                logging.warning(
+                    'Failed to provision, error code is {}'.format(status['exitstatus'])
+                )
+                set_job_status(
+                    job, 'Failed to provision, error code is {}'.format(status['exitstatus'])
+                )
                 delete_vm_task(vmid)
                 return
 
