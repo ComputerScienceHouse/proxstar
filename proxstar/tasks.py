@@ -239,6 +239,7 @@ def setup_template_task(
             set_job_status(job, 'registering in STARRS')
             ip = get_next_ip(starrs, app.config['STARRS_IP_RANGE'])
             register_starrs(starrs, name, app.config['STARRS_USER'], vm.get_mac(), ip)
+
         get_vm_expire(db, vmid, app.config['VM_EXPIRE_MONTHS'])
         logging.info('[{}] Setting CPU and memory.'.format(name))
         set_job_status(job, 'setting CPU and memory')
@@ -246,9 +247,7 @@ def setup_template_task(
         vm.set_mem(memory)
         logging.info('[{}] Applying cloud-init config.'.format(name))
         set_job_status(job, 'applying cloud-init')
-        vm.set_ci_user(user)
-        vm.set_ci_ssh_key(ssh_key)
-        vm.set_ci_network()
+        vm.set_ci(user, ssh_key)
 
         if app.config['USE_STARRS']:
             logging.info('[{}] Waiting for STARRS to propogate before starting VM.'.format(name))

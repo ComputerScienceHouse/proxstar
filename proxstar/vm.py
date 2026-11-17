@@ -353,6 +353,11 @@ class VM:
     def expire(self):
         return get_vm_expire(db, self.id, app.config['VM_EXPIRE_MONTHS'])
 
+    def set_ci(self, user, ssh_key):
+        self.set_ci_user(user)
+        self.set_ci_ssh_key(ssh_key)
+        self.set_ci_network()
+
     @retry(wait=wait_fixed(2), stop=stop_after_attempt(5))
     def set_ci_user(self, user):
         proxmox = connect_proxmox()
