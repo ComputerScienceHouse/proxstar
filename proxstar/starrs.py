@@ -107,6 +107,7 @@ def register_starrs(starrs, name, owner, mac, addr):
         c.execute('BEGIN')
         c.callproc('api.initialize', ('root',))
         c.callproc('api.modify_system', (name, 'comment', f'Owned by {owner}'))
+        c.callproc('api.modify_system', (name, 'type', 'Virtual Machine'))
         c.execute('COMMIT')
     except Exception as e:
         logging.exception(e)

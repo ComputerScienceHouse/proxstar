@@ -4,6 +4,13 @@ services:
     networks:
       - proxstar
     restart: always
+    develop:
+      watch:
+        - action: sync+restart
+          path: ../proxstar
+          target: /opt/proxstar/proxstar
+          ignore:
+            - __pycache__
 
   proxstar-postgres:
     build:
@@ -13,7 +20,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./proxstar-postgres/volume:/var/lib/postgresql/data:Z
+      - proxstar-postgres:/var/lib/postgresql/data:Z
     networks:
       - proxstar
     restart: always
@@ -26,6 +33,13 @@ services:
     networks:
       - proxstar
     restart: always
+    develop:
+      watch:
+        - action: sync+restart
+          path: ../proxstar
+          target: /opt/proxstar/proxstar
+          ignore:
+            - __pycache__
 
   proxstar-rq:
     build:
@@ -35,16 +49,27 @@ services:
     networks:
       - proxstar
     restart: always
+    develop:
+      watch:
+        - action: sync+restart
+          path: ../proxstar
+          target: /opt/proxstar/proxstar
+          ignore:
+            - __pycache__
+
 
   proxstar:
     build:
       context: ..
     ports:
-      - "8000:8000"
-      - "8001:8001"
+      - "8080:8080"
+      - "8081:8081"
     env_file: .env
-    entrypoint: ["gunicorn", "proxstar:app", "--bind=0.0.0.0:8000"]
+    entrypoint: ["gunicorn", "proxstar:app", "--bind=0.0.0.0:8080"]
     networks:
       - proxstar
 networks:
   proxstar:
+
+volumes:
+  proxstar-postgres:
